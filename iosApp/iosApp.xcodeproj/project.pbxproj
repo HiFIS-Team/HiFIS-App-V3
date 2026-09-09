@@ -289,7 +289,8 @@
 					"-framework",
 					SharedKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = app.hifis.hifis;
+				APP_DISPLAY_NAME = "HiFIS Dev";
+				PRODUCT_BUNDLE_IDENTIFIER = app.hifis.hifis.debug;
 				PRODUCT_NAME = HiFIS;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -318,6 +319,7 @@
 					"-framework",
 					SharedKit,
 				);
+				APP_DISPLAY_NAME = HiFIS;
 				PRODUCT_BUNDLE_IDENTIFIER = app.hifis.hifis;
 				PRODUCT_NAME = HiFIS;
 				SDKROOT = iphoneos;

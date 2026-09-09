@@ -17,6 +17,10 @@ Kotlin Multiplatform 프로젝트입니다. **비즈니스 로직은 `:shared` �
 `:shared` 는 Android 에 AAR 로, iOS 에 `SharedKit.framework` 로 제공됩니다.
 
 Application ID / Bundle ID 는 양 플랫폼 모두 `app.hifis.hifis` 입니다 (V2 와 동일).
+**디버그 빌드만 `app.hifis.hifis.debug` · 이름 `HiFIS Dev`** 로 갈라져 있어, 운영 V2 가
+깔린 기기에 개발 빌드를 같이 둘 수 있습니다.
+
+앱 아이콘은 `assets/brand/logo.png` 에서 `python3 tools/icons/gen_app_icon.py` 로 굽습니다.
 
 ## 요구 환경
 

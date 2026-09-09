@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 디버그 빌드는 운영 V2 와 나란히 깔리므로 런처에서 구분되어야 한다 -->
+    <string name="app_name">HiFIS Dev</string>
+</resources>

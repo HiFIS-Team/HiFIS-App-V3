@@ -22,6 +22,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            // 운영 V2 (app.hifis.hifis) 와 한 기기에 같이 두기 위해 ID 를 가른다.
+            // 푸시·OAuth 를 붙이면 이 ID 도 콘솔에 같이 등록해야 한다.
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
