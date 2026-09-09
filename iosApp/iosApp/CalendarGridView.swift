@@ -77,7 +77,7 @@ private struct DayCellView: View {
                     HStack(spacing: 3) {
                         ForEach(Array(events.prefix(3).enumerated()), id: \.element.id) { _, event in
                             Circle()
-                                .fill(HifisEventTint.of(event.kind))
+                                .fill(HifisEventColor.at(event.colorIndex))
                                 .frame(width: HifisSize.calendarDot, height: HifisSize.calendarDot)
                         }
                     }

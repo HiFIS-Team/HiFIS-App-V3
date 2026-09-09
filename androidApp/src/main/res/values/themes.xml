@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.HiFIS" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        앱이 늘 어두워서 창 바탕도 어둡게 둔다.
+        라이트로 두면 앱이 뜨기 전 한 프레임이 하얗게 번쩍인다.
+        색은 `HifisColors.DarkColors.background` 와 같은 값이다.
+    -->
+    <style name="Theme.HiFIS" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+    </style>
 </resources>

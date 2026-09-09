@@ -23,6 +23,14 @@ data class HifisColors(
     val inkTertiary: Color,
     /** 구분선·테두리 */
     val line: Color,
+
+    /**
+     * 입력칸·고르개의 면 — **`surface` 위에 얹히는 한 겹 더**
+     *
+     * 라이트는 흰 카드보다 조금 어둡게, 다크는 어두운 카드보다 조금 밝게 간다.
+     * `background` 를 쓰면 안 된다 — 다크에서 카드보다 **어두워서** 칸이 파여 보인다.
+     */
+    val fieldFill: Color,
     /** 강조 — 화면당 한 곳에만 쓴다 */
     val brand: Color,
     /** 안 읽음 점·삭제 */
@@ -70,6 +78,7 @@ val LightColors = HifisColors(
     inkSecondary = Color(0xFF5A6272),
     inkTertiary = Color(0xFF949BA9),
     line = Color(0xFFE7E9EE),
+    fieldFill = Color(0xFFF2F4F6),
     brand = Brand,
     danger = Color(0xFFF04452),
     success = Color(0xFF00C471),
@@ -87,6 +96,7 @@ val DarkColors = HifisColors(
     inkSecondary = Color(0xFFA3AAB8),
     inkTertiary = Color(0xFF6B7280),
     line = Color(0xFF262A33),
+    fieldFill = Color(0xFF232A35),
     brand = BrandOnDark,
     danger = Color(0xFFFF6B76),
     success = Color(0xFF2FD98D),

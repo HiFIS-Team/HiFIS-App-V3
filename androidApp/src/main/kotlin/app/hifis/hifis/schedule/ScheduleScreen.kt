@@ -57,6 +57,7 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
     var monthMode by remember { mutableStateOf(true) }
     var anchor by remember { mutableStateOf(today) }
     var picked by remember { mutableStateOf(today) }
+    var adding by remember { mutableStateOf(false) }
 
     val weeks = remember(anchor, monthMode, today) {
         if (monthMode) Calendar.monthGrid(anchor, today) else Calendar.weekGrid(anchor, today)
@@ -78,12 +79,14 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
                 // 달 보기는 한 달씩, 주 보기는 한 주씩 옮긴다
                 onPrev = { anchor = Calendar.step(anchor, monthMode, back = true) },
                 onNext = { anchor = Calendar.step(anchor, monthMode, back = false) },
-                onAdd = {},
+                onAdd = { adding = true },
             )
             CalendarGrid(weeks, events, picked) { picked = it }
             UpcomingList(upcoming)
         }
     }
+
+    if (adding) EventFormSheet(onDismiss = { adding = false })
 }
 
 @Composable

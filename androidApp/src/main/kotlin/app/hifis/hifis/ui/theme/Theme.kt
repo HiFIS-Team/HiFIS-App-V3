@@ -1,6 +1,5 @@
 package app.hifis.hifis.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -22,7 +21,9 @@ private val LocalHifisColors = staticCompositionLocalOf { LightColors }
  */
 @Composable
 fun HifisTheme(
-    dark: Boolean = isSystemInDarkTheme(),
+    // **지금은 늘 어둡게 간다.** 라이트 한 벌은 그대로 두었다 —
+    // 설정에서 고르게 할 때 `isSystemInDarkTheme()` 로 되돌리면 된다
+    dark: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(

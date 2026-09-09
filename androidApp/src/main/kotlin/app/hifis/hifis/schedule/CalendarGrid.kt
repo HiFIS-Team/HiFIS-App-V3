@@ -24,7 +24,7 @@ import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
-import app.hifis.hifis.ui.theme.tintOf
+import app.hifis.hifis.ui.theme.eventColor
 import app.hifis.shared.schedule.Calendar
 import app.hifis.shared.schedule.CalendarCell
 import app.hifis.shared.schedule.ScheduleEvent
@@ -169,7 +169,7 @@ private fun DayCell(
                     Box(
                         Modifier
                             .size(Dimens.calendarDot)
-                            .background(tintOf(event.kind), CircleShape),
+                            .background(eventColor(event.colorIndex), CircleShape),
                     )
                 }
             }

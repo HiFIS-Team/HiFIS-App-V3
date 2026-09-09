@@ -83,16 +83,31 @@ class CalendarTest {
         val date = LocalDate(2026, 7, 22)
         val events = listOf(
             ScheduleEvent("a", "오후 회의", EventKind.MEETING, date, "15:00"),
-            ScheduleEvent("b", "월차", EventKind.OFF, date, null),
+            ScheduleEvent("b", "월차", EventKind.LEAVE, date, null),
         )
         assertEquals("b", Calendar.upcoming(events, date).first().events.first().id)
     }
 
     @Test
-    fun `모르는 종류는 기타로 떨어진다`() {
+    fun `모르는 종류는 일반으로 떨어진다`() {
         assertEquals(EventKind.LESSON, EventKind.parse("수업"))
-        assertEquals(EventKind.ETC, EventKind.parse("없는종류"))
-        assertEquals(EventKind.ETC, EventKind.parse(null))
+        assertEquals(EventKind.GENERAL, EventKind.parse("없는종류"))
+        assertEquals(EventKind.GENERAL, EventKind.parse(null))
+    }
+
+    @Test
+    fun `색 자리가 벗어나도 색은 나온다`() {
+        // 서버가 모르는 값을 줄 수 있다 — 화면이 비면 안 된다
+        assertEquals(EventPalette.colors[0], EventPalette.at(-1))
+        assertEquals(EventPalette.colors[0], EventPalette.at(999))
+        assertEquals(EventPalette.colors[3], EventPalette.at(3))
+    }
+
+    @Test
+    fun `종류와 공유 범위는 아이콘을 다 갖고 있다`() {
+        // 하나라도 비면 그 칩만 그림이 없는 채로 뜬다
+        assertTrue(EventKind.all.all { it.icon.startsWith("ic_") })
+        assertTrue(EventScope.all.all { it.icon.startsWith("ic_") })
     }
 
     @Test

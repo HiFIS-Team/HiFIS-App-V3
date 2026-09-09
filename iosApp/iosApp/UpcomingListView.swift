@@ -89,7 +89,7 @@ private struct EventRowView: View {
         Button {} label: {
             HStack(spacing: 10) {
                 Circle()
-                    .fill(HifisEventTint.of(event.kind))
+                    .fill(HifisEventColor.at(event.colorIndex))
                     .frame(width: HifisSize.calendarDot + 1, height: HifisSize.calendarDot + 1)
                 Text(event.title)
                     .font(.system(size: 14, weight: .semibold))

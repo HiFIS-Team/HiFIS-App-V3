@@ -48,6 +48,10 @@ private struct MainTabBar: UIViewControllerRepresentable {
             return host
         }
         controller.tabBar.tintColor = UIColor(HifisColor.brand)
+        // **지금은 늘 어둡게 간다.** 이 한 줄이 자식 화면과 탭바까지 다 어둡게 만든다 —
+        // 동적 `UIColor` 도 `UITraitCollection.current` 도 여기서 정해진다.
+        // 라이트 한 벌은 그대로 두었다. 설정에서 고르게 할 때 `.unspecified` 로 되돌린다
+        controller.overrideUserInterfaceStyle = .dark
         return controller
     }
 

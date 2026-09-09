@@ -13,6 +13,7 @@ struct ScheduleView: View {
     @State private var monthMode = true
     @State private var anchor: Kotlinx_datetimeLocalDate
     @State private var pickedKey: String
+    @State private var adding = false
 
     init() {
         let parts = Foundation.Calendar.current.dateComponents(
@@ -57,6 +58,9 @@ struct ScheduleView: View {
                 }
                 .padding(.bottom, 24)
             }
+            .sheet(isPresented: $adding) {
+                EventFormSheet(onDismiss: { adding = false })
+            }
         }
     }
 
@@ -67,7 +71,7 @@ struct ScheduleView: View {
             HStack(spacing: 0) {
                 ModeToggle(monthMode: $monthMode)
                 Spacer()
-                Button {} label: {
+                Button { adding = true } label: {
                     Image("ic_plus")
                         .renderingMode(.template)
                         .resizable()

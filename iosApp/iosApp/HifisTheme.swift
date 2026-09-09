@@ -22,6 +22,11 @@ enum HifisColor {
     /// 구분선·테두리
     static let line = dynamic(light: 0xE7_E9_EE, dark: 0x26_2A_33)
 
+    /// 입력칸·고르개의 면 — **`surface` 위에 얹히는 한 겹 더**
+    ///
+    /// `background` 를 쓰면 안 된다 — 다크에서 카드보다 **어두워서** 칸이 파여 보인다.
+    static let fieldFill = dynamic(light: 0xF2_F4_F6, dark: 0x23_2A_35)
+
     /// 강조 — 화면당 한 곳에만 쓴다.
     ///
     /// 라이트 `#217FE1` 은 `assets/brand/logo.png` **마크 픽셀의 평균색**이다.
@@ -179,19 +184,13 @@ enum HifisShortcutTint {
     }
 }
 
-/// 일정 종류를 가르는 색 — **V2 와 같은 짝이다** (`schedule_data.dart` 의 `Kind.color`)
+/// 일정 색 — **고른 색이다. 뜻이 없다**
 ///
-/// 넷은 이미 있는 토큰에서 온다. `기타`만 보라인데, 바로가기의 전자결재와 **같은 보라**다 —
-/// 뜻이 없는 표식이라 새 색을 하나 더 만들 이유가 없다.
-enum HifisEventTint {
-    static func of(_ kind: EventKind) -> Color {
-        if kind == EventKind.meeting { return HifisColor.brand }
-        if kind == EventKind.lesson { return HifisColor.success }
-        if kind == EventKind.event { return HifisColor.warning }
-        // 휴무는 일정이 있다는 표시만 하면 된다 — 눈에 덜 띄어야 맞다
-        if kind == EventKind.off { return HifisColor.inkTertiary }
-        return Color(UIColor { $0.userInterfaceStyle == .dark
-            ? UIColor(rgb: 0xB0_8C_FF) : UIColor(rgb: 0x8A_5C_F0) })
+/// 숫자는 `shared` 의 `EventPalette` 가 들고 있다. 두 플랫폼이 같은 숫자를 읽어
+/// 같은 색을 낸다 — 여기서 색을 새로 정하지 않는다.
+enum HifisEventColor {
+    static func at(_ index: Int32) -> Color {
+        Color(UIColor(rgb: UInt32(EventPalette.shared.at(index: index))))
     }
 }
 

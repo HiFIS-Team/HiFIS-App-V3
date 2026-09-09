@@ -3,7 +3,7 @@ package app.hifis.hifis.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import app.hifis.shared.nav.HomeShortcut
-import app.hifis.shared.schedule.EventKind
+import app.hifis.shared.schedule.EventPalette
 
 /**
  * 바로가기 칸을 가르는 색 — **바로가기 격자에서만 쓴다**
@@ -40,20 +40,9 @@ fun tintOf(shortcut: HomeShortcut): Color {
 fun tintFillAlpha(): Float = if (HifisTheme.colors.isDark) 0.20f else 0.12f
 
 /**
- * 일정 종류를 가르는 색 — **V2 와 같은 짝이다** (`schedule_data.dart` 의 `Kind.color`)
+ * 일정 색 — **고른 색이다. 뜻이 없다**
  *
- * 넷은 이미 있는 토큰에서 온다. `기타`만 보라인데, 바로가기의 전자결재와 **같은 보라**다 —
- * 뜻이 없는 표식이라 새 색을 하나 더 만들 이유가 없다.
+ * 숫자는 `shared` 의 [EventPalette] 가 들고 있다. 두 플랫폼이 같은 숫자를 읽어
+ * 같은 색을 낸다 — 여기서 색을 새로 정하지 않는다.
  */
-@Composable
-fun tintOf(kind: EventKind): Color {
-    val colors = HifisTheme.colors
-    return when (kind) {
-        EventKind.MEETING -> colors.brand
-        EventKind.LESSON -> colors.success
-        EventKind.EVENT -> colors.warning
-        // 휴무는 일정이 있다는 표시만 하면 된다 — 눈에 덜 띄어야 맞다
-        EventKind.OFF -> colors.inkTertiary
-        EventKind.ETC -> if (colors.isDark) Color(0xFFB08CFF) else Color(0xFF8A5CF0)
-    }
-}
+fun eventColor(index: Int): Color = Color(0xFF000000L or EventPalette.at(index).toLong())

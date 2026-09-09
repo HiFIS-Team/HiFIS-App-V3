@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#FDFDFD</color>
+    <!-- 앱이 뜨기 전 창 바탕 — DarkColors.background 와 같은 값 -->
+    <color name="window_background">#0F1116</color>
 </resources>

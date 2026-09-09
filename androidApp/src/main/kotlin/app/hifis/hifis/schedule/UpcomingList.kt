@@ -25,7 +25,7 @@ import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
-import app.hifis.hifis.ui.theme.tintOf
+import app.hifis.hifis.ui.theme.eventColor
 import app.hifis.shared.schedule.DaySchedule
 import app.hifis.shared.schedule.ScheduleEvent
 
@@ -141,7 +141,7 @@ private fun EventRow(event: ScheduleEvent) {
         Box(
             Modifier
                 .size(Dimens.calendarDot + 1.dp)
-                .background(tintOf(event.kind), CircleShape),
+                .background(eventColor(event.colorIndex), CircleShape),
         )
         Spacer(Modifier.width(10.dp))
         Text(
