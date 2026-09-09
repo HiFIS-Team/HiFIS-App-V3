@@ -35,9 +35,10 @@ struct TabPage<Content: View>: View {
                     .font(HifisFont.title)
                     .foregroundStyle(HifisColor.ink)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // 헤더와 붙으면 헤더의 일부처럼 보인다 — 위아래로 띄운다
                     .padding(.horizontal, HifisSize.screenEdge)
-                    .padding(.top, 10)
-                    .padding(.bottom, 2)
+                    .padding(.top, 18)
+                    .padding(.bottom, 10)
             }
             content()
         }

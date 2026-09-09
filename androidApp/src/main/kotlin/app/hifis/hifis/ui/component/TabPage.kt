@@ -55,11 +55,12 @@ fun TabPage(
                 title,
                 style = HifisType.title,
                 color = HifisTheme.colors.ink,
+                // 헤더와 붙으면 헤더의 일부처럼 보인다 — 위아래로 띄운다
                 modifier = Modifier.padding(
                     start = Dimens.screenEdge,
                     end = Dimens.screenEdge,
-                    top = 10.dp,
-                    bottom = 2.dp,
+                    top = 18.dp,
+                    bottom = 10.dp,
                 ),
             )
         }
