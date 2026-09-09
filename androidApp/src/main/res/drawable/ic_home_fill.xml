@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 홈 (채움) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12,3.3L2.9,10.95V19.5a2.6,2.6 0 0 0 2.6,2.6h13a2.6,2.6 0 0 0 2.6,-2.6V10.95ZM9.6,22.1V15.7H14.4V22.1Z"
+        android:fillColor="#000000"
+        android:fillType="evenOdd" />
+</vector>

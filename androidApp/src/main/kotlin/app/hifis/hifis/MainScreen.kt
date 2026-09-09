@@ -60,17 +60,18 @@ fun MainScreen() {
 }
 
 /**
- * 아이콘 이름([MainTab.icon])을 그림 자원으로 바꾼다
+ * 탭 아이콘을 그림 자원으로 바꾼다 — **고른 칸은 속을 채운 것**을 쓴다
  *
  * **`when` 이 enum 을 다 덮어야 컴파일된다.** 탭을 추가하면 여기서 걸린다 —
  * 이름으로 자원을 찾는 방식(`getIdentifier`)은 빠뜨려도 빌드가 통과해서 안 쓴다.
  */
-private fun drawableOf(tab: MainTab): Int = when (tab) {
-    MainTab.HOME -> R.drawable.ic_home
-    MainTab.WORK -> R.drawable.ic_work
-    MainTab.SCHEDULE -> R.drawable.ic_schedule
-    MainTab.ATTENDANCE -> R.drawable.ic_attendance
-    MainTab.MORE -> R.drawable.ic_more
+private fun drawableOf(tab: MainTab, filled: Boolean): Int = when (tab) {
+    MainTab.HOME -> if (filled) R.drawable.ic_home_fill else R.drawable.ic_home
+    MainTab.WORK -> if (filled) R.drawable.ic_work_fill else R.drawable.ic_work
+    MainTab.SCHEDULE -> if (filled) R.drawable.ic_schedule_fill else R.drawable.ic_schedule
+    MainTab.ATTENDANCE ->
+        if (filled) R.drawable.ic_attendance_fill else R.drawable.ic_attendance
+    MainTab.MORE -> if (filled) R.drawable.ic_more_fill else R.drawable.ic_more
 }
 
 @Composable
@@ -82,12 +83,13 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
         tonalElevation = 0.dp,
     ) {
         MainTab.all.forEach { tab ->
+            val picked = tab == selected
             NavigationBarItem(
-                selected = tab == selected,
+                selected = picked,
                 onClick = { onSelect(tab) },
                 icon = {
                     Icon(
-                        painter = painterResource(drawableOf(tab)),
+                        painter = painterResource(drawableOf(tab, filled = picked)),
                         contentDescription = null, // 라벨이 바로 아래에 있다
                         modifier = Modifier.size(24.dp),
                     )

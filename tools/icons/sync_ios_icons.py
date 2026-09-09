@@ -27,7 +27,11 @@ def to_svg(xml_path: Path) -> str:
     for path in root.iter("path"):
         data = path.get(ANDROID + "pathData")
         if path.get(ANDROID + "fillColor"):
-            parts.append(f'<path d="{data}" fill="#000000"/>')
+            # evenOdd = 겹치는 자리를 뚫는다 (채운 아이콘의 문·바늘·구분선)
+            rule = ""
+            if path.get(ANDROID + "fillType") == "evenOdd":
+                rule = ' fill-rule="evenodd"'
+            parts.append(f'<path d="{data}" fill="#000000"{rule}/>')
             continue
         attrs = [
             f'd="{data}"',

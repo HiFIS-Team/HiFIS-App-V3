@@ -17,15 +17,17 @@ package app.hifis.shared.nav
  * 그때도 목록이 늘어날 뿐 **읽는 자리는 여기 하나여야 한다.**
  *
  * @property label 하단바에 찍히는 글자
- * @property icon 아이콘 이름 — 양 플랫폼이 **같은 이름**을 쓴다.
- *   안드로이드는 `R.drawable.<icon>`, iOS 는 같은 이름의 에셋
- *   (`tools/icons/sync_ios_icons.py` 가 맞춰 준다)
+ * @property icon 안 고른 칸 — **선으로만** 그린 아이콘
+ * @property iconFilled 고른 칸 — **속을 채운** 아이콘
+ *
+ * 아이콘 이름은 양 플랫폼이 **같은 것**을 쓴다. 안드로이드는 `R.drawable.<이름>`,
+ * iOS 는 같은 이름의 에셋이다 (`tools/icons/sync_ios_icons.py` 가 맞춰 준다).
  */
-enum class MainTab(val label: String, val icon: String) {
-    HOME("홈", "ic_home"),
-    WORK("업무", "ic_work"),
-    SCHEDULE("일정", "ic_schedule"),
-    ATTENDANCE("근태", "ic_attendance"),
+enum class MainTab(val label: String, val icon: String, val iconFilled: String) {
+    HOME("홈", "ic_home", "ic_home_fill"),
+    WORK("업무", "ic_work", "ic_work_fill"),
+    SCHEDULE("일정", "ic_schedule", "ic_schedule_fill"),
+    ATTENDANCE("근태", "ic_attendance", "ic_attendance_fill"),
 
     /**
      * 나머지를 전부 담는 목록 — **하단바가 변신하지 않는다**
@@ -33,7 +35,7 @@ enum class MainTab(val label: String, val icon: String) {
      * 5칸짜리 바를 2단으로 뒤집는 방식(V2 아이폰)은 한 칸을 '뒤로'에 쓰느라
      * 실제로 8개밖에 못 담는다. 넣을 것이 10개라 처음부터 안 맞는다.
      */
-    MORE("전체", "ic_more"),
+    MORE("전체", "ic_more", "ic_more_fill"),
     ;
 
     companion object {

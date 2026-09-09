@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일정 (채움) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M4.25,4.9h15.5a2.35,2.35 0 0 1 2.35,2.35v11a2.35,2.35 0 0 1 -2.35,2.35H4.25a2.35,2.35 0 0 1 -2.35,-2.35v-11a2.35,2.35 0 0 1 2.35,-2.35zM1.9,9.15H22.1V10.85H1.9Z"
+        android:fillColor="#000000"
+        android:fillType="evenOdd" />
+    <path
+        android:pathData="M7.75,3.25v4"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M16.25,3.25v4"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

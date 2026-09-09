@@ -20,7 +20,15 @@ struct MainScreen: View {
         TabView(selection: $selected) {
             ForEach(MainTab.companion.all, id: \.icon) { tab in
                 screen(for: tab)
-                    .tabItem { Label(tab.label, image: tab.icon) }
+                    // 고른 칸은 **속을 채운** 아이콘으로 바꾼다.
+                    // `tabItem` 에는 선택 상태용 그림을 따로 주는 자리가 없어서
+                    // 고른 값을 보고 그림 자체를 갈아 끼운다
+                    .tabItem {
+                        Label(
+                            tab.label,
+                            image: selected == tab.icon ? tab.iconFilled : tab.icon
+                        )
+                    }
                     .tag(tab.icon)
             }
         }
