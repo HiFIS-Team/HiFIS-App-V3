@@ -27,6 +27,20 @@ data class HifisColors(
     val brand: Color,
     /** 안 읽음 점·삭제 */
     val danger: Color,
+
+    /** 잘 돌아간다 — 출근 중 */
+    val success: Color,
+    /** 짚어 볼 것 — 지각·조기 퇴근 */
+    val warning: Color,
+
+    /**
+     * 게이지·진행 막대를 채우는 그라데이션 두 끝
+     *
+     * 단색으로 채우면 막대가 납작해 보인다. [brand] 를 기준으로 한 칸 밝게·어둡게 잡았다.
+     */
+    val brandGradientStart: Color,
+    val brandGradientEnd: Color,
+
     val isDark: Boolean,
 )
 
@@ -58,6 +72,10 @@ val LightColors = HifisColors(
     line = Color(0xFFE7E9EE),
     brand = Brand,
     danger = Color(0xFFF04452),
+    success = Color(0xFF00C471),
+    warning = Color(0xFFFF9F0A),
+    brandGradientStart = Color(0xFF3590E7),
+    brandGradientEnd = Color(0xFF1A6CDD),
     isDark = false,
 )
 
@@ -71,5 +89,9 @@ val DarkColors = HifisColors(
     line = Color(0xFF262A33),
     brand = BrandOnDark,
     danger = Color(0xFFFF6B76),
+    success = Color(0xFF2FD98D),
+    warning = Color(0xFFFFB340),
+    brandGradientStart = Color(0xFF5FA9FF),
+    brandGradientEnd = Color(0xFF2F86F5),
     isDark = true,
 )

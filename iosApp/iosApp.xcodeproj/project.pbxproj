@@ -10,6 +10,7 @@
 		22EA1CB33A17DCC6FC82406D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F543015C899423D4B01CEB2E /* Assets.xcassets */; };
 		307C2654CD5972A25FB7FD87 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668CECA83ACC03A83C85A623 /* iOSApp.swift */; };
 		56B0305B5D3847FC6B326502 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */; };
+		9B1202A891865BFAAA8793E2 /* TodayWorkCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */; };
 		24603AA8641282E8FB0E19AD /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E793824202E64E67580836F /* MainScreen.swift */; };
 		0FBD04005571F35049F51515 /* HifisTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDB0956765C6566C45DD1190 /* HifisTheme.swift */; };
 		FC31AE4454C3C5F7AB5C4FF5 /* HeaderIconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3944AA87BFB08C25ABCE8073 /* HeaderIconButton.swift */; };
@@ -22,6 +23,7 @@
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C117AD187833E2513BD2F553 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkCard.swift; sourceTree = "<group>"; };
 		4E793824202E64E67580836F /* MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreen.swift; sourceTree = "<group>"; };
 		BDB0956765C6566C45DD1190 /* HifisTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HifisTheme.swift; sourceTree = "<group>"; };
 		3944AA87BFB08C25ABCE8073 /* HeaderIconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderIconButton.swift; sourceTree = "<group>"; };
@@ -38,6 +40,7 @@
 				CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */,
 				C117AD187833E2513BD2F553 /* Info.plist */,
 				668CECA83ACC03A83C85A623 /* iOSApp.swift */,
+				8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */,
 				4E793824202E64E67580836F /* MainScreen.swift */,
 				BDB0956765C6566C45DD1190 /* HifisTheme.swift */,
 				3944AA87BFB08C25ABCE8073 /* HeaderIconButton.swift */,
@@ -155,6 +158,7 @@
 			files = (
 				56B0305B5D3847FC6B326502 /* ContentView.swift in Sources */,
 				307C2654CD5972A25FB7FD87 /* iOSApp.swift in Sources */,
+				9B1202A891865BFAAA8793E2 /* TodayWorkCard.swift in Sources */,
 				24603AA8641282E8FB0E19AD /* MainScreen.swift in Sources */,
 				0FBD04005571F35049F51515 /* HifisTheme.swift in Sources */,
 				FC31AE4454C3C5F7AB5C4FF5 /* HeaderIconButton.swift in Sources */,

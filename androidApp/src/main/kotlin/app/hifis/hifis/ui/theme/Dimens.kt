@@ -37,4 +37,19 @@ object Dimens {
 
     /** 안 읽음 점을 두르는 바탕색 테두리 — 아이콘 선 위에 겹쳐도 점이 뭉개지지 않게 */
     val badgeRing = 1.5.dp
+
+    /** 카드 모서리 — **카드는 전부 이 값이다.** 자리마다 다르면 줄이 안 맞는다 */
+    val cardRadius = 24.dp
+
+    /** 카드 안쪽 여백 */
+    val cardPadding = 24.dp
+
+    /** 게이지가 차지하는 줄 높이 — 트랙보다 큰 것은 손잡이가 트랙 밖으로 나오기 때문 */
+    val gaugeRow = 18.dp
+
+    /** 게이지 트랙 두께 */
+    val gaugeTrack = 8.dp
+
+    /** 게이지 손잡이 지름 */
+    val gaugeThumb = 14.dp
 }

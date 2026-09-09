@@ -30,6 +30,15 @@ enum HifisColor {
     /// 안 읽음 점·삭제
     static let danger = dynamic(light: 0xF0_44_52, dark: 0xFF_6B_76)
 
+    /// 잘 돌아간다 — 출근 중
+    static let success = dynamic(light: 0x00_C4_71, dark: 0x2F_D9_8D)
+    /// 짚어 볼 것 — 지각·조기 퇴근
+    static let warning = dynamic(light: 0xFF_9F_0A, dark: 0xFF_B3_40)
+
+    /// 게이지를 채우는 그라데이션 두 끝 — 단색으로 채우면 막대가 납작해 보인다
+    static let brandGradientStart = dynamic(light: 0x35_90_E7, dark: 0x5F_A9_FF)
+    static let brandGradientEnd = dynamic(light: 0x1A_6C_DD, dark: 0x2F_86_F5)
+
     private static func dynamic(light: UInt32, dark: UInt32) -> Color {
         Color(UIColor { trait in
             UIColor(rgb: trait.userInterfaceStyle == .dark ? dark : light)
@@ -59,6 +68,35 @@ enum HifisSize {
     static let badgeDot: CGFloat = 7
     /// 그 점을 두르는 바탕색 테두리
     static let badgeRing: CGFloat = 1.5
+
+    /// 카드 모서리 — **카드는 전부 이 값이다**
+    static let cardRadius: CGFloat = 24
+    /// 카드 안쪽 여백
+    static let cardPadding: CGFloat = 24
+
+    /// 게이지가 차지하는 줄 높이 — 손잡이가 트랙 밖으로 나오기 때문에 트랙보다 크다
+    static let gaugeRow: CGFloat = 18
+    /// 게이지 트랙 두께
+    static let gaugeTrack: CGFloat = 8
+    /// 게이지 손잡이 지름
+    static let gaugeThumb: CGFloat = 14
+}
+
+/// 글자 크기 한 벌 — **안드로이드 `HifisType` 과 같은 값**이다
+///
+/// 색은 안 들어 있다. 쓰는 자리에서 토큰으로 준다.
+///
+/// 글꼴은 **OS 기본**이다 (SF Pro · Apple SD Gothic Neo). Pretendard 를 안 넣는다 —
+/// 하단바를 각자 OS 표준으로 둔 것과 같은 결이다.
+enum HifisFont {
+    /// 시계처럼 크게 세우는 숫자
+    static let display = Font.system(size: 40, weight: .bold)
+    /// 값 — 스캔 시각처럼 읽어야 하는 것
+    static let body = Font.system(size: 16, weight: .semibold)
+    /// 머리말·강조 한 줄
+    static let label = Font.system(size: 14, weight: .medium)
+    /// 곁들이는 글자
+    static let caption = Font.system(size: 13, weight: .regular)
 }
 
 private extension UIColor {
