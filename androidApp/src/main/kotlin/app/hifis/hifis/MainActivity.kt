@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.ui.theme.HifisTheme
 
 class MainActivity : ComponentActivity() {
@@ -15,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HifisTheme {
-                HomeScreen()
+                MainScreen()
             }
         }
     }
