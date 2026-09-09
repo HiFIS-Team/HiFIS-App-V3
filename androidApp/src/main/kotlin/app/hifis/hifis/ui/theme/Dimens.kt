@@ -61,4 +61,13 @@ object Dimens {
 
     /** 바로가기 아이콘 그림 크기 */
     val shortcutIcon = 24.dp
+
+    /** 목록 한 줄의 모서리 — 카드 안에 들어가는 줄이라 카드보다 작다 */
+    val rowRadius = 14.dp
+
+    /** 목록 한 줄의 안쪽 여백 (가로) */
+    val rowPaddingH = 14.dp
+
+    /** 목록 한 줄의 안쪽 여백 (세로) */
+    val rowPaddingV = 13.dp
 }

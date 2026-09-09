@@ -17,15 +17,18 @@ struct HomeView: View {
                 onNotification: {},
                 onProfile: {}
             )
-            VStack(spacing: 12) {
-                TodayWorkCard(work: TodayWork.companion.demo)
-                // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
-                HomeShortcuts(onOpen: { _ in })
+            // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
+            ScrollView {
+                VStack(spacing: 12) {
+                    TodayWorkCard(work: TodayWork.companion.demo)
+                    // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
+                    HomeShortcuts(onOpen: { _ in })
+                    TodayNewsCard(notices: Notice.companion.demo, onOpen: { _ in })
+                }
+                .padding(.horizontal, HifisSize.screenEdge)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal, HifisSize.screenEdge)
-            .padding(.top, 16)
-
-            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(HifisColor.background.ignoresSafeArea())

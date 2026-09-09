@@ -88,6 +88,13 @@ enum HifisSize {
     static let shortcutChipRadius: CGFloat = 14
     /// 바로가기 아이콘 그림 크기
     static let shortcutIcon: CGFloat = 24
+
+    /// 목록 한 줄의 모서리 — 카드 안에 들어가는 줄이라 카드보다 작다
+    static let rowRadius: CGFloat = 14
+    /// 목록 한 줄의 안쪽 여백 (가로)
+    static let rowPaddingH: CGFloat = 14
+    /// 목록 한 줄의 안쪽 여백 (세로)
+    static let rowPaddingV: CGFloat = 13
 }
 
 /// 바로가기 칸을 가르는 색 — **여기서만 쓴다**
