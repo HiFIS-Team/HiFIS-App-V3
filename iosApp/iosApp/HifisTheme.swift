@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedKit
 
 /// 화면이 쓰는 색 한 벌 — **안드로이드 `HifisColors` 와 같은 값**이다
 ///
@@ -89,6 +90,38 @@ enum HifisSize {
     static let shortcutIcon: CGFloat = 24
 }
 
+/// 바로가기 칸을 가르는 색 — **여기서만 쓴다**
+///
+/// `HifisColor` 와 따로 둔 것은 성격이 달라서다. 저쪽은 **뜻**이 있는 색이고
+/// (`success` = 잘 돌아간다, `danger` = 문제), 이건 **뜻이 없는 표식**이다.
+/// 글자를 안 읽고도 찾던 것을 집으라고 색을 다르게 줄 뿐이다.
+/// 안드로이드 `ShortcutTint.kt` 와 **같은 값**이다.
+///
+/// > ⚠️ **다른 화면으로 가져가지 않는다.** 여섯 색이 앱 곳곳에 퍼지면
+/// > 브랜드 파랑 하나로 강조하던 규칙이 무너진다.
+enum HifisShortcutTint {
+    static func of(_ shortcut: HomeShortcut) -> Color {
+        switch shortcut.icon {
+        case "ic_project": return dyn(light: 0x5B_6B_F0, dark: 0x8D_98_FF)
+        case "ic_meeting": return dyn(light: 0x12_A5_B0, dark: 0x3F_C7_D2)
+        case "ic_approval": return dyn(light: 0x8A_5C_F0, dark: 0xB0_8C_FF)
+        case "ic_staff": return dyn(light: 0x2A_A7_6A, dark: 0x4F_C9_8C)
+        case "ic_salary": return dyn(light: 0xE8_91_2A, dark: 0xFF_B0_55)
+        default: return dyn(light: 0xE8_5D_75, dark: 0xFF_8D_A0)
+        }
+    }
+
+    /// 색 면을 얼마나 옅게 까나 — 상태 배지와 **같은 값**이다.
+    /// 다크는 어두운 면 위라 같은 값이면 안 보여서 조금 더 준다.
+    static var fillOpacity: Double {
+        UITraitCollection.current.userInterfaceStyle == .dark ? 0.20 : 0.12
+    }
+
+    private static func dyn(light: UInt32, dark: UInt32) -> Color {
+        Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(rgb: dark) : UIColor(rgb: light) })
+    }
+}
+
 /// 글자 크기 한 벌 — **안드로이드 `HifisType` 과 같은 값**이다
 ///
 /// 색은 안 들어 있다. 쓰는 자리에서 토큰으로 준다.
@@ -106,7 +139,7 @@ enum HifisFont {
     static let caption = Font.system(size: 13, weight: .regular)
 }
 
-private extension UIColor {
+extension UIColor {
     convenience init(rgb: UInt32) {
         self.init(
             red: CGFloat((rgb >> 16) & 0xFF) / 255,

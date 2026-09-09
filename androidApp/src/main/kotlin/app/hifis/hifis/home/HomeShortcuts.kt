@@ -25,6 +25,8 @@ import app.hifis.hifis.R
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
+import app.hifis.hifis.ui.theme.tintFillAlpha
+import app.hifis.hifis.ui.theme.tintOf
 import app.hifis.shared.nav.HomeShortcut
 
 /**
@@ -76,6 +78,7 @@ private fun ShortcutItem(
     modifier: Modifier = Modifier,
 ) {
     val colors = HifisTheme.colors
+    val tint = tintOf(shortcut)
     Column(
         modifier
             .clip(RoundedCornerShape(12.dp))
@@ -86,13 +89,18 @@ private fun ShortcutItem(
         Box(
             Modifier
                 .size(Dimens.shortcutChip)
-                .background(colors.background, RoundedCornerShape(Dimens.shortcutChipRadius)),
+                // **면에도 색을 깐다.** 회색 네모에 아이콘만 색을 주면 한눈에는
+                // 여섯이 다 같은 상자로 보여서 색이 하는 일이 거의 없다 (둘 다 만들어 대 봤다)
+                .background(
+                    tint.copy(alpha = tintFillAlpha()),
+                    RoundedCornerShape(Dimens.shortcutChipRadius),
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource(drawableOf(shortcut)),
                 contentDescription = null, // 바로 아래에 글자가 있다
-                tint = colors.ink,
+                tint = tint,
                 modifier = Modifier.size(Dimens.shortcutIcon),
             )
         }

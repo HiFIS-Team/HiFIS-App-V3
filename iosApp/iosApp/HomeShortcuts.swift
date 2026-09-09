@@ -40,20 +40,23 @@ private struct ShortcutItem: View {
     let onOpen: (HomeShortcut) -> Void
 
     var body: some View {
-        Button { onOpen(shortcut) } label: {
+        let tint = HifisShortcutTint.of(shortcut)
+        return Button { onOpen(shortcut) } label: {
             VStack(spacing: 8) {
                 Image(shortcut.icon)
                     .renderingMode(.template)
                     .resizable()
                     .frame(width: HifisSize.shortcutIcon, height: HifisSize.shortcutIcon)
-                    .foregroundStyle(HifisColor.ink)
+                    .foregroundStyle(tint)
                     .frame(width: HifisSize.shortcutChip, height: HifisSize.shortcutChip)
+                    // **면에도 색을 깐다.** 회색 네모에 아이콘만 색을 주면 한눈에는
+                    // 여섯이 다 같은 상자로 보여서 색이 하는 일이 거의 없다
                     .background(
                         RoundedRectangle(
                             cornerRadius: HifisSize.shortcutChipRadius,
                             style: .continuous
                         )
-                        .fill(HifisColor.background)
+                        .fill(tint.opacity(HifisShortcutTint.fillOpacity))
                     )
                 Text(shortcut.label)
                     .font(HifisFont.caption)
