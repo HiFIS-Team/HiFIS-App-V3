@@ -10,6 +10,7 @@
 		22EA1CB33A17DCC6FC82406D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F543015C899423D4B01CEB2E /* Assets.xcassets */; };
 		307C2654CD5972A25FB7FD87 /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668CECA83ACC03A83C85A623 /* iOSApp.swift */; };
 		56B0305B5D3847FC6B326502 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */; };
+		D0E7C42C0BA9F4D9E3E864D4 /* HomeAlertBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2794DF1899E2B95BDD7E417E /* HomeAlertBanner.swift */; };
 		9D80935116A35FF4C124E807 /* TodayNewsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79A99C97D53D8923C7F1A53 /* TodayNewsCard.swift */; };
 		4BB46CBFA4B8BD59AF42918D /* HomeShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E492B578FABFDFAF872879E1 /* HomeShortcuts.swift */; };
 		9B1202A891865BFAAA8793E2 /* TodayWorkCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */; };
@@ -25,6 +26,7 @@
 		86038AE1032E284E79B32AD6 /* iosApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C117AD187833E2513BD2F553 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2794DF1899E2B95BDD7E417E /* HomeAlertBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAlertBanner.swift; sourceTree = "<group>"; };
 		E79A99C97D53D8923C7F1A53 /* TodayNewsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayNewsCard.swift; sourceTree = "<group>"; };
 		E492B578FABFDFAF872879E1 /* HomeShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeShortcuts.swift; sourceTree = "<group>"; };
 		8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkCard.swift; sourceTree = "<group>"; };
@@ -44,6 +46,7 @@
 				CE8509E5A49E4A5CAAEB3ADB /* ContentView.swift */,
 				C117AD187833E2513BD2F553 /* Info.plist */,
 				668CECA83ACC03A83C85A623 /* iOSApp.swift */,
+				2794DF1899E2B95BDD7E417E /* HomeAlertBanner.swift */,
 				E79A99C97D53D8923C7F1A53 /* TodayNewsCard.swift */,
 				E492B578FABFDFAF872879E1 /* HomeShortcuts.swift */,
 				8B6A148F2A7DE883B70CB95A /* TodayWorkCard.swift */,
@@ -164,6 +167,7 @@
 			files = (
 				56B0305B5D3847FC6B326502 /* ContentView.swift in Sources */,
 				307C2654CD5972A25FB7FD87 /* iOSApp.swift in Sources */,
+				D0E7C42C0BA9F4D9E3E864D4 /* HomeAlertBanner.swift in Sources */,
 				9D80935116A35FF4C124E807 /* TodayNewsCard.swift in Sources */,
 				4BB46CBFA4B8BD59AF42918D /* HomeShortcuts.swift in Sources */,
 				9B1202A891865BFAAA8793E2 /* TodayWorkCard.swift in Sources */,

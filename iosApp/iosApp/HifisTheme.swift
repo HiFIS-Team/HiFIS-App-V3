@@ -95,6 +95,31 @@ enum HifisSize {
     static let rowPaddingH: CGFloat = 14
     /// 목록 한 줄의 안쪽 여백 (세로)
     static let rowPaddingV: CGFloat = 13
+
+    /// 알림 배너 안쪽 여백 — 카드(24)보다 좁다. 한 줄짜리라 그만큼 주면 허전하다
+    static let alertPadding: CGFloat = 16
+    /// 알림 배너의 아이콘 네모
+    static let alertChip: CGFloat = 44
+    static let alertChipRadius: CGFloat = 14
+    static let alertIcon: CGFloat = 22
+}
+
+extension HifisColor {
+    /// 뜻(`Tone`)에서 색을 집는다 — **쓰는 자리마다 새로 잇지 않는다**
+    ///
+    /// 근무 배지와 알림 배너가 같이 쓴다. 안드로이드도 같은 표다.
+    static func tone(_ tone: Tone) -> Color {
+        if tone == Tone.good { return success }
+        if tone == Tone.caution { return warning }
+        if tone == Tone.bad { return danger }
+        if tone == Tone.info { return brand }
+        return inkSecondary
+    }
+
+    /// 뜻 색을 면으로 깔 때의 진하기 — 다크는 어두운 면 위라 조금 더 준다
+    static var toneFillOpacity: Double {
+        UITraitCollection.current.userInterfaceStyle == .dark ? 0.20 : 0.12
+    }
 }
 
 /// 바로가기 칸을 가르는 색 — **여기서만 쓴다**

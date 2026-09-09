@@ -71,29 +71,6 @@ data class TodayWork(
 }
 
 /**
- * 배지 색을 고르는 기준 — **색 이름이 아니라 뜻**이다
- *
- * 두 플랫폼이 각자 `when` 으로 상태를 색에 잇게 두면 언젠가 갈린다.
- * 뜻을 여기서 정하고 색은 각 플랫폼의 토큰에서 한 번만 잇는다.
- */
-enum class WorkTone {
-    /** 아직 아무 일도 없다 — 미출근·휴무·판정 불가 */
-    NEUTRAL,
-
-    /** 잘 돌아간다 — 출근 중 */
-    GOOD,
-
-    /** 짚어 볼 것 — 지각·조기 퇴근 */
-    CAUTION,
-
-    /** 문제 — 결근·퇴근 누락 */
-    BAD,
-
-    /** 알림 — 휴가 */
-    INFO,
-}
-
-/**
  * 오늘 근태 판정 — **서버가 정한다.** 앱은 문구로 옮기기만 한다
  *
  * V2 서버는 열 가지를 주는데 홈 배지는 **지금 어떤 상태인지**만 보면 되므로
@@ -102,20 +79,20 @@ enum class WorkTone {
  * `NORMAL` 과 `OVERTIME` 을 **둘 다 '퇴근'** 으로 둔 것은 V2 와 같다 —
  * 이 배지는 지금 상태를 알리는 자리라 문구를 늘리지 않는다.
  */
-enum class WorkStatus(val label: String, val tone: WorkTone) {
+enum class WorkStatus(val label: String, val tone: Tone) {
     /** 아직 안 찍었다. 근무 시간이 다 지나도록 안 찍히면 서버가 [ABSENT] 로 바꾼다 */
-    NOT_IN("미출근", WorkTone.NEUTRAL),
-    IN_PROGRESS("출근", WorkTone.GOOD),
-    NORMAL("퇴근", WorkTone.NEUTRAL),
-    OVERTIME("퇴근", WorkTone.NEUTRAL),
-    LATE("지각", WorkTone.CAUTION),
-    EARLY_LEAVE("조기 퇴근", WorkTone.CAUTION),
-    LATE_AND_EARLY("지각·조기 퇴근", WorkTone.CAUTION),
-    NO_CHECKOUT("퇴근 누락", WorkTone.BAD),
-    ABSENT("결근", WorkTone.BAD),
-    ON_LEAVE("휴가", WorkTone.INFO),
-    DAY_OFF("휴무", WorkTone.NEUTRAL),
-    UNKNOWN("판정 불가", WorkTone.NEUTRAL),
+    NOT_IN("미출근", Tone.NEUTRAL),
+    IN_PROGRESS("출근", Tone.GOOD),
+    NORMAL("퇴근", Tone.NEUTRAL),
+    OVERTIME("퇴근", Tone.NEUTRAL),
+    LATE("지각", Tone.CAUTION),
+    EARLY_LEAVE("조기 퇴근", Tone.CAUTION),
+    LATE_AND_EARLY("지각·조기 퇴근", Tone.CAUTION),
+    NO_CHECKOUT("퇴근 누락", Tone.BAD),
+    ABSENT("결근", Tone.BAD),
+    ON_LEAVE("휴가", Tone.INFO),
+    DAY_OFF("휴무", Tone.NEUTRAL),
+    UNKNOWN("판정 불가", Tone.NEUTRAL),
 }
 
 /** `"09:00"` → 540. 형식이 다르거나 비어 있으면 null */

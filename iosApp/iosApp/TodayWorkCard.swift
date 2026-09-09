@@ -31,7 +31,7 @@ struct TodayWorkCard: View {
                     .font(HifisFont.label)
                     .foregroundStyle(HifisColor.inkSecondary)
                 Spacer()
-                StatusBadge(label: work.status.label, color: toneColor(work.status.tone))
+                StatusBadge(label: work.status.label, color: HifisColor.tone(work.status.tone))
             }
 
             Spacer().frame(height: 16)
@@ -82,14 +82,6 @@ struct TodayWorkCard: View {
         .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
     }
 
-    /// 색은 뜻(`WorkTone`)에서 온다. 여기서 상태별로 새로 고르지 않는다
-    private func toneColor(_ tone: WorkTone) -> Color {
-        if tone == WorkTone.good { return HifisColor.success }
-        if tone == WorkTone.caution { return HifisColor.warning }
-        if tone == WorkTone.bad { return HifisColor.danger }
-        if tone == WorkTone.info { return HifisColor.brand }
-        return HifisColor.inkSecondary
-    }
 }
 
 private struct StatusBadge: View {

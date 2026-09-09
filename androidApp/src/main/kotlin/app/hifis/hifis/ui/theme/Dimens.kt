@@ -70,4 +70,12 @@ object Dimens {
 
     /** 목록 한 줄의 안쪽 여백 (세로) */
     val rowPaddingV = 13.dp
+
+    /** 알림 배너 안쪽 여백 — 카드(24)보다 좁다. 한 줄짜리라 그만큼 주면 허전하다 */
+    val alertPadding = 16.dp
+
+    /** 알림 배너의 아이콘 네모 */
+    val alertChip = 44.dp
+    val alertChipRadius = 14.dp
+    val alertIcon = 22.dp
 }

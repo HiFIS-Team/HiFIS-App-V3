@@ -34,7 +34,7 @@ import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.home.TodayWork
-import app.hifis.shared.home.WorkTone
+import app.hifis.shared.home.Tone
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 
@@ -121,12 +121,12 @@ fun TodayWorkCard(work: TodayWork, modifier: Modifier = Modifier) {
 }
 
 /** 상태 배지 — 색은 뜻([WorkTone])에서 온다. 여기서 상태별로 새로 고르지 않는다 */
-private fun toneColor(tone: WorkTone, colors: HifisColors): Color = when (tone) {
-    WorkTone.NEUTRAL -> colors.inkSecondary
-    WorkTone.GOOD -> colors.success
-    WorkTone.CAUTION -> colors.warning
-    WorkTone.BAD -> colors.danger
-    WorkTone.INFO -> colors.brand
+private fun toneColor(tone: Tone, colors: HifisColors): Color = when (tone) {
+    Tone.NEUTRAL -> colors.inkSecondary
+    Tone.GOOD -> colors.success
+    Tone.CAUTION -> colors.warning
+    Tone.BAD -> colors.danger
+    Tone.INFO -> colors.brand
 }
 
 @Composable

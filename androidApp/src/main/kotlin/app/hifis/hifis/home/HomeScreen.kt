@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.shared.home.HomeAlert
 import app.hifis.shared.home.Notice
 import app.hifis.shared.home.TodayWork
 
@@ -46,6 +47,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .padding(top = 16.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            HomeAlertBanner(HomeAlert.demo, onOpen = {})
             TodayWorkCard(TodayWork.demo)
             // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
             HomeShortcuts(onOpen = {})
