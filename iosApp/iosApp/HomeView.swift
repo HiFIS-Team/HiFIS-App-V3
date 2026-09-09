@@ -17,9 +17,13 @@ struct HomeView: View {
                 onNotification: {},
                 onProfile: {}
             )
-            TodayWorkCard(work: TodayWork.companion.demo)
-                .padding(.horizontal, HifisSize.screenEdge)
-                .padding(.top, 16)
+            VStack(spacing: 12) {
+                TodayWorkCard(work: TodayWork.companion.demo)
+                // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
+                HomeShortcuts(onOpen: { _ in })
+            }
+            .padding(.horizontal, HifisSize.screenEdge)
+            .padding(.top, 16)
 
             Spacer(minLength: 0)
         }

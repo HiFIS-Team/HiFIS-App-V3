@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 전자결재 — 결재판 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M8.25,4.25H6.5a1.5,1.5 0 0 0 -1.5,1.5v14a1.5,1.5 0 0 0 1.5,1.5h11a1.5,1.5 0 0 0 1.5,-1.5v-14a1.5,1.5 0 0 0 -1.5,-1.5h-1.75"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M9.5,2.75h5a1,1 0 0 1 1,1v1.5a1,1 0 0 1 -1,1h-5a1,1 0 0 1 -1,-1v-1.5a1,1 0 0 1 1,-1z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M8.75,13.5l2.4,2.4l4.1,-4.7"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

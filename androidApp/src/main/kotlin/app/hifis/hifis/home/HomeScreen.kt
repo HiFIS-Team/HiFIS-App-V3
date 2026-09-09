@@ -1,6 +1,7 @@
 package app.hifis.hifis.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -34,9 +35,15 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             onProfile = {},
         )
 
-        TodayWorkCard(
-            work = TodayWork.demo,
-            modifier = Modifier.padding(horizontal = Dimens.screenEdge).padding(top = 16.dp),
-        )
+        Column(
+            Modifier
+                .padding(horizontal = Dimens.screenEdge)
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            TodayWorkCard(TodayWork.demo)
+            // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
+            HomeShortcuts(onOpen = {})
+        }
     }
 }

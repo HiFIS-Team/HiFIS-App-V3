@@ -80,6 +80,13 @@ enum HifisSize {
     static let gaugeTrack: CGFloat = 8
     /// 게이지 손잡이 지름
     static let gaugeThumb: CGFloat = 14
+
+    /// 바로가기 아이콘을 담는 네모 — 누를 수 있어 보이라고 면을 깐다
+    static let shortcutChip: CGFloat = 48
+    /// 그 네모의 모서리
+    static let shortcutChipRadius: CGFloat = 14
+    /// 바로가기 아이콘 그림 크기
+    static let shortcutIcon: CGFloat = 24
 }
 
 /// 글자 크기 한 벌 — **안드로이드 `HifisType` 과 같은 값**이다

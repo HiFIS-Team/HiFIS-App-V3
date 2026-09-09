@@ -52,4 +52,13 @@ object Dimens {
 
     /** 게이지 손잡이 지름 */
     val gaugeThumb = 14.dp
+
+    /** 바로가기 아이콘을 담는 네모 — 누를 수 있어 보이라고 면을 깐다 */
+    val shortcutChip = 48.dp
+
+    /** 그 네모의 모서리 */
+    val shortcutChipRadius = 14.dp
+
+    /** 바로가기 아이콘 그림 크기 */
+    val shortcutIcon = 24.dp
 }
