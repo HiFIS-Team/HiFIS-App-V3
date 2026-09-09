@@ -85,6 +85,9 @@ private fun WeekdayHeader() {
                     strokeWidth = 1f,
                 )
             },
+        // **`Row` 는 기본이 위쪽 정렬이다.** 줄 높이만 키우면 글자가 위에 붙은 채로
+        // 아래만 비어서, 요일이 조작줄에 눌린 것처럼 보인다
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Calendar.weekdayLabels.forEachIndexed { index, label ->
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
