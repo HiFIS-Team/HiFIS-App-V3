@@ -1,17 +1,15 @@
 package app.hifis.hifis.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.theme.Dimens
-import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.shared.home.HomeAlert
 import app.hifis.shared.home.Notice
 import app.hifis.shared.home.TodayWork
@@ -26,20 +24,7 @@ import app.hifis.shared.home.TodayWork
  */
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier
-            .fillMaxSize()
-            .background(HifisTheme.colors.background),
-    ) {
-        HomeHeader(
-            onBranch = {},
-            onSearch = {},
-            onScan = {},
-            onChat = {},
-            onNotification = {},
-            onProfile = {},
-        )
-
+    TabPage(modifier) {
         // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
         Column(
             Modifier

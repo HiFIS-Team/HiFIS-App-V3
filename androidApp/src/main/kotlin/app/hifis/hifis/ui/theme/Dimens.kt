@@ -78,4 +78,16 @@ object Dimens {
     val alertChip = 44.dp
     val alertChipRadius = 14.dp
     val alertIcon = 22.dp
+
+    /** 달력 위 줄의 네모 버튼 (이전·다음·추가) */
+    val stepButton = 36.dp
+
+    /** 달력 한 칸 높이 */
+    val calendarCell = 54.dp
+
+    /** 달력 요일 머리말 줄 높이 */
+    val calendarWeekday = 34.dp
+
+    /** 일정이 있다는 점 */
+    val calendarDot = 5.dp
 }

@@ -54,9 +54,8 @@ private struct MainTabBar: UIViewControllerRepresentable {
     func updateUIViewController(_ controller: UITabBarController, context: Context) {}
 
     private func screen(for tab: MainTab) -> AnyView {
-        if tab == MainTab.home {
-            return AnyView(HomeView())
-        }
+        if tab == MainTab.home { return AnyView(HomeView()) }
+        if tab == MainTab.schedule { return AnyView(ScheduleView()) }
         return AnyView(ComingSoonView(label: tab.label))
     }
 }

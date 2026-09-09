@@ -3,9 +3,10 @@ package app.hifis.hifis.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import app.hifis.shared.nav.HomeShortcut
+import app.hifis.shared.schedule.EventKind
 
 /**
- * 바로가기 칸을 가르는 색 — **여기서만 쓴다**
+ * 바로가기 칸을 가르는 색 — **바로가기 격자에서만 쓴다**
  *
  * [HifisColors] 와 따로 둔 것은 성격이 달라서다. 저쪽은 **뜻**이 있는 색이고
  * (`success` = 잘 돌아간다, `danger` = 문제), 이건 **뜻이 없는 표식**이다.
@@ -37,3 +38,22 @@ fun tintOf(shortcut: HomeShortcut): Color {
  */
 @Composable
 fun tintFillAlpha(): Float = if (HifisTheme.colors.isDark) 0.20f else 0.12f
+
+/**
+ * 일정 종류를 가르는 색 — **V2 와 같은 짝이다** (`schedule_data.dart` 의 `Kind.color`)
+ *
+ * 넷은 이미 있는 토큰에서 온다. `기타`만 보라인데, 바로가기의 전자결재와 **같은 보라**다 —
+ * 뜻이 없는 표식이라 새 색을 하나 더 만들 이유가 없다.
+ */
+@Composable
+fun tintOf(kind: EventKind): Color {
+    val colors = HifisTheme.colors
+    return when (kind) {
+        EventKind.MEETING -> colors.brand
+        EventKind.LESSON -> colors.success
+        EventKind.EVENT -> colors.warning
+        // 휴무는 일정이 있다는 표시만 하면 된다 — 눈에 덜 띄어야 맞다
+        EventKind.OFF -> colors.inkTertiary
+        EventKind.ETC -> if (colors.isDark) Color(0xFFB08CFF) else Color(0xFF8A5CF0)
+    }
+}

@@ -98,6 +98,15 @@ enum HifisSize {
 
     /// 알림 배너 안쪽 여백 — 카드(24)보다 좁다. 한 줄짜리라 그만큼 주면 허전하다
     static let alertPadding: CGFloat = 16
+    /// 달력 위 줄의 네모 버튼 (이전·다음·추가)
+    static let stepButton: CGFloat = 36
+    /// 달력 한 칸 높이
+    static let calendarCell: CGFloat = 54
+    /// 달력 요일 머리말 줄 높이
+    static let calendarWeekday: CGFloat = 34
+    /// 일정이 있다는 점
+    static let calendarDot: CGFloat = 5
+
     /// 알림 배너의 아이콘 네모
     static let alertChip: CGFloat = 44
     static let alertChipRadius: CGFloat = 14
@@ -167,6 +176,22 @@ enum HifisShortcutTint {
 
     private static func dyn(light: UInt32, dark: UInt32) -> Color {
         Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(rgb: dark) : UIColor(rgb: light) })
+    }
+}
+
+/// 일정 종류를 가르는 색 — **V2 와 같은 짝이다** (`schedule_data.dart` 의 `Kind.color`)
+///
+/// 넷은 이미 있는 토큰에서 온다. `기타`만 보라인데, 바로가기의 전자결재와 **같은 보라**다 —
+/// 뜻이 없는 표식이라 새 색을 하나 더 만들 이유가 없다.
+enum HifisEventTint {
+    static func of(_ kind: EventKind) -> Color {
+        if kind == EventKind.meeting { return HifisColor.brand }
+        if kind == EventKind.lesson { return HifisColor.success }
+        if kind == EventKind.event { return HifisColor.warning }
+        // 휴무는 일정이 있다는 표시만 하면 된다 — 눈에 덜 띄어야 맞다
+        if kind == EventKind.off { return HifisColor.inkTertiary }
+        return Color(UIColor { $0.userInterfaceStyle == .dark
+            ? UIColor(rgb: 0xB0_8C_FF) : UIColor(rgb: 0x8A_5C_F0) })
     }
 }
 

@@ -8,7 +8,7 @@ import SwiftUI
 /// 새 버튼이 생겨도 이 넷 사이에 끼우지 말고 지점 옆(왼쪽)에 붙인다.
 ///
 /// 헤더는 `surface`, 본문은 `background` 라 **선을 안 그어도 층이 갈린다**.
-struct HomeHeader: View {
+struct AppHeader: View {
     /// 한 지점을 보고 있으면 true — 지점 아이콘이 브랜드색으로 바뀐다
     var branchPicked: Bool = false
     /// 출퇴근 스캔 버튼을 세울지 — **`doesFieldWork` (점장·직원) 에게만 true**

@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.home.HomeScreen
+import app.hifis.hifis.schedule.ScheduleScreen
 import app.hifis.hifis.ui.NoInteraction
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.shared.nav.MainTab
@@ -48,9 +49,9 @@ fun MainScreen() {
         Box(Modifier.weight(1f)) {
             when (selected) {
                 MainTab.HOME -> HomeScreen()
+                MainTab.SCHEDULE -> ScheduleScreen()
                 // 나머지는 아직 화면이 없다
                 MainTab.WORK,
-                MainTab.SCHEDULE,
                 MainTab.ATTENDANCE,
                 MainTab.MORE,
                 -> ComingSoon(selected)

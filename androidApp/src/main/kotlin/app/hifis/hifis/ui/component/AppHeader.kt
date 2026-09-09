@@ -1,4 +1,4 @@
-package app.hifis.hifis.home
+package app.hifis.hifis.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
@@ -11,12 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.HeaderIconButton
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 
 /**
- * 홈 헤더 — 왼쪽 지점, 오른쪽 검색·스캔·사내톡·알림·마이
+ * 앱 헤더 — 왼쪽 지점, 오른쪽 검색·스캔·사내톡·알림·마이
+ *
+ * **홈 전용이 아니다.** 탭 화면(홈·업무·일정·근태)이 다 같은 줄을 쓴다 —
+ * 사내톡·알림·마이가 홈에서만 열리면 다른 탭에서는 갈 방법이 없어진다.
+ * V2 도 셸이 이 줄을 그리고 화면은 왼쪽 버튼만 끼워 넣었다 (`header_action.dart`).
  *
  * 글자가 없고 아이콘만 선다.
  *
@@ -27,7 +30,7 @@ import app.hifis.hifis.ui.theme.HifisTheme
  * 스크롤 경계선은 본문이 생긴 다음에 필요하면 그때 정한다.
  */
 @Composable
-fun HomeHeader(
+fun AppHeader(
     onBranch: () -> Unit,
     onSearch: () -> Unit,
     onScan: () -> Unit,
