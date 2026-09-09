@@ -41,9 +41,11 @@ struct ScheduleView: View {
     }
 
     var body: some View {
-        TabPage(title: "일정") {
+        TabPage {
             ScrollView {
                 VStack(spacing: 0) {
+                    // 제목도 같이 굴러간다 — 붙어 있는 것은 헤더(아이콘 줄)뿐이다
+                    ScreenTitle("일정")
                     controls
                     CalendarGridView(
                         weeks: weeks,

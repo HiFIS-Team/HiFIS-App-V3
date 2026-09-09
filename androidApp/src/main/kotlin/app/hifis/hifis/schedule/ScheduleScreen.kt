@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
+import app.hifis.hifis.ui.component.ScreenTitle
 import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
@@ -62,12 +63,14 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
     }
     val upcoming = remember(events, today) { Calendar.upcoming(events, today) }
 
-    TabPage(modifier, title = "일정") {
+    TabPage(modifier) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
+            // 제목도 같이 굴러간다 — 붙어 있는 것은 헤더(아이콘 줄)뿐이다
+            ScreenTitle("일정")
             ScheduleControls(
                 label = Calendar.monthLabel(anchor),
                 monthMode = monthMode,

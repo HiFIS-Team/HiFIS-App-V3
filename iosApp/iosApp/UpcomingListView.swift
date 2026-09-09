@@ -4,46 +4,54 @@ import SharedKit
 /// 다가오는 일정 — 날짜별로 묶어 세운다
 ///
 /// 왼쪽에 날짜, 오른쪽에 그 날 일정들. **일정이 없는 날은 아예 빠진다** (`Calendar.upcoming`).
+///
+/// **카드가 아니라 달력과 같은 네모 판이다** — 모서리를 안 둥글리고 화면 끝까지 간다.
+/// 둥근 것은 그 안의 일정 줄이다. 달력 아래에 판이 하나 더 이어지는 모양이라
+/// 위에 `sectionGap` 만큼 바닥이 비쳐 두 판이 갈린다.
 struct UpcomingListView: View {
     let groups: [DaySchedule]
 
+    /// 달력 판과 이 판을 가르는 틈 — 바닥색이 비친다
+    private let sectionGap: CGFloat = 10
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("다가오는 일정")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(HifisColor.ink)
-                .padding(.horizontal, 20)
+            Spacer().frame(height: sectionGap)
 
-            Spacer().frame(height: 14)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("다가오는 일정")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(HifisColor.ink)
+                    .padding(.horizontal, HifisSize.screenEdge)
 
-            if groups.isEmpty {
-                Text("앞으로 2주간 잡힌 일정이 없어요")
-                    .font(HifisFont.caption)
-                    .foregroundStyle(HifisColor.inkTertiary)
-                    .padding(.horizontal, 20)
-            } else {
-                ForEach(Array(groups.enumerated()), id: \.element.key) { index, group in
-                    if index > 0 {
-                        Rectangle()
-                            .fill(HifisColor.line)
-                            .frame(height: 1)
-                            .padding(.horizontal, 20)
+                Spacer().frame(height: 16)
+                divider
+
+                if groups.isEmpty {
+                    Text("앞으로 2주간 잡힌 일정이 없어요")
+                        .font(HifisFont.caption)
+                        .foregroundStyle(HifisColor.inkTertiary)
+                        .padding(.horizontal, HifisSize.screenEdge)
+                        .padding(.vertical, 14)
+                } else {
+                    ForEach(Array(groups.enumerated()), id: \.element.key) { index, group in
+                        if index > 0 { divider }
+                        DayGroupView(group: group)
                     }
-                    DayGroupView(group: group)
                 }
             }
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(HifisColor.surface)
         }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(HifisColor.surface)
-        .clipShape(RoundedRectangle(cornerRadius: HifisSize.cardRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: HifisSize.cardRadius, style: .continuous)
-                .strokeBorder(HifisColor.line, lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
-        .padding(.horizontal, HifisSize.screenEdge)
-        .padding(.top, 20)
+    }
+
+    /// 판 안을 가르는 줄 — 화면 끝까지 안 간다
+    private var divider: some View {
+        Rectangle()
+            .fill(HifisColor.line)
+            .frame(height: 1)
+            .padding(.horizontal, HifisSize.screenEdge)
     }
 }
 
@@ -69,7 +77,7 @@ private struct DayGroupView: View {
                 }
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, HifisSize.screenEdge)
         .padding(.vertical, 12)
     }
 }
@@ -96,8 +104,7 @@ private struct EventRowView: View {
             .padding(.horizontal, HifisSize.rowPaddingH)
             .padding(.vertical, HifisSize.rowPaddingV)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // **카드 안이라 `background` 를 쓴다.** `surface` 를 쓰면 카드와 같은 색이라
-            // 줄이 안 보인다 (공지 카드의 평범한 줄과 같은 규칙)
+            // **판이 `surface` 라 줄은 `background` 로 깐다.** 같은 색이면 줄이 안 보인다
             .background(
                 HifisColor.background,
                 in: RoundedRectangle(cornerRadius: HifisSize.rowRadius, style: .continuous)

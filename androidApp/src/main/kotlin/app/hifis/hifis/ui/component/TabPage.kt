@@ -22,13 +22,12 @@ import app.hifis.hifis.ui.theme.HifisType
  * **본문 스크롤은 화면이 정한다.** 헤더는 붙어 있고 본문만 굴리는 화면도 있고
  * (홈), 통째로 굴리는 화면도 있다 (일정).
  *
- * [title] 을 주면 헤더 바로 아래에 화면 이름이 한 줄 선다. **홈은 안 준다** —
- * 첫 화면이라 어디인지 물을 일이 없고, 그 자리는 알림 배너가 먼저 차지한다.
+ * **헤더는 아이콘 줄뿐이다.** 화면 이름은 [ScreenTitle] 로 본문 **안에** 넣는다 —
+ * 굴릴 때 같이 올라가야 한다. 여기서 그리면 붙어 있는 줄이 둘이 된다.
  */
 @Composable
 fun TabPage(
     modifier: Modifier = Modifier,
-    title: String? = null,
     onBranch: () -> Unit = {},
     onSearch: () -> Unit = {},
     onScan: () -> Unit = {},
@@ -50,20 +49,30 @@ fun TabPage(
             onNotification = onNotification,
             onProfile = onProfile,
         )
-        if (title != null) {
-            Text(
-                title,
-                style = HifisType.title,
-                color = HifisTheme.colors.ink,
-                // 헤더와 붙으면 헤더의 일부처럼 보인다 — 위아래로 띄운다
-                modifier = Modifier.padding(
-                    start = Dimens.screenEdge,
-                    end = Dimens.screenEdge,
-                    top = 18.dp,
-                    bottom = 10.dp,
-                ),
-            )
-        }
         content()
     }
+}
+
+/**
+ * 화면 이름 — **본문 맨 위에 넣는다.** 헤더가 아니다
+ *
+ * 굴리면 같이 올라간다. 붙어 있는 것은 아이콘 줄(헤더)뿐이다.
+ *
+ * **홈에는 안 쓴다** — 첫 화면이라 어디인지 물을 일이 없고,
+ * 그 자리는 알림 배너가 먼저 차지한다.
+ */
+@Composable
+fun ScreenTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text,
+        style = HifisType.title,
+        color = HifisTheme.colors.ink,
+        // 헤더와 붙으면 헤더의 일부처럼 보인다 — 위아래로 띄운다
+        modifier = modifier.padding(
+            start = Dimens.screenEdge,
+            end = Dimens.screenEdge,
+            top = 18.dp,
+            bottom = 10.dp,
+        ),
+    )
 }
