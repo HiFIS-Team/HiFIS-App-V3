@@ -2,7 +2,6 @@ package app.hifis.hifis.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,9 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
+import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
@@ -82,7 +83,7 @@ private fun ShortcutItem(
     Column(
         modifier
             .clip(RoundedCornerShape(12.dp))
-            .clickable(onClickLabel = shortcut.label) { onOpen(shortcut) }
+            .tap(label = shortcut.label) { onOpen(shortcut) }
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -106,8 +107,9 @@ private fun ShortcutItem(
         }
         Text(
             text = shortcut.label,
-            style = HifisType.caption,
-            color = colors.inkSecondary,
+            // 시계·스캔 시각과 같은 결로 진하게 — 아이콘만 보고 못 찾을 때 읽는 글자다
+            style = HifisType.caption.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.ink,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )

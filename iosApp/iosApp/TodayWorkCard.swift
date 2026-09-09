@@ -49,7 +49,9 @@ struct TodayWorkCard: View {
             Spacer().frame(height: 10)
 
             // 시작 — 진행률 — 종료
-            HStack {
+            // **크기가 다른 글자는 가운데가 아니라 기준선을 맞춘다.**
+            // 가운데로 맞추면 큰 쪽이 살짝 떠 보인다
+            HStack(alignment: .firstTextBaseline) {
                 Text(work.shiftStartText)
                     .font(HifisFont.caption)
                     .foregroundStyle(HifisColor.inkTertiary)
@@ -104,7 +106,8 @@ private struct ScanRecord: View {
     let time: String
 
     var body: some View {
-        HStack(spacing: 8) {
+        // `출근` 13 / 시각 16 — 기준선을 맞춘다
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(label)
                 .font(HifisFont.caption)
                 .foregroundStyle(HifisColor.inkTertiary)

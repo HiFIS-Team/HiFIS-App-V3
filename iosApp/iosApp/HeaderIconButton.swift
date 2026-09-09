@@ -31,7 +31,7 @@ struct HeaderIconButton: View {
                 )
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TapStyle())
         .accessibilityLabel(label)
     }
 

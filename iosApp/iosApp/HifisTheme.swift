@@ -104,6 +104,22 @@ enum HifisSize {
     static let alertIcon: CGFloat = 22
 }
 
+/// 누를 수 있는 자리 — **누름 효과(어두워짐)를 안 낸다**
+///
+/// 누르면 화면이 넘어가는 것으로 충분하다. 눌린 동안 어두워지고 화면이 바뀌면
+/// 두 가지가 겹쳐 보인다. 요즘 앱들이 대개 이렇게 한다.
+///
+/// **`Button` 에는 이걸 쓴다.** `.plain` 도 눌린 동안 흐려진다.
+/// 한 자리만 빠뜨려도 거기만 반응이 남고, 그런 건 그 화면을 열어 봐야 발견된다.
+///
+/// > 하단 탭바는 예외다 — `UITabBar` 가 제 것을 그린다.
+/// > 거기는 눌린 칸 표시가 곧 반응이라 따로 뺄 것이 없다.
+struct TapStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+    }
+}
+
 extension HifisColor {
     /// 뜻(`Tone`)에서 색을 집는다 — **쓰는 자리마다 새로 잇지 않는다**
     ///

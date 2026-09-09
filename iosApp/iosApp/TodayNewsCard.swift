@@ -60,7 +60,8 @@ private struct NoticeRow: View {
 
     var body: some View {
         Button { onOpen(notice) } label: {
-            HStack(spacing: 8) {
+            // `필독` 13 / 제목 16 — 기준선을 맞춘다
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
                 if notice.pinned {
                     Text(Notice.companion.PINNED_LABEL)
                         .font(.system(size: 13, weight: .bold))
@@ -79,7 +80,7 @@ private struct NoticeRow: View {
             .background(fill, in: RoundedRectangle(cornerRadius: HifisSize.rowRadius, style: .continuous))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TapStyle())
     }
 
     /// 필독이면 줄 바탕이 그 색으로 옅게 물든다. 아니면 평범한 회색 줄이다.

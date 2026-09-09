@@ -9,7 +9,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
+import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
@@ -102,7 +102,7 @@ private fun AlertCard(alert: HomeAlert, onOpen: (HomeAlert) -> Unit) {
             .clip(shape)
             .background(colors.surface, shape)
             .border(1.dp, colors.line, shape)
-            .clickable(onClickLabel = alert.title) { onOpen(alert) }
+            .tap(label = alert.title) { onOpen(alert) }
             .padding(Dimens.alertPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {

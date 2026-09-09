@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.home.HomeScreen
+import app.hifis.hifis.ui.NoInteraction
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.shared.nav.MainTab
 
@@ -87,6 +88,9 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
             NavigationBarItem(
                 selected = picked,
                 onClick = { onSelect(tab) },
+                // 누름 효과(물결)를 끈다 — 화면이 바뀌는 것으로 충분하다.
+                // 알약 표시는 `selected` 를 보므로 그대로 남는다
+                interactionSource = NoInteraction,
                 icon = {
                     Icon(
                         painter = painterResource(drawableOf(tab, filled = picked)),

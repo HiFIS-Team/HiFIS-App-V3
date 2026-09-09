@@ -99,6 +99,6 @@ private struct AlertCard: View {
             .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TapStyle())
     }
 }

@@ -97,16 +97,27 @@ fun TodayWorkCard(work: TodayWork, modifier: Modifier = Modifier) {
         Spacer(Modifier.height(10.dp))
 
         // 시작 — 진행률 — 종료
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(work.shiftStartText, style = HifisType.caption, color = colors.inkTertiary)
+        Row(Modifier.fillMaxWidth()) {
+            Text(
+                work.shiftStartText,
+                style = HifisType.caption,
+                color = colors.inkTertiary,
+                modifier = Modifier.alignByBaseline(),
+            )
             Spacer(Modifier.weight(1f))
             Text(
                 "${(rate * 100).toInt()}%",
                 style = HifisType.label.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
                 color = colors.brand,
+                modifier = Modifier.alignByBaseline(),
             )
             Spacer(Modifier.weight(1f))
-            Text(work.shiftEndText, style = HifisType.caption, color = colors.inkTertiary)
+            Text(
+                work.shiftEndText,
+                style = HifisType.caption,
+                color = colors.inkTertiary,
+                modifier = Modifier.alignByBaseline(),
+            )
         }
 
         Spacer(Modifier.height(18.dp))
@@ -146,8 +157,15 @@ private fun StatusBadge(label: String, color: Color) {
 private fun ScanRecord(label: String, time: String) {
     val colors = HifisTheme.colors
     val recorded = time != TodayWork.NO_TIME
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = HifisType.caption, color = colors.inkTertiary)
+    // **크기가 다른 글자는 가운데가 아니라 기준선을 맞춘다** (`출근` 13 / 시각 16).
+    // 가운데로 맞추면 시각이 살짝 떠 보인다
+    Row {
+        Text(
+            label,
+            style = HifisType.caption,
+            color = colors.inkTertiary,
+            modifier = Modifier.alignByBaseline(),
+        )
         Spacer(Modifier.width(8.dp))
         Text(
             time,
@@ -156,6 +174,7 @@ private fun ScanRecord(label: String, time: String) {
                 fontFeatureSettings = HifisType.TABULAR,
             ),
             color = if (recorded) colors.ink else colors.inkTertiary,
+            modifier = Modifier.alignByBaseline(),
         )
     }
 }

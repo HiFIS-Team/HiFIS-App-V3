@@ -59,13 +59,14 @@ private struct ShortcutItem: View {
                         .fill(tint.opacity(HifisShortcutTint.fillOpacity))
                     )
                 Text(shortcut.label)
-                    .font(HifisFont.caption)
-                    .foregroundStyle(HifisColor.inkSecondary)
+                    // 시계·스캔 시각과 같은 결로 진하게 — 아이콘만 보고 못 찾을 때 읽는 글자다
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(HifisColor.ink)
             }
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TapStyle())
         .accessibilityLabel(shortcut.label)
     }
 }

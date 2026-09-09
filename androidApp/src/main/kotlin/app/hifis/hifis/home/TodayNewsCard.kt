@@ -2,7 +2,6 @@ package app.hifis.hifis.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +21,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
@@ -97,15 +97,17 @@ private fun NoticeRow(notice: Notice, onOpen: (Notice) -> Unit) {
             .fillMaxWidth()
             .clip(shape)
             .background(fill, shape)
-            .clickable(onClickLabel = notice.title) { onOpen(notice) }
+            .tap(label = notice.title) { onOpen(notice) }
             .padding(horizontal = Dimens.rowPaddingH, vertical = Dimens.rowPaddingV),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
+        // **크기가 다른 글자는 가운데가 아니라 기준선을 맞춘다.**
+        // 가운데로 맞추면 큰 쪽이 살짝 떠 보인다
         if (notice.pinned) {
             Text(
                 Notice.PINNED_LABEL,
                 style = HifisType.caption.copy(fontWeight = FontWeight.Bold),
                 color = colors.danger,
+                modifier = Modifier.alignByBaseline(),
             )
             Spacer(Modifier.width(8.dp))
         }
@@ -115,6 +117,7 @@ private fun NoticeRow(notice: Notice, onOpen: (Notice) -> Unit) {
             color = colors.ink,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.alignByBaseline(),
         )
     }
 }
