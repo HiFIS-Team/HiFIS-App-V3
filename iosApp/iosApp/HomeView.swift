@@ -13,6 +13,7 @@ struct HomeView: View {
             HomeHeader(
                 onBranch: {},
                 onSearch: {},
+                onScan: {},
                 onChat: {},
                 onNotification: {},
                 onProfile: {}

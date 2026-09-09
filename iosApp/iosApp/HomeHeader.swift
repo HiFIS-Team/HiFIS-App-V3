@@ -11,6 +11,12 @@ import SwiftUI
 struct HomeHeader: View {
     /// 한 지점을 보고 있으면 true — 지점 아이콘이 브랜드색으로 바뀐다
     var branchPicked: Bool = false
+    /// 출퇴근 스캔 버튼을 세울지 — **`doesFieldWork` (점장·직원) 에게만 true**
+    ///
+    /// 대표·관리자는 출퇴근을 안 찍어서 눌러도 할 일이 없다.
+    /// V2 는 데스크톱만 그렇게 하고 **폰은 전원에게 띄워 놨었다.**
+    /// 로그인이 붙기 전이라 지금은 늘 true 지만, 자리는 여기다.
+    var canScan: Bool = true
     /// 안 읽은 방이 있으면 true
     var chatUnread: Bool = false
     /// 안 읽은 알림이 있으면 true
@@ -18,6 +24,7 @@ struct HomeHeader: View {
 
     let onBranch: () -> Void
     let onSearch: () -> Void
+    let onScan: () -> Void
     let onChat: () -> Void
     let onNotification: () -> Void
     let onProfile: () -> Void
@@ -34,6 +41,9 @@ struct HomeHeader: View {
             Spacer(minLength: 0)
 
             HeaderIconButton(icon: "ic_search", label: "검색", action: onSearch)
+            if canScan {
+                HeaderIconButton(icon: "ic_scan", label: "출퇴근 스캔", action: onScan)
+            }
             HeaderIconButton(
                 icon: "ic_chat",
                 label: "사내톡",

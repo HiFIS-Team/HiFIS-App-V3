@@ -16,12 +16,12 @@ import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 
 /**
- * 홈 헤더 — 왼쪽 지점, 오른쪽 검색·사내톡·알림·마이
+ * 홈 헤더 — 왼쪽 지점, 오른쪽 검색·스캔·사내톡·알림·마이
  *
  * 글자가 없고 아이콘만 선다.
  *
- * **오른쪽 넷은 순서가 고정이다.** 자리를 외운 사람에게 순서가 바뀌면 못 찾는다.
- * 새 버튼이 생겨도 이 넷 사이에 끼우지 말고 지점 옆(왼쪽)에 붙인다.
+ * **오른쪽 순서는 앱이 나간 뒤로는 안 바꾼다.** 자리를 외운 사람에게 순서가
+ * 바뀌면 못 찾는다. 지금은 아직 안 나가서 사이에 끼워 넣어도 잃을 것이 없다.
  *
  * 헤더는 `surface`, 본문은 `background` 라 **선을 안 그어도 층이 갈린다**.
  * 스크롤 경계선은 본문이 생긴 다음에 필요하면 그때 정한다.
@@ -30,12 +30,21 @@ import app.hifis.hifis.ui.theme.HifisTheme
 fun HomeHeader(
     onBranch: () -> Unit,
     onSearch: () -> Unit,
+    onScan: () -> Unit,
     onChat: () -> Unit,
     onNotification: () -> Unit,
     onProfile: () -> Unit,
     modifier: Modifier = Modifier,
     /** 한 지점을 보고 있으면 true — 지점 아이콘이 브랜드색으로 바뀐다 */
     branchPicked: Boolean = false,
+    /**
+     * 출퇴근 스캔 버튼을 세울지 — **`doesFieldWork` (점장·직원) 에게만 true**
+     *
+     * 대표·관리자는 출퇴근을 안 찍어서 눌러도 할 일이 없다.
+     * V2 는 데스크톱만 그렇게 하고 **폰은 전원에게 띄워 놨었다.**
+     * 로그인이 붙기 전이라 지금은 늘 true 지만, 자리는 여기다.
+     */
+    canScan: Boolean = true,
     /** 안 읽은 방이 있으면 true */
     chatUnread: Boolean = false,
     /** 안 읽은 알림이 있으면 true */
@@ -66,6 +75,13 @@ fun HomeHeader(
             label = "검색",
             onClick = onSearch,
         )
+        if (canScan) {
+            HeaderIconButton(
+                icon = R.drawable.ic_scan,
+                label = "출퇴근 스캔",
+                onClick = onScan,
+            )
+        }
         HeaderIconButton(
             icon = R.drawable.ic_chat,
             label = "사내톡",

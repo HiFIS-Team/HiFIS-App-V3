@@ -34,6 +34,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         HomeHeader(
             onBranch = {},
             onSearch = {},
+            onScan = {},
             onChat = {},
             onNotification = {},
             onProfile = {},
