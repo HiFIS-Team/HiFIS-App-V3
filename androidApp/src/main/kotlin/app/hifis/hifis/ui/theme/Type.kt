@@ -20,6 +20,9 @@ object HifisType {
     /** 시계처럼 크게 세우는 숫자 */
     val display = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold, lineHeight = 44.sp)
 
+    /** 화면 제목 — 헤더 바로 아래 한 줄 */
+    val title = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold, lineHeight = 28.sp)
+
     /** 값 — 스캔 시각처럼 읽어야 하는 것 */
     val body = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Medium, lineHeight = 24.sp)
 

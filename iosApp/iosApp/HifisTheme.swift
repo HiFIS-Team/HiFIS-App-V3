@@ -102,8 +102,8 @@ enum HifisSize {
     static let stepButton: CGFloat = 36
     /// 달력 한 칸 높이
     static let calendarCell: CGFloat = 54
-    /// 달력 요일 머리말 줄 높이
-    static let calendarWeekday: CGFloat = 34
+    /// 달력 요일 머리말 줄 높이 — 낮으면 글자가 격자에 눌린다
+    static let calendarWeekday: CGFloat = 44
     /// 일정이 있다는 점
     static let calendarDot: CGFloat = 5
 
@@ -204,6 +204,8 @@ enum HifisEventTint {
 enum HifisFont {
     /// 시계처럼 크게 세우는 숫자
     static let display = Font.system(size: 40, weight: .bold)
+    /// 화면 제목 — 헤더 바로 아래 한 줄
+    static let title = Font.system(size: 22, weight: .bold)
     /// 값 — 스캔 시각처럼 읽어야 하는 것
     static let body = Font.system(size: 16, weight: .semibold)
     /// 머리말·강조 한 줄

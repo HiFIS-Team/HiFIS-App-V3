@@ -85,8 +85,8 @@ object Dimens {
     /** 달력 한 칸 높이 */
     val calendarCell = 54.dp
 
-    /** 달력 요일 머리말 줄 높이 */
-    val calendarWeekday = 34.dp
+    /** 달력 요일 머리말 줄 높이 — 낮으면 글자가 격자에 눌린다 */
+    val calendarWeekday = 44.dp
 
     /** 일정이 있다는 점 */
     val calendarDot = 5.dp

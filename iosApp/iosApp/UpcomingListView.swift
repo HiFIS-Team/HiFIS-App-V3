@@ -12,8 +12,7 @@ struct UpcomingListView: View {
             Text("다가오는 일정")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(HifisColor.ink)
-                .padding(.horizontal, HifisSize.screenEdge)
-                .padding(.top, 24)
+                .padding(.horizontal, 20)
 
             Spacer().frame(height: 14)
 
@@ -21,21 +20,30 @@ struct UpcomingListView: View {
                 Text("앞으로 2주간 잡힌 일정이 없어요")
                     .font(HifisFont.caption)
                     .foregroundStyle(HifisColor.inkTertiary)
-                    .padding(.horizontal, HifisSize.screenEdge)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
             } else {
                 ForEach(Array(groups.enumerated()), id: \.element.key) { index, group in
                     if index > 0 {
                         Rectangle()
                             .fill(HifisColor.line)
                             .frame(height: 1)
-                            .padding(.horizontal, HifisSize.screenEdge)
+                            .padding(.horizontal, 20)
                     }
                     DayGroupView(group: group)
                 }
             }
         }
+        .padding(.vertical, 20)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(HifisColor.surface)
+        .clipShape(RoundedRectangle(cornerRadius: HifisSize.cardRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: HifisSize.cardRadius, style: .continuous)
+                .strokeBorder(HifisColor.line, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
+        .padding(.horizontal, HifisSize.screenEdge)
+        .padding(.top, 20)
     }
 }
 
@@ -61,7 +69,7 @@ private struct DayGroupView: View {
                 }
             }
         }
-        .padding(.horizontal, HifisSize.screenEdge)
+        .padding(.horizontal, 20)
         .padding(.vertical, 12)
     }
 }
@@ -88,8 +96,10 @@ private struct EventRowView: View {
             .padding(.horizontal, HifisSize.rowPaddingH)
             .padding(.vertical, HifisSize.rowPaddingV)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // **카드 안이라 `background` 를 쓴다.** `surface` 를 쓰면 카드와 같은 색이라
+            // 줄이 안 보인다 (공지 카드의 평범한 줄과 같은 규칙)
             .background(
-                HifisColor.surface,
+                HifisColor.background,
                 in: RoundedRectangle(cornerRadius: HifisSize.rowRadius, style: .continuous)
             )
             .contentShape(Rectangle())

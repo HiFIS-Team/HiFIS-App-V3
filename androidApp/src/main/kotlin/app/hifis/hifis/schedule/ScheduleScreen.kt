@@ -43,8 +43,6 @@ import java.time.LocalDate as JavaDate
  *
  * 격자·묶음 계산은 `shared` 의 [Calendar] 가 한다. 두 플랫폼이 같은 달력을 그려야 한다.
  *
- * **큰 제목(`일정관리`)을 안 붙였다.** 하단바에서 `일정` 을 눌러 들어온 자리라
- * 화면 이름을 한 번 더 적으면 그만큼 달력이 밀린다.
  *
  * 값은 아직 [ScheduleEvent.demo] 다 — **서버를 안 붙였다.**
  */
@@ -64,7 +62,7 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
     }
     val upcoming = remember(events, today) { Calendar.upcoming(events, today) }
 
-    TabPage(modifier) {
+    TabPage(modifier, title = "일정") {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -95,25 +93,32 @@ private fun ScheduleControls(
     onAdd: () -> Unit,
 ) {
     val colors = HifisTheme.colors
-    Row(
+    // **달 이름이 줄 한가운데에 선다.** 오른쪽으로 몰아 놓으면 이전/다음을
+    // 누를 때마다 글자 길이에 따라 자리가 흔들린다 (`2026년 9월` ↔ `2026년 12월`)
+    Box(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.screenEdge, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = Dimens.screenEdge, vertical = 10.dp),
     ) {
-        ModeToggle(monthMode, onMode)
-        Spacer(Modifier.weight(1f))
-        StepButton(R.drawable.ic_chevron_left, "이전", onPrev)
-        Text(
-            label,
-            style = HifisType.body.copy(fontWeight = FontWeight.Bold),
-            color = colors.ink,
-            modifier = Modifier.padding(horizontal = 10.dp),
-        )
-        StepButton(R.drawable.ic_chevron_right, "다음", onNext)
-        Spacer(Modifier.width(8.dp))
+        Box(Modifier.align(Alignment.CenterStart)) { ModeToggle(monthMode, onMode) }
+
+        Row(
+            Modifier.align(Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            StepButton(R.drawable.ic_chevron_left, "이전", onPrev)
+            Text(
+                label,
+                style = HifisType.body.copy(fontWeight = FontWeight.Bold),
+                color = colors.ink,
+                modifier = Modifier.padding(horizontal = 10.dp),
+            )
+            StepButton(R.drawable.ic_chevron_right, "다음", onNext)
+        }
+
         Box(
             Modifier
+                .align(Alignment.CenterEnd)
                 .size(Dimens.stepButton)
                 .clip(RoundedCornerShape(12.dp))
                 .background(colors.brand, RoundedCornerShape(12.dp))

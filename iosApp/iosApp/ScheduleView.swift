@@ -6,8 +6,6 @@ import SharedKit
 /// 격자·묶음 계산은 `shared` 의 `Calendar` 가 한다. 두 플랫폼이 같은 달력을 그려야 한다.
 /// 안드로이드 `ScheduleScreen.kt` 와 같은 화면이다 — 한쪽만 고치면 갈린다.
 ///
-/// **큰 제목(`일정관리`)을 안 붙였다.** 하단바에서 `일정` 을 눌러 들어온 자리라
-/// 화면 이름을 한 번 더 적으면 그만큼 달력이 밀린다.
 struct ScheduleView: View {
     private let today: Kotlinx_datetimeLocalDate
     private let events: [ScheduleEvent]
@@ -43,7 +41,7 @@ struct ScheduleView: View {
     }
 
     var body: some View {
-        TabPage {
+        TabPage(title: "일정") {
             ScrollView {
                 VStack(spacing: 0) {
                     controls
@@ -60,35 +58,48 @@ struct ScheduleView: View {
         }
     }
 
+    /// **달 이름이 줄 한가운데에 선다.** 오른쪽으로 몰아 놓으면 이전/다음을
+    /// 누를 때마다 글자 길이에 따라 자리가 흔들린다 (`2026년 9월` ↔ `2026년 12월`)
     private var controls: some View {
-        HStack(spacing: 0) {
-            ModeToggle(monthMode: $monthMode)
-            Spacer()
-            StepButton(icon: "ic_chevron_left", label: "이전") {
-                anchor = SharedKit.Calendar.shared.step(from: anchor, monthMode: monthMode, back: true)
+        ZStack {
+            HStack(spacing: 0) {
+                ModeToggle(monthMode: $monthMode)
+                Spacer()
+                Button {} label: {
+                    Image("ic_plus")
+                        .renderingMode(.template)
+                        .resizable()
+                        .frame(width: 18, height: 18)
+                        .foregroundStyle(.white)
+                        .frame(width: HifisSize.stepButton, height: HifisSize.stepButton)
+                        .background(
+                            HifisColor.brand,
+                            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        )
+                }
+                .buttonStyle(TapStyle())
+                .accessibilityLabel("일정 추가")
             }
-            Text(SharedKit.Calendar.shared.monthLabel(anyDayInMonth: anchor))
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(HifisColor.ink)
-                .padding(.horizontal, 10)
-            StepButton(icon: "ic_chevron_right", label: "다음") {
-                anchor = SharedKit.Calendar.shared.step(from: anchor, monthMode: monthMode, back: false)
+
+            HStack(spacing: 0) {
+                StepButton(icon: "ic_chevron_left", label: "이전") {
+                    anchor = SharedKit.Calendar.shared.step(
+                        from: anchor, monthMode: monthMode, back: true
+                    )
+                }
+                Text(SharedKit.Calendar.shared.monthLabel(anyDayInMonth: anchor))
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(HifisColor.ink)
+                    .padding(.horizontal, 10)
+                StepButton(icon: "ic_chevron_right", label: "다음") {
+                    anchor = SharedKit.Calendar.shared.step(
+                        from: anchor, monthMode: monthMode, back: false
+                    )
+                }
             }
-            Spacer().frame(width: 8)
-            Button {} label: {
-                Image("ic_plus")
-                    .renderingMode(.template)
-                    .resizable()
-                    .frame(width: 18, height: 18)
-                    .foregroundStyle(.white)
-                    .frame(width: HifisSize.stepButton, height: HifisSize.stepButton)
-                    .background(HifisColor.brand, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            }
-            .buttonStyle(TapStyle())
-            .accessibilityLabel("일정 추가")
         }
         .padding(.horizontal, HifisSize.screenEdge)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
     }
 }
 

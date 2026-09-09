@@ -1,6 +1,7 @@
 package app.hifis.hifis.schedule
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,12 +39,23 @@ import app.hifis.shared.schedule.ScheduleEvent
 @Composable
 fun UpcomingList(groups: List<DaySchedule>) {
     val colors = HifisTheme.colors
-    Column(Modifier.fillMaxWidth().padding(top = 24.dp)) {
+    val shape = RoundedCornerShape(Dimens.cardRadius)
+
+    Column(
+        Modifier
+            .padding(horizontal = Dimens.screenEdge)
+            .padding(top = 20.dp)
+            .fillMaxWidth()
+            .shadow(6.dp, shape, clip = false)
+            .background(colors.surface, shape)
+            .border(1.dp, colors.line, shape)
+            .padding(vertical = 20.dp),
+    ) {
         Text(
             "다가오는 일정",
             style = HifisType.body.copy(fontWeight = FontWeight.Bold),
             color = colors.ink,
-            modifier = Modifier.padding(horizontal = Dimens.screenEdge),
+            modifier = Modifier.padding(horizontal = 20.dp),
         )
         Spacer(Modifier.height(14.dp))
 
@@ -51,7 +64,7 @@ fun UpcomingList(groups: List<DaySchedule>) {
                 "앞으로 2주간 잡힌 일정이 없어요",
                 style = HifisType.caption,
                 color = colors.inkTertiary,
-                modifier = Modifier.padding(horizontal = Dimens.screenEdge, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 20.dp),
             )
             return@Column
         }
@@ -60,7 +73,7 @@ fun UpcomingList(groups: List<DaySchedule>) {
             if (index > 0) {
                 Box(
                     Modifier
-                        .padding(horizontal = Dimens.screenEdge)
+                        .padding(horizontal = 20.dp)
                         .fillMaxWidth()
                         .height(1.dp)
                         .background(colors.line),
@@ -77,7 +90,7 @@ private fun DayGroup(group: DaySchedule) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.screenEdge, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
         // 날짜 기둥 — 줄이 몇 개든 폭이 같아야 오른쪽 일정들이 안 흔들린다
         Column(
@@ -113,7 +126,9 @@ private fun EventRow(event: ScheduleEvent) {
         Modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(colors.surface, shape)
+            // **카드 안이라 `background` 를 쓴다.** `surface` 를 쓰면 카드와 같은 색이라
+            // 줄이 안 보인다 (공지 카드의 평범한 줄과 같은 규칙)
+            .background(colors.background, shape)
             .tap(label = event.title) { }
             .padding(horizontal = Dimens.rowPaddingH, vertical = Dimens.rowPaddingV),
         verticalAlignment = Alignment.CenterVertically,
