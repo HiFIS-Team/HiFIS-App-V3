@@ -9,6 +9,9 @@ package app.hifis.shared.home
  *
  * **닫기(X)를 두지 않는다.** 닫아 놓은 것을 언제 다시 띄울지가 또 정해야 할 일이 되고,
  * 어차피 몇 초 뒤면 다음 것으로 넘어간다.
+ *
+ * **오른쪽 버튼도 두지 않는다.** 카드를 누르면 그리로 가는데 버튼이 또 있으면
+ * 누르는 자리가 둘로 갈린다 — 어느 쪽이 무엇인지 설명해야 하고, 그만큼 글자 자리도 준다.
  */
 data class HomeAlert(
     val kind: AlertKind,
@@ -16,8 +19,6 @@ data class HomeAlert(
     val title: String,
     /** 아래 흐린 한 줄 — 어떤 것인지 */
     val detail: String,
-    /** 오른쪽 버튼 글자 */
-    val action: String,
 ) {
     companion object {
         /** 다음 알림으로 넘어가는 간격 — **양 플랫폼이 같은 박자로 돈다** */
@@ -33,25 +34,21 @@ data class HomeAlert(
                 AlertKind.PROJECT_DUE,
                 "마감이 이틀 남았어요",
                 "9월 센터 리뉴얼 · 아직 진행 중",
-                "보기",
             ),
             HomeAlert(
                 AlertKind.TASK_LEFT,
                 "오늘 할 일 3개 남았어요",
                 "환경정비 · 세션 싸인 · 회원 등록",
-                "보기",
             ),
             HomeAlert(
                 AlertKind.APPROVED,
                 "월차가 승인됐어요",
                 "9월 12일 (금)",
-                "확인",
             ),
             HomeAlert(
                 AlertKind.REJECTED,
                 "지출 결의가 반려됐어요",
                 "사유를 확인해 주세요",
-                "확인",
             ),
         )
     }

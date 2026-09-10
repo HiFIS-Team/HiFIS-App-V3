@@ -143,21 +143,8 @@ private fun AlertCard(alert: HomeAlert, onOpen: (HomeAlert) -> Unit) {
             )
         }
 
-        Spacer(Modifier.width(12.dp))
-
-        // 버튼은 카드 전체와 같은 곳으로 간다 — 따로 누를 자리를 만들지 않는다.
-        // 갈 곳이 하나인데 누르는 자리를 둘로 나누면 어느 쪽이 무엇인지 설명해야 한다
-        Text(
-            alert.action,
-            style = HifisType.label.copy(fontWeight = FontWeight.Bold),
-            color = tint,
-            modifier = Modifier
-                .background(
-                    tint.copy(alpha = if (colors.isDark) 0.20f else 0.12f),
-                    RoundedCornerShape(10.dp),
-                )
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-        )
+        // **오른쪽에 버튼을 안 둔다.** 카드를 누르면 그리로 가는데 버튼이 또 있으면
+        // 누르는 자리가 둘로 갈린다 — 어느 쪽이 무엇인지 설명해야 하고, 글자 자리도 그만큼 준다
     }
 }
 

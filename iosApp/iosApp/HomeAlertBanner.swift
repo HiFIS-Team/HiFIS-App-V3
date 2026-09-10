@@ -77,16 +77,9 @@ private struct AlertCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer().frame(width: 12)
-
-                // 버튼은 카드 전체와 같은 곳으로 간다 — 따로 누를 자리를 만들지 않는다.
-                // 갈 곳이 하나인데 누르는 자리를 둘로 나누면 어느 쪽이 무엇인지 설명해야 한다
-                Text(alert.action)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(tint)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(fill, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                // **오른쪽에 버튼을 안 둔다.** 카드를 누르면 그리로 가는데 버튼이 또 있으면
+                // 누르는 자리가 둘로 갈린다 — 어느 쪽이 무엇인지 설명해야 하고,
+                // 글자 자리도 그만큼 준다
             }
             .padding(HifisSize.alertPadding)
             .frame(maxWidth: .infinity)
