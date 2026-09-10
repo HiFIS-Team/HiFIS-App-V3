@@ -74,6 +74,37 @@ class MoreRowTest {
     }
 
     @Test
+    fun `iOS 하단바는 네 칸이다`() {
+        // 다섯째 칸을 시스템 AI 동그라미가 쓴다. 여섯으로 세우면 iOS 가 `More(…)` 로 접는다
+        assertEquals(4, MainTab.ios.size, "iOS 하단바가 네 칸이 아니다: ${MainTab.ios}")
+        assertEquals(5, MainTab.android.size, "안드로이드 하단바가 다섯 칸이 아니다")
+    }
+
+    @Test
+    fun `하단바에서 내려온 화면은 그 플랫폼 바로가기가 받는다`() {
+        // iOS 는 근태가 탭에서 내려왔다 — 갈 방법이 사라지면 안 된다
+        (MainTab.android - MainTab.ios.toSet()).forEach { tab ->
+            assertTrue(
+                HomeShortcut.ios.any { it.label == tab.label },
+                "${tab.label} 이 iOS 탭에서 빠졌는데 바로가기에도 없다",
+            )
+        }
+    }
+
+    @Test
+    fun `바로가기는 같은 플랫폼 하단바와 안 겹친다`() {
+        // 바로가기는 **하단바로 못 가는 것**이다. 겹치면 같은 화면이 두 자리에 선다
+        fun check(tabs: List<MainTab>, shortcuts: List<HomeShortcut>, who: String) {
+            val labels = tabs.map { it.label }.toSet()
+            shortcuts.forEach {
+                assertTrue(it.label !in labels, "$who — ${it.label} 이 하단바에도 바로가기에도 있다")
+            }
+        }
+        check(MainTab.android, HomeShortcut.android, "안드로이드")
+        check(MainTab.ios, HomeShortcut.ios, "iOS")
+    }
+
+    @Test
     fun `묶음마다 머리말이 있다`() {
         // 판으로 안 싸서 머리말이 유일한 경계다 — 비면 위 묶음에 딸린 것처럼 보인다
         MoreGroup.all.forEach { group ->
