@@ -8,8 +8,9 @@ import SharedKit
 /// **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
 /// V3 는 공통 업무와 내 업무만 둔다 (2026-09-10 대표 결정).
 ///
-/// **지금은 공통 업무만 있다.** 내 업무가 생기면 둘을 고르는 칸이 제목 아래에 붙는다.
-/// 그때까지 칸을 미리 세워 두지 않는다 — 한 칸짜리 고르개는 고를 것이 없다.
+/// 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
+/// 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 내 업무는 한 번씩 체크해서
+/// 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
 ///
 /// 안드로이드 `WorkScreen` 과 같은 화면이다.
 struct WorkView: View {
@@ -18,19 +19,30 @@ struct WorkView: View {
     var onChat: () -> Void = {}
     var onNotification: () -> Void = {}
 
-    private let items = EnvItem.companion.demo
+    /// **지점이 정한 항목표다.** 서버가 붙으면 그 지점 것을 받아 쓴다
+    private let items = EnvItem.companion.base
     /// 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
     @State private var counts: [String: Int] = [:]
+    @State private var tasks = MyTask.companion.demo
+    @State private var mine = false
 
     var body: some View {
         TabPage(onSearch: onSearch, onScan: onScan, onChat: onChat, onNotification: onNotification) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     ScreenTitle(WorkBoard.shared.TITLE)
-                    checklist
+                    ModeSwitch(
+                        left: WorkBoard.shared.COMMON,
+                        right: WorkBoard.shared.MINE,
+                        rightSelected: $mine
+                    )
+                    .padding(.horizontal, HifisSize.screenEdge)
+                    Spacer().frame(height: Self.switchBodyGap)
+                    if mine { myTasks } else { checklist }
                 }
                 .padding(.bottom, 24)
             }
+
         }
     }
 
@@ -66,7 +78,7 @@ struct WorkView: View {
             Spacer().frame(height: 12)
 
             if items.isEmpty {
-                Text(board.EMPTY)
+                Text(board.EMPTY_ITEMS)
                     .font(HifisFont.body)
                     .foregroundStyle(HifisColor.inkSecondary)
                     .frame(maxWidth: .infinity)
@@ -137,6 +149,65 @@ struct WorkView: View {
         return min(max(size, chipFontMin), chipFontBase)
     }
 
+    /// 내 업무 — **하루에 한 번씩 체크**한다
+    ///
+    /// **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
+    /// 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
+    private var myTasks: some View {
+        let board = WorkBoard.shared
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 0) {
+                Text(board.MY_TODAY)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(HifisColor.ink)
+                Spacer(minLength: 0)
+                // 다 했으면 숫자 대신 `완료` 다 — 남은 것이 없다는 말이 숫자보다 빠르다
+                Text(board.progressLabel(tasks: tasks))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(HifisColor.brand)
+            }
+            .padding(.horizontal, 4)
+
+            Spacer().frame(height: 12)
+
+            if tasks.isEmpty {
+                Text(board.EMPTY_TASKS)
+                    .font(HifisFont.body)
+                    .foregroundStyle(HifisColor.inkSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Self.emptyPad)
+            } else {
+                // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(HifisColor.fieldFill)
+                        Capsule()
+                            .fill(HifisColor.brand)
+                            .frame(width: proxy.size.width * CGFloat(board.progress(tasks: tasks)))
+                    }
+                }
+                .frame(height: Self.barHeight)
+                Spacer().frame(height: 6)
+
+                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
+                    if index > 0 {
+                        Rectangle()
+                            .fill(HifisColor.line)
+                            .frame(height: 1)
+                            .padding(.horizontal, 4)
+                    }
+                    TaskRow(task: task) { check(task) }
+                }
+            }
+        }
+        .padding(.horizontal, HifisSize.screenEdge)
+    }
+
+    /// 화면을 먼저 바꾼다. 서버가 붙으면 그 뒤에 보낸다
+    private func check(_ picked: MyTask) {
+        tasks = tasks.map { $0.id == picked.id ? $0.check() : $0 }
+    }
+
     /// 격자 칸 수 — 폰은 둘이다
     fileprivate static let columns = 2
     /// 칩 사이 (가로·세로 같다)
@@ -156,7 +227,11 @@ struct WorkView: View {
     /// 한 칩의 면·테두리 진하기
     fileprivate static let activeFill: Double = 0.16
     fileprivate static let activeLine: Double = 0.45
-    /// 점검 항목이 없을 때 그 자리의 위아래 여백
+    /// 스위치와 본문 사이
+    private static let switchBodyGap: CGFloat = 16
+    /// 내 업무 진행 막대 두께
+    private static let barHeight: CGFloat = 6
+    /// 목록이 비었을 때 그 자리의 위아래 여백
     private static let emptyPad: CGFloat = 52
 }
 
@@ -244,3 +319,52 @@ private struct AdjustButton: View {
         .accessibilityLabel(label)
     }
 }
+
+/// 업무 한 줄 — 왼쪽 동그라미를 누르면 체크된다
+///
+/// **다 한 줄은 잠근다** (V2 2026-08-20). 체크는 되돌릴 수 없어서 누를 자리가 아니다.
+/// 눌리는 것처럼 보이는데 아무 일이 없으면 고장으로 읽힌다.
+///
+/// **다 한 줄이 도드라지지 않는다.** 파란 면으로 띄우면 눈이 거기 멈추는데,
+/// 봐야 하는 건 아직 안 한 줄이다 — 줄이 그어진 채로 조용히 물러난다.
+private struct TaskRow: View {
+    let task: MyTask
+    let onCheck: () -> Void
+
+    var body: some View {
+        let checked = task.checked
+        Button(action: { if !checked { onCheck() } }) {
+            HStack(spacing: 0) {
+                Image(checked ? "ic_check_circle_fill" : "ic_circle")
+                    .renderingMode(.template)
+                    .resizable()
+                    .frame(width: Self.check, height: Self.check)
+                    .foregroundStyle(checked ? HifisColor.brand : HifisColor.inkTertiary)
+                Spacer().frame(width: 12)
+                VStack(alignment: .leading, spacing: 3) {
+                    // 다 한 줄은 **글자를 눕힌다** — 색만 바꾸면 남은 것과 한눈에 안 갈린다
+                    Text(task.content)
+                        .font(HifisFont.body)
+                        .foregroundStyle(checked ? HifisColor.inkTertiary : HifisColor.ink)
+                        .strikethrough(checked, color: HifisColor.inkTertiary)
+                    // 체크할 때 적어 넣은 값 — 아직 안 한 줄에는 안 붙는다
+                    if let value = task.value, !value.isEmpty {
+                        Text(value)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(HifisColor.brand)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(TapStyle())
+        .disabled(checked)
+    }
+
+    /// 내 업무 줄 왼쪽 동그라미
+    private static let check: CGFloat = 22
+}
+

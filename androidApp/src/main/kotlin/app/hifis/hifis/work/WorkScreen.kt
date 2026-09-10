@@ -24,7 +24,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,11 +40,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
+import app.hifis.hifis.ui.component.ModeSwitch
 import app.hifis.hifis.ui.component.ScreenTitle
 import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.tap
@@ -48,6 +54,7 @@ import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.work.EnvItem
+import app.hifis.shared.work.MyTask
 import app.hifis.shared.work.WorkBoard
 
 /**
@@ -58,8 +65,9 @@ import app.hifis.shared.work.WorkBoard
  * **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
  * V3 는 공통 업무와 내 업무만 둔다 (2026-09-10 대표 결정).
  *
- * **지금은 공통 업무만 있다.** 내 업무가 생기면 둘을 고르는 칸이 제목 아래에 붙는다.
- * 그때까지 칸을 미리 세워 두지 않는다 — 한 칸짜리 고르개는 고를 것이 없다.
+ * 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
+ * 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 내 업무는 한 번씩 체크해서
+ * 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
  */
 @Composable
 fun WorkScreen(
@@ -76,17 +84,164 @@ fun WorkScreen(
         onNotification = onNotification,
         onChat = onChat,
     ) {
-        val items = remember { EnvItem.demo }
+        // **지점이 정한 항목표다.** 서버가 붙으면 그 지점 것을 받아 쓴다
+        val items = remember { EnvItem.base }
         // 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
         val counts = remember { mutableStateMapOf<String, Int>() }
+        val tasks = remember { mutableStateListOf(*MyTask.demo.toTypedArray()) }
+        // 화면을 돌려도 보던 칸에 그대로 있는다
+        var mine by rememberSaveable { mutableStateOf(false) }
 
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp),
+                // 떠 있는 AI 단추가 마지막 칩의 `+` 를 덮는다 — 그만큼 더 둬서 굴려 올릴 수 있게 한다
+                .padding(bottom = Dimens.aiChatClear),
         ) {
             ScreenTitle(WorkBoard.TITLE)
-            Checklist(items, counts)
+            ModeSwitch(
+                left = WorkBoard.COMMON,
+                right = WorkBoard.MINE,
+                rightSelected = mine,
+                onChange = { mine = it },
+                modifier = Modifier.padding(horizontal = Dimens.screenEdge),
+            )
+            Spacer(Modifier.height(SWITCH_BODY_GAP))
+            if (mine) {
+                MyTasks(tasks) { picked ->
+                    // 화면을 먼저 바꾼다. 서버가 붙으면 그 뒤에 보낸다
+                    val at = tasks.indexOfFirst { it.id == picked.id }
+                    if (at >= 0) tasks[at] = tasks[at].check()
+                }
+            } else {
+                Checklist(items, counts)
+            }
+        }
+    }
+}
+
+/**
+ * 내 업무 — **하루에 한 번씩 체크**한다
+ *
+ * **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
+ * 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
+ */
+@Composable
+private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
+    val colors = HifisTheme.colors
+    Column(Modifier.padding(horizontal = Dimens.screenEdge)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                WorkBoard.MY_TODAY,
+                style = HifisType.label.copy(fontWeight = FontWeight.Bold),
+                color = colors.ink,
+            )
+            Spacer(Modifier.weight(1f))
+            // 다 했으면 숫자 대신 `완료` 다 — 남은 것이 없다는 말이 숫자보다 빠르다
+            Text(
+                WorkBoard.progressLabel(tasks),
+                style = HifisType.caption.copy(fontWeight = FontWeight.Bold),
+                color = colors.brand,
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+
+        if (tasks.isEmpty()) {
+            Text(
+                WorkBoard.EMPTY_TASKS,
+                style = HifisType.body,
+                color = colors.inkSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = EMPTY_PAD),
+            )
+            return@Column
+        }
+
+        // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(BAR_HEIGHT)
+                .clip(RoundedCornerShape(BAR_HEIGHT / 2))
+                .background(colors.fieldFill),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(WorkBoard.progress(tasks))
+                    .fillMaxHeight()
+                    .background(colors.brand),
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+
+        tasks.forEachIndexed { i, task ->
+            if (i > 0) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .height(1.dp)
+                        .background(colors.line),
+                )
+            }
+            TaskRow(task) { onCheck(task) }
+        }
+    }
+}
+
+/**
+ * 업무 한 줄 — 왼쪽 동그라미를 누르면 체크된다
+ *
+ * **다 한 줄은 잠근다** (V2 2026-08-20). 체크는 되돌릴 수 없어서 누를 자리가 아니다.
+ * 눌리는 것처럼 보이는데 아무 일이 없으면 고장으로 읽힌다.
+ *
+ * **다 한 줄이 도드라지지 않는다.** 파란 면으로 띄우면 눈이 거기 멈추는데,
+ * 봐야 하는 건 아직 안 한 줄이다 — 줄이 그어진 채로 조용히 물러난다.
+ */
+@Composable
+private fun TaskRow(task: MyTask, onCheck: () -> Unit) {
+    val colors = HifisTheme.colors
+    val checked = task.checked
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .then(if (checked) Modifier else Modifier.tap(label = task.content, onClick = onCheck))
+            .padding(horizontal = 4.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painterResource(
+                if (checked) R.drawable.ic_check_circle_fill else R.drawable.ic_circle,
+            ),
+            contentDescription = null, // 바로 옆에 할 일이 적혀 있다
+            tint = if (checked) colors.brand else colors.inkTertiary,
+            modifier = Modifier.size(CHECK_SIZE),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                task.content,
+                style = HifisType.body,
+                // 다 한 줄은 **글자를 눕힌다** — 색만 바꾸면 남은 것과 한눈에 안 갈린다
+                color = if (checked) colors.inkTertiary else colors.ink,
+                textDecoration = if (checked) TextDecoration.LineThrough else null,
+            )
+            // 체크할 때 적어 넣은 값 — 아직 안 한 줄에는 안 붙는다
+            task.value?.takeIf { it.isNotEmpty() }?.let { value ->
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    value,
+                    style = HifisType.caption.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.brand,
+                )
+            }
         }
     }
 }
@@ -131,7 +286,7 @@ private fun Checklist(items: List<EnvItem>, counts: MutableMap<String, Int>) {
 
         if (items.isEmpty()) {
             Text(
-                WorkBoard.EMPTY,
+                WorkBoard.EMPTY_ITEMS,
                 style = HifisType.body,
                 color = colors.inkSecondary,
                 textAlign = TextAlign.Center,
@@ -344,5 +499,14 @@ private const val ACTIVE_LINE = 0.45f
 private val CHIP_FONT_BASE = 14.sp
 private const val CHIP_FONT_MIN = 10f
 
-/** 점검 항목이 없을 때 그 자리의 위아래 여백 */
+/** 스위치와 본문 사이 */
+private val SWITCH_BODY_GAP = 16.dp
+
+/** 내 업무 진행 막대 두께 */
+private val BAR_HEIGHT = 6.dp
+
+/** 내 업무 줄 왼쪽 동그라미 */
+private val CHECK_SIZE = 22.dp
+
+/** 목록이 비었을 때 그 자리의 위아래 여백 */
 private val EMPTY_PAD = 52.dp
