@@ -52,12 +52,22 @@ fun MoreScreen(modifier: Modifier = Modifier, onTab: (MainTab) -> Unit = {}) {
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
+            Spacer(Modifier.height(TITLE_TOP_EXTRA))
             // 제목도 같이 굴러간다 — 붙어 있는 것은 헤더(아이콘 줄)뿐이다
             ScreenTitle("전체")
             MoreGroup.all.forEach { group -> MenuGroup(group, onTab) }
         }
     }
 }
+
+/**
+ * 제목 위에 더 붙이는 여백 — **아래와 맞추려고 있다**
+ *
+ * `ScreenTitle` 은 위 18 · 아래 10 을 띄운다. 그런데 이 화면은 제목 아래에
+ * 묶음 여백([Dimens.moreGroupGap])이 또 붙어 **아래가 32 가 된다.**
+ * 그대로 두면 제목이 헤더 쪽으로 붙어 보인다.
+ */
+private val TITLE_TOP_EXTRA = 14.dp
 
 @Composable
 private fun MenuGroup(group: MoreGroup, onTab: (MainTab) -> Unit) {
