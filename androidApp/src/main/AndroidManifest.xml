@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 출퇴근 스캔 — 카메라가 없는 기기(태블릿 일부)에서도 깔리게 required 를 끈다.
+         카메라가 없으면 그 화면이 '카메라를 열 수 없어요' 를 띄운다 -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

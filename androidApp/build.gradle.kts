@@ -65,5 +65,11 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
+    // 출퇴근 스캔의 카메라 — 미리보기는 `camera-compose` 의 `CameraXViewfinder` 로 그린다
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.compose)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

@@ -23,8 +23,12 @@ import app.hifis.shared.home.TodayWork
  * 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다.
  */
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, onSearch: () -> Unit = {}) {
-    TabPage(modifier, onSearch = onSearch) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    onSearch: () -> Unit = {},
+    onScan: () -> Unit = {},
+) {
+    TabPage(modifier, onSearch = onSearch, onScan = onScan) {
         // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
         Column(
             Modifier

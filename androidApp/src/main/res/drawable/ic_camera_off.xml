@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 카메라를 못 연다 — 카메라 + 빗금 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M3.25,8.75a2.25,2.25 0 0 1 2.25,-2.25H8.25L9.75,4.5h4.5l1.5,2H18.5a2.25,2.25 0 0 1 2.25,2.25v7.5a2.25,2.25 0 0 1 -2.25,2.25H5.5a2.25,2.25 0 0 1 -2.25,-2.25Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,9.25a3,3 0 1 1 0,6a3,3 0 1 1 0,-6Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M4,4L20,20"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+</vector>

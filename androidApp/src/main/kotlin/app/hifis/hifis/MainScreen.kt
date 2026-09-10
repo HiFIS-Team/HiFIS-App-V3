@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.ai.AiChatScreen
+import app.hifis.hifis.attendance.AttendanceScanScreen
 import app.hifis.hifis.search.SearchOverlay
 import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.ui.component.AiChatButton
@@ -60,6 +63,8 @@ fun MainScreen() {
     var aiOpen by rememberSaveable { mutableStateOf(false) }
     // 검색도 **덮기만 한다** — 화면을 갈아 끼우지 않으니 닫으면 하던 자리로 돌아온다
     var searchOpen by rememberSaveable { mutableStateOf(false) }
+    // 출퇴근 스캔은 **옆에서 밀려 들어오는 상세 화면**이다 — 헤더의 스캔 아이콘이 연다
+    var scanOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -68,17 +73,28 @@ fun MainScreen() {
     ) {
         Box(Modifier.weight(1f)) {
             when (selected) {
-                MainTab.HOME -> HomeScreen(onSearch = { searchOpen = true })
-                MainTab.SCHEDULE -> ScheduleScreen(onSearch = { searchOpen = true })
+                MainTab.HOME -> HomeScreen(
+                    onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
+                )
+                MainTab.SCHEDULE -> ScheduleScreen(
+                    onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
+                )
                 // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
                 MainTab.MORE -> MoreScreen(
                     onTab = { index = MainTab.all.indexOf(it) },
                     onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
                 )
                 // 나머지는 아직 화면이 없다
                 MainTab.WORK,
                 MainTab.ATTENDANCE,
-                -> ComingSoon(selected) { searchOpen = true }
+                -> ComingSoon(
+                    selected,
+                    onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
+                )
             }
 
             // **탭이 아니라 셸이 들고 있다** — 다섯 곳에 다 떠 있어야 한다.
@@ -103,6 +119,16 @@ fun MainScreen() {
         HifisTheme(dark = false) {
             AiChatScreen(onClose = { aiOpen = false })
         }
+    }
+
+    // **상세 화면은 옆에서 밀려 들어온다.** 오른쪽에서 왔다가 오른쪽으로 돌아간다 —
+    // iOS 의 내비게이션 push 와 같은 결이다. 하단바까지 덮는다 (`DESIGN.md`)
+    AnimatedVisibility(
+        visible = scanOpen,
+        enter = slideInHorizontally(tween(320)) { it },
+        exit = slideOutHorizontally(tween(260)) { it },
+    ) {
+        AttendanceScanScreen(onBack = { scanOpen = false })
     }
 
     // 검색은 **헤더 아래로 내려오는 판**이라 하단바까지 덮는다
@@ -190,10 +216,10 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
  * 화면이 생기면 지운다. 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
  */
 @Composable
-private fun ComingSoon(tab: MainTab, onSearch: () -> Unit) {
+private fun ComingSoon(tab: MainTab, onSearch: () -> Unit, onScan: () -> Unit) {
     // **`TabPage` 를 쓴다.** 헤더가 거기 있어서, 안 쓰면 이 두 탭에서만
     // 검색·사내톡·알림으로 갈 방법이 사라진다 (iOS `ComingSoonView` 도 같다)
-    TabPage(onSearch = onSearch) {
+    TabPage(onSearch = onSearch, onScan = onScan) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = "${tab.label} — 준비 중",
