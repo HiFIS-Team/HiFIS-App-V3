@@ -38,8 +38,16 @@ struct MainScreen: View {
 private struct MainTabBar: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UITabBarController {
         let controller = UITabBarController()
+        // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**.
+        // 컨트롤러를 약하게 잡는다 — 화면이 컨트롤러를 되잡으면 둘 다 안 풀린다
+        let go: (MainTab) -> Void = { [weak controller] tab in
+            guard let controller,
+                  let index = MainTab.companion.all.firstIndex(where: { $0 == tab })
+            else { return }
+            controller.selectedIndex = index
+        }
         controller.viewControllers = MainTab.companion.all.map { tab in
-            let host = UIHostingController(rootView: screen(for: tab))
+            let host = UIHostingController(rootView: screen(for: tab, go: go))
             host.tabBarItem = UITabBarItem(
                 title: tab.label,
                 image: UIImage(named: tab.icon),
@@ -57,9 +65,10 @@ private struct MainTabBar: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: UITabBarController, context: Context) {}
 
-    private func screen(for tab: MainTab) -> AnyView {
+    private func screen(for tab: MainTab, go: @escaping (MainTab) -> Void) -> AnyView {
         if tab == MainTab.home { return AnyView(HomeView()) }
         if tab == MainTab.schedule { return AnyView(ScheduleView()) }
+        if tab == MainTab.more { return AnyView(MoreView(onTab: go)) }
         return AnyView(ComingSoonView(label: tab.label))
     }
 }

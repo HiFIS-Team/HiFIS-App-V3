@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 설정 (톱니) — 톱니 좌표는 손으로 적은 것이 아니라 8등분해서 뽑았다 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M9.83,5.5L10.16,3.34L13.84,3.34L14.17,5.5L15.06,5.87L16.82,4.58L19.42,7.18L18.13,8.94L18.5,9.83L20.66,10.16L20.66,13.84L18.5,14.17L18.13,15.06L19.42,16.82L16.82,19.42L15.06,18.13L14.17,18.5L13.84,20.66L10.16,20.66L9.83,18.5L8.94,18.13L7.18,19.42L4.58,16.82L5.87,15.06L5.5,14.17L3.34,13.84L3.34,10.16L5.5,9.83L5.87,8.94L4.58,7.18L7.18,4.58L8.94,5.87Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,8.9a3.1,3.1 0 1 0 0,6.2a3.1,3.1 0 1 0 0,-6.2z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7" />
+</vector>

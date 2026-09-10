@@ -90,4 +90,20 @@ object Dimens {
 
     /** 일정이 있다는 점 */
     val calendarDot = 5.dp
+
+    /** 전체 목록 한 줄의 높이 */
+    val moreRow = 52.dp
+
+    /** 전체 목록 줄 왼쪽 아이콘 */
+    val moreIcon = 22.dp
+
+    /**
+     * 묶음과 묶음 사이 — **판이 없어서 이 여백이 유일한 경계다**
+     *
+     * 줄 높이(52)보다 뚜렷하게 작으면 묶음이 안 갈려 보인다.
+     */
+    val moreGroupGap = 22.dp
+
+    /** 묶음 머리말과 첫 줄 사이 — 머리말은 그 아래 줄들에 붙어 있어야 한다 */
+    val moreGroupTitleGap = 6.dp
 }

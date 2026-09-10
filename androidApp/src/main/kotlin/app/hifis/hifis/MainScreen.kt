@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.home.HomeScreen
+import app.hifis.hifis.more.MoreScreen
 import app.hifis.hifis.schedule.ScheduleScreen
 import app.hifis.hifis.ui.NoInteraction
 import app.hifis.hifis.ui.theme.HifisTheme
@@ -50,10 +51,11 @@ fun MainScreen() {
             when (selected) {
                 MainTab.HOME -> HomeScreen()
                 MainTab.SCHEDULE -> ScheduleScreen()
+                // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
+                MainTab.MORE -> MoreScreen(onTab = { index = MainTab.all.indexOf(it) })
                 // 나머지는 아직 화면이 없다
                 MainTab.WORK,
                 MainTab.ATTENDANCE,
-                MainTab.MORE,
                 -> ComingSoon(selected)
             }
         }
