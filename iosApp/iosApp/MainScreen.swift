@@ -286,6 +286,11 @@ private struct MainTabBar: UIViewControllerRepresentable {
                 HomeView(onSearch: search, onScan: scan, onNotification: notification, onChat: chat)
             )
         }
+        if tab == MainTab.work {
+            return AnyView(
+                WorkView(onSearch: search, onScan: scan, onChat: chat, onNotification: notification)
+            )
+        }
         if tab == MainTab.schedule {
             return AnyView(
                 ScheduleView(onSearch: search, onScan: scan, onNotification: notification, onChat: chat)
