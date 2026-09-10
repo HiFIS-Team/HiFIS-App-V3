@@ -17,6 +17,7 @@ import SharedKit
 struct MoreView: View {
     /// 하단바에 자리가 있는 화면을 눌렀을 때 — **탭을 옮긴다.** 화면을 새로 쌓지 않는다
     var onTab: (MainTab) -> Void = { _ in }
+    var onSearch: () -> Void = {}
 
     /// 제목 위에 더 붙이는 여백 — **아래와 맞추려고 있다**
     ///
@@ -26,7 +27,7 @@ struct MoreView: View {
     private static let titleTopExtra: CGFloat = 14
 
     var body: some View {
-        TabPage {
+        TabPage(onSearch: onSearch) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer().frame(height: Self.titleTopExtra)

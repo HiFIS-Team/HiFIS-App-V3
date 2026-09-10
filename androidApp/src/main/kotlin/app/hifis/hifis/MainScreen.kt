@@ -27,11 +27,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.ai.AiChatScreen
+import app.hifis.hifis.search.SearchOverlay
 import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.ui.component.AiChatButton
 import app.hifis.hifis.more.MoreScreen
 import app.hifis.hifis.schedule.ScheduleScreen
 import app.hifis.hifis.ui.NoInteraction
+import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.theme.Dimens
 import android.app.Activity
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +58,8 @@ fun MainScreen() {
     val selected = MainTab.all[index]
     // AI 페이지는 **탭이 아니라 덮고 올라오는 자리**다 — 화면을 돌려도 열린 채로 남는다
     var aiOpen by rememberSaveable { mutableStateOf(false) }
+    // 검색도 **덮기만 한다** — 화면을 갈아 끼우지 않으니 닫으면 하던 자리로 돌아온다
+    var searchOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -64,14 +68,17 @@ fun MainScreen() {
     ) {
         Box(Modifier.weight(1f)) {
             when (selected) {
-                MainTab.HOME -> HomeScreen()
-                MainTab.SCHEDULE -> ScheduleScreen()
+                MainTab.HOME -> HomeScreen(onSearch = { searchOpen = true })
+                MainTab.SCHEDULE -> ScheduleScreen(onSearch = { searchOpen = true })
                 // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
-                MainTab.MORE -> MoreScreen(onTab = { index = MainTab.all.indexOf(it) })
+                MainTab.MORE -> MoreScreen(
+                    onTab = { index = MainTab.all.indexOf(it) },
+                    onSearch = { searchOpen = true },
+                )
                 // 나머지는 아직 화면이 없다
                 MainTab.WORK,
                 MainTab.ATTENDANCE,
-                -> ComingSoon(selected)
+                -> ComingSoon(selected) { searchOpen = true }
             }
 
             // **탭이 아니라 셸이 들고 있다** — 다섯 곳에 다 떠 있어야 한다.
@@ -97,6 +104,9 @@ fun MainScreen() {
             AiChatScreen(onClose = { aiOpen = false })
         }
     }
+
+    // 검색은 **헤더 아래로 내려오는 판**이라 하단바까지 덮는다
+    if (searchOpen) SearchOverlay(onClose = { searchOpen = false })
 
     // 밝은 화면이 떠 있는 동안에는 상태바 글자도 어둡게 — 안 그러면 흰 바탕에 흰 시계다
     SystemBarsForAi(light = aiOpen)
@@ -180,12 +190,16 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
  * 화면이 생기면 지운다. 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
  */
 @Composable
-private fun ComingSoon(tab: MainTab) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = "${tab.label} — 준비 중",
-            color = HifisTheme.colors.inkTertiary,
-            fontSize = 15.sp,
-        )
+private fun ComingSoon(tab: MainTab, onSearch: () -> Unit) {
+    // **`TabPage` 를 쓴다.** 헤더가 거기 있어서, 안 쓰면 이 두 탭에서만
+    // 검색·사내톡·알림으로 갈 방법이 사라진다 (iOS `ComingSoonView` 도 같다)
+    TabPage(onSearch = onSearch) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "${tab.label} — 준비 중",
+                color = HifisTheme.colors.inkTertiary,
+                fontSize = 15.sp,
+            )
+        }
     }
 }

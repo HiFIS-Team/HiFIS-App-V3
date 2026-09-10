@@ -48,12 +48,17 @@ private struct MainTabBar: UIViewControllerRepresentable {
             else { return }
             controller.selectedIndex = index
         }
+        // **검색은 덮기만 한다** — 화면을 갈아 끼우지 않으니 닫으면 하던 자리로 돌아온다
+        let search: () -> Void = { [weak controller] in
+            guard let controller else { return }
+            controller.present(SearchOverlayController(onClose: {}), animated: true)
+        }
         if #available(iOS 18.0, *) {
             // **`tabs` 로 세운다.** `viewControllers` 로는 아래 AI 자리를 못 만든다.
             // 화면의 `tabBarItem` 은 그대로 둔다 — 고른 칸의 채운 그림이 거기 있다
             var tabs: [UITab] = MainTab.companion.ios.map { tab in
                 UITab(title: tab.label, image: UIImage(named: tab.icon), identifier: tab.name) { _ in
-                    hosted(tab, go: go)
+                    hosted(tab, go: go, search: search)
                 }
             }
 
@@ -76,7 +81,7 @@ private struct MainTabBar: UIViewControllerRepresentable {
             controller.delegate = context.coordinator
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 다섯 칸만 세운다
-            controller.viewControllers = MainTab.companion.ios.map { hosted($0, go: go) }
+            controller.viewControllers = MainTab.companion.ios.map { hosted($0, go: go, search: search) }
         }
 
         controller.tabBar.tintColor = UIColor(HifisColor.brand)
@@ -128,8 +133,12 @@ private struct MainTabBar: UIViewControllerRepresentable {
     }
 
     /// 탭 하나를 담는 화면 — 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 을 같이 심는다
-    private func hosted(_ tab: MainTab, go: @escaping (MainTab) -> Void) -> UIHostingController<AnyView> {
-        let host = UIHostingController(rootView: screen(for: tab, go: go))
+    private func hosted(
+        _ tab: MainTab,
+        go: @escaping (MainTab) -> Void,
+        search: @escaping () -> Void
+    ) -> UIHostingController<AnyView> {
+        let host = UIHostingController(rootView: screen(for: tab, go: go, search: search))
         host.tabBarItem = UITabBarItem(
             title: tab.label,
             image: UIImage(named: tab.icon),
@@ -138,11 +147,15 @@ private struct MainTabBar: UIViewControllerRepresentable {
         return host
     }
 
-    private func screen(for tab: MainTab, go: @escaping (MainTab) -> Void) -> AnyView {
-        if tab == MainTab.home { return AnyView(HomeView()) }
-        if tab == MainTab.schedule { return AnyView(ScheduleView()) }
-        if tab == MainTab.more { return AnyView(MoreView(onTab: go)) }
-        return AnyView(ComingSoonView(label: tab.label))
+    private func screen(
+        for tab: MainTab,
+        go: @escaping (MainTab) -> Void,
+        search: @escaping () -> Void
+    ) -> AnyView {
+        if tab == MainTab.home { return AnyView(HomeView(onSearch: search)) }
+        if tab == MainTab.schedule { return AnyView(ScheduleView(onSearch: search)) }
+        if tab == MainTab.more { return AnyView(MoreView(onTab: go, onSearch: search)) }
+        return AnyView(ComingSoonView(label: tab.label, onSearch: search))
     }
 }
 
@@ -152,11 +165,12 @@ private struct MainTabBar: UIViewControllerRepresentable {
 /// 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
 private struct ComingSoonView: View {
     let label: String
+    var onSearch: () -> Void = {}
 
     var body: some View {
         // **`TabPage` 를 쓴다.** 헤더와 AI 단추가 거기 있어서, 안 쓰면 이 두 탭에서만
         // 사내톡·알림으로 갈 방법도 AI 단추도 사라진다
-        TabPage {
+        TabPage(onSearch: onSearch) {
             Text("\(label) — 준비 중")
                 .font(.system(size: 15))
                 .foregroundStyle(HifisColor.inkTertiary)

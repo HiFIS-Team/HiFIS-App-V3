@@ -45,8 +45,12 @@ import app.hifis.shared.nav.MoreRow
  * 여기까지 번지면 브랜드 파랑 하나로 강조하던 규칙이 무너진다.
  */
 @Composable
-fun MoreScreen(modifier: Modifier = Modifier, onTab: (MainTab) -> Unit = {}) {
-    TabPage(modifier) {
+fun MoreScreen(
+    modifier: Modifier = Modifier,
+    onTab: (MainTab) -> Unit = {},
+    onSearch: () -> Unit = {},
+) {
+    TabPage(modifier, onSearch = onSearch) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())

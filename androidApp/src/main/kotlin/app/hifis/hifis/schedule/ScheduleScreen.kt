@@ -48,7 +48,7 @@ import java.time.LocalDate as JavaDate
  * 값은 아직 [ScheduleEvent.demo] 다 — **서버를 안 붙였다.**
  */
 @Composable
-fun ScheduleScreen(modifier: Modifier = Modifier) {
+fun ScheduleScreen(modifier: Modifier = Modifier, onSearch: () -> Unit = {}) {
     val today = remember {
         JavaDate.now().let { Calendar.dateOf(it.year, it.monthValue, it.dayOfMonth) }
     }
@@ -64,7 +64,7 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
     }
     val upcoming = remember(events, today) { Calendar.upcoming(events, today) }
 
-    TabPage(modifier) {
+    TabPage(modifier, onSearch = onSearch) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
