@@ -138,27 +138,61 @@ struct AiChatView: View {
                 .textFieldStyle(.plain)
                 .submitLabel(.send)
 
-            Button {
-                // 아직 보낼 곳이 없다 — AI 도 서버도 안 붙였다
-            } label: {
-                Image("ic_send")
-                    .renderingMode(.template)
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    // 글자가 없으면 눌러도 할 일이 없다 — 죽여 둔다
-                    .foregroundStyle(message.isEmpty ? HifisColor.inkTertiary : .white)
-                    .frame(width: 38, height: 38)
-                    .background(message.isEmpty ? HifisColor.line : HifisColor.brand, in: Circle())
-            }
-            .buttonStyle(TapStyle())
-            .disabled(message.isEmpty)
-            .accessibilityLabel("보내기")
+            sendButton
         }
         .padding(.leading, 20)
         .padding(.trailing, 6)
         .padding(.vertical, 6)
         .modifier(GlassCapsule())
     }
+
+    /// 보내기 — **글자가 들어오면 파란 동그라미가 튀어 들어온다**
+    ///
+    /// V2 사내톡 입력칸이 하던 움직임을 그대로 옮겼다 (거기는 Flutter 라
+    /// `AnimatedSwitcher` + `ScaleTransition` 이었다). 두 벌이 **갈아 끼워지면서**
+    /// 들어오는 쪽은 커지며 나타나고 나가는 쪽은 작아지며 사라진다.
+    ///
+    /// 들어올 때 **1을 살짝 넘겼다 돌아온다** — V2 의 `easeOutBack` 이 그 느낌이었다.
+    /// 스프링의 감쇠를 낮춰 같은 것을 낸다. 그냥 색만 바꾸면 눌러도 되는 때가 왔다는 것이
+    /// 눈에 안 띈다.
+    ///
+    /// 비었을 때는 **동그라미를 안 그린다** (V2 도 그랬다). 회색 동그라미를 두면
+    /// 죽은 단추가 하나 놓인 것처럼 보인다.
+    private var sendButton: some View {
+        ZStack {
+            if message.isEmpty {
+                Image("ic_send")
+                    .renderingMode(.template)
+                    .resizable()
+                    .frame(width: Self.sendIcon, height: Self.sendIcon)
+                    .foregroundStyle(HifisColor.inkTertiary)
+                    .frame(width: Self.sendButton, height: Self.sendButton)
+                    .transition(.scale.combined(with: .opacity))
+            } else {
+                Button {
+                    // 아직 보낼 곳이 없다 — AI 도 서버도 안 붙였다
+                } label: {
+                    Image("ic_send_fill")
+                        .renderingMode(.template)
+                        .resizable()
+                        .frame(width: Self.sendIcon, height: Self.sendIcon)
+                        .foregroundStyle(.white)
+                        .frame(width: Self.sendButton, height: Self.sendButton)
+                        .background(HifisColor.brand, in: Circle())
+                        .contentShape(Circle())
+                }
+                .buttonStyle(TapStyle())
+                .accessibilityLabel("보내기")
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .frame(width: Self.sendButton, height: Self.sendButton)
+        .animation(.spring(response: 0.28, dampingFraction: 0.58), value: message.isEmpty)
+    }
+
+    /// 보내기 동그라미와 그 안의 비행기 — V2 와 같은 값이다 (38 / 20)
+    private static let sendButton: CGFloat = 38
+    private static let sendIcon: CGFloat = 20
 
     /// 글자가 다 올라온 뒤 **드는 데 걸리는 시간** — 페이지 올라오는 것과 안 겹치게
     private static let settle = 0.22

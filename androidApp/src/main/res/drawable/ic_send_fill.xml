@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  보내기 (채움) — 선짝(`ic_send`)과 **같은 윤곽**이다
+
+  파란 동그라미 위에 흰 도형으로 올라가는 자리라 채운 쪽이 맞다.
+  38 동그라미 안에서 1.7 선은 너무 가늘어 보인다 (V2 도 같은 이유로 채운 것을 썼다).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M20.5,3.5L2.8,10.2a0.6,0.6 0 0 0 0.05,1.13L10.6,13.4L12.67,21.15a0.6,0.6 0 0 0 1.13,0.05Z"
+        android:fillColor="#000000" />
+</vector>
