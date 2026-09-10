@@ -39,7 +39,25 @@ enum class MainTab(val label: String, val icon: String, val iconFilled: String) 
     ;
 
     companion object {
-        /** 하단바에 서는 **차례**. 순서를 바꾸면 양 플랫폼이 같이 바뀐다 */
+        /** 다섯 칸 전부 — `전체` 목록·테스트가 읽는 **명단**이다 */
         val all: List<MainTab> = entries.toList()
+
+        /** 안드로이드 하단바 — 다섯 칸을 그대로 쓴다 */
+        val android: List<MainTab> = all
+
+        /**
+         * iOS 하단바 — **네 칸이다**
+         *
+         * iOS 26 은 탭바 오른쪽에 시스템이 그리는 동그라미 자리를 하나 준다
+         * (`UISearchTab`). 거기에 AI 를 앉혔는데 **그 자리가 다섯 칸 중 하나를 먹는다** —
+         * 여섯으로 세우면 iOS 가 넘치는 것을 `More(…)` 로 접어 버린다.
+         *
+         * 그래서 **근태가 탭에서 내려온다.** 대신 iOS 홈 바로가기가 여덟 개가 되어
+         * 근태를 받는다 ([HomeShortcut.ios]). 안드로이드에는 그 자리가 없어 그대로 다섯이다.
+         *
+         * 동그라미를 직접 그리지 않는 이유는 **바가 그려야 바와 같은 유리**이기 때문이다.
+         * 우리가 유리를 입히면 다크에서 바보다 어둡게 뜬다 (`DESIGN.md` 참고).
+         */
+        val ios: List<MainTab> = all - ATTENDANCE
     }
 }
