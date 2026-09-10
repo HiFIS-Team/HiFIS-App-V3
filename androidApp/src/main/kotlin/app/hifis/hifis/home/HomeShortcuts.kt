@@ -57,7 +57,7 @@ fun HomeShortcuts(
             .padding(horizontal = 12.dp, vertical = Dimens.cardPadding),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
-        HomeShortcut.all.chunked(COLUMNS).forEach { row ->
+        HomeShortcut.android.chunked(COLUMNS).forEach { row ->
             Row(Modifier.fillMaxWidth()) {
                 row.forEach { shortcut ->
                     ShortcutItem(shortcut, onOpen, Modifier.weight(1f))
@@ -128,4 +128,7 @@ private fun drawableOf(shortcut: HomeShortcut): Int = when (shortcut) {
     HomeShortcut.STAFF -> R.drawable.ic_staff
     HomeShortcut.SALARY -> R.drawable.ic_salary
     HomeShortcut.NOTICE -> R.drawable.ic_notice
+    // 근태는 **iOS 홈에만 선다** (`HomeShortcut.ios`). 안드로이드는 탭에 있어서
+    // 안 그려지지만 `when` 은 enum 을 다 덮어야 한다
+    HomeShortcut.ATTENDANCE -> R.drawable.ic_attendance
 }

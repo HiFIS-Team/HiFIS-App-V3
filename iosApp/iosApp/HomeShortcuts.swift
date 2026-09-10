@@ -4,19 +4,21 @@ import SharedKit
 /// 홈 바로가기 — 하단바로 못 가는 여섯 화면
 ///
 /// 목록은 `shared` 의 `HomeShortcut` 하나만 읽는다. 여기서 새로 세우지 않는다.
-/// 안드로이드 `HomeShortcuts.kt` 와 같은 격자다 — 한쪽만 고치면 갈린다.
+///
+/// **안드로이드와 개수는 같고 한 칸만 다르다.** iOS 는 다섯째 탭 자리를 AI 동그라미가
+/// 써서 **근태가 여기로 내려오고**, 대신 조직도가 빠진다 (조직도는 `전체` 에 있다).
 ///
 /// **머리말을 안 붙였다.** 아이콘과 글자가 스스로 무엇인지 말하고 있어서,
 /// `바로가기` 한 줄을 더 얹으면 카드가 그만큼 길어지기만 한다.
 struct HomeShortcuts: View {
     let onOpen: (HomeShortcut) -> Void
 
-    /// 한 줄에 세우는 칸 수
+    /// 한 줄에 세우는 칸 수 — 안드로이드와 같은 셋씩 두 줄이다
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 3)
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 18) {
-            ForEach(HomeShortcut.companion.all, id: \.icon) { shortcut in
+            ForEach(HomeShortcut.companion.ios, id: \.icon) { shortcut in
                 ShortcutItem(shortcut: shortcut, onOpen: onOpen)
             }
         }

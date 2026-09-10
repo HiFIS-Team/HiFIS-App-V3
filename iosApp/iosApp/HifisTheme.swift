@@ -129,12 +129,9 @@ enum HifisSize {
     /// 묶음 머리말과 첫 줄 사이 — 머리말은 그 아래 줄들에 붙어 있어야 한다
     static let moreGroupTitleGap: CGFloat = 6
 
-    /// 떠 있는 AI 채팅 단추 — 탭 다섯 곳에 다 뜬다
-    static let aiChatButton: CGFloat = 56
-    /// 그 단추 안의 그림
-    static let aiChatIcon: CGFloat = 26
-    /// 단추와 화면 오른쪽 끝·탭바 사이 — 좌우는 ``screenEdge`` 와 같은 값이다
-    static let aiChatMargin: CGFloat = 20
+    /// AI 자리는 **iOS 에서 토큰이 없다** — 탭바가 그 동그라미를 그리고
+    /// 우리는 안에 들 그림(`brand_mark`)만 댄다. 크기·여백은 시스템이 정한다.
+    /// 안드로이드는 우리가 단추를 그려서 `Dimens.aiChat*` 가 따로 있다.
 }
 
 /// 누를 수 있는 자리 — **누름 효과(어두워짐)를 안 낸다**
@@ -188,6 +185,9 @@ enum HifisShortcutTint {
         case "ic_approval": return dyn(light: 0x8A_5C_F0, dark: 0xB0_8C_FF)
         case "ic_staff": return dyn(light: 0x2A_A7_6A, dark: 0x4F_C9_8C)
         case "ic_salary": return dyn(light: 0xE8_91_2A, dark: 0xFF_B0_55)
+        // 근태는 **iOS 홈에만 선다** — 하단바가 네 칸이라 탭에서 내려온다.
+        // 안드로이드 `Tints.kt` 와 같은 값이다
+        case "ic_attendance": return dyn(light: 0xC4_52_C9, dark: 0xDD_87_E0)
         default: return dyn(light: 0xE8_5D_75, dark: 0xFF_8D_A0)
         }
     }

@@ -28,6 +28,9 @@ fun tintOf(shortcut: HomeShortcut): Color {
         HomeShortcut.STAFF -> if (dark) Color(0xFF4FC98C) else Color(0xFF2AA76A)
         HomeShortcut.SALARY -> if (dark) Color(0xFFFFB055) else Color(0xFFE8912A)
         HomeShortcut.NOTICE -> if (dark) Color(0xFFFF8DA0) else Color(0xFFE85D75)
+        // 근태는 **iOS 홈에만 선다** — 거기는 하단바가 네 칸이라 근태가 내려온다.
+        // 안드로이드에서는 안 그려지지만 `when` 이 enum 을 다 덮어야 컴파일된다
+        HomeShortcut.ATTENDANCE -> if (dark) Color(0xFFDD87E0) else Color(0xFFC452C9)
     }
 }
 
