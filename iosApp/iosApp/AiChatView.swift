@@ -19,12 +19,18 @@ struct AiChatView: View {
     let onClose: () -> Void
 
     @State private var message = ""
+    /// 글자가 **다 올라온 뒤에** 하나씩 든다 — 아래 `Entrance` 참고
+    @State private var shown = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
             HifisColor.surface.ignoresSafeArea()
             glow
             content
+        }
+        .onAppear {
+            // 페이지가 올라오는 동안은 가만히 둔다. 같이 움직이면 둘이 겹쳐 어지럽다
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.settle) { shown = true }
         }
     }
 
@@ -48,21 +54,27 @@ struct AiChatView: View {
         VStack(alignment: .leading, spacing: 0) {
             closeButton
             Spacer(minLength: 0)
-            brandRow
+            brandRow.modifier(Entrance(step: 0, shown: shown))
             Spacer().frame(height: 14)
             Text(AiPrompt.companion.TITLE)
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(HifisColor.ink)
+                .modifier(Entrance(step: 1, shown: shown))
             Spacer().frame(height: 28)
             prompts
             Spacer().frame(height: 24)
-            inputBar
+            inputBar.modifier(Entrance(step: 2 + AiPrompt.companion.all.count, shown: shown))
         }
         .padding(.horizontal, HifisSize.screenEdge)
         .padding(.bottom, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// 닫기 — 그림이 화면 끝 `screenEdge` 에 서야 한다
+    ///
+    /// 터치 자리(44)가 그림(22)보다 넓어서 **가운데 정렬**을 하고 그 차이만큼
+    /// 왼쪽으로 당긴다. 헤더가 하는 계산과 같다 — `.leading` 으로 두면
+    /// 그림이 터치 자리 왼쪽 끝에 붙어 화면 끝에서 11 만큼 더 나간다.
     private var closeButton: some View {
         Button(action: onClose) {
             Image("ic_close")
@@ -70,18 +82,13 @@ struct AiChatView: View {
                 .resizable()
                 .frame(width: HifisSize.headerIcon, height: HifisSize.headerIcon)
                 .foregroundStyle(HifisColor.ink)
-                .frame(
-                    width: HifisSize.headerIconButton,
-                    height: HifisSize.headerIconButton,
-                    alignment: .leading
-                )
+                .frame(width: HifisSize.headerIconButton, height: HifisSize.headerIconButton)
                 .contentShape(Rectangle())
         }
         .buttonStyle(TapStyle())
         .accessibilityLabel("닫기")
-        // 터치 자리가 그림보다 넓어서 생기는 여백만큼 왼쪽으로 당긴다 — 헤더와 같은 셈이다
         .padding(.leading, -HifisSize.headerIconInset)
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     /// 마크 + 이름 — 마크는 **제 그라데이션 그대로** 선다 (탭바 동그라미와 같은 그림)
@@ -100,7 +107,7 @@ struct AiChatView: View {
     /// 말 걸기 보기 — 빈 칸만 두면 무엇을 물어도 되는지 몰라서 아무도 안 쓴다
     private var prompts: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(AiPrompt.companion.all, id: \.icon) { prompt in
+            ForEach(Array(AiPrompt.companion.all.enumerated()), id: \.element.icon) { index, prompt in
                 Button { message = prompt.label } label: {
                     HStack(spacing: 14) {
                         Image(prompt.icon)
@@ -118,6 +125,7 @@ struct AiChatView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(TapStyle())
+                .modifier(Entrance(step: 2 + index, shown: shown))
             }
         }
     }
@@ -149,7 +157,53 @@ struct AiChatView: View {
         .padding(.leading, 20)
         .padding(.trailing, 6)
         .padding(.vertical, 6)
-        .background(HifisColor.surface, in: Capsule())
-        .overlay(Capsule().strokeBorder(HifisColor.line, lineWidth: 1))
+        .modifier(GlassCapsule())
+    }
+
+    /// 글자가 다 올라온 뒤 **드는 데 걸리는 시간** — 페이지 올라오는 것과 안 겹치게
+    private static let settle = 0.22
+}
+
+/// 하나씩 **떠오르듯 든다** — 한 번만, 순서대로
+///
+/// 다 같이 나타나면 화면이 한 번에 꽉 차서 어디를 봐야 할지 모른다.
+/// 마크 → 물음 → 보기 넷 → 입력칸 순으로 조금씩 늦춰 눈이 따라가게 한다.
+private struct Entrance: ViewModifier {
+    let step: Int
+    let shown: Bool
+
+    /// 한 칸 늦추는 간격. 너무 길면 굼떠 보이고 짧으면 순서가 안 읽힌다
+    private static let stagger = 0.06
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            // 아래에서 올라오며 초점이 잡힌다 — 흐림이 있어야 '떠오르는' 느낌이 난다
+            .offset(y: shown ? 0 : 16)
+            .blur(radius: shown ? 0 : 5)
+            .animation(
+                .spring(response: 0.5, dampingFraction: 0.82)
+                    .delay(Double(step) * Self.stagger),
+                value: shown
+            )
+    }
+}
+
+/// 유리 알약 — **입력칸을 담는다**
+///
+/// 유리는 iOS 에서만 진짜라 화면 부품에는 안 쓰기로 했지만, 이 화면은 **iOS 에만 있다.**
+/// 안드로이드가 흉내낼 자리가 아예 없어서 그 걱정이 붙지 않는다.
+///
+/// 바닥의 빛 위에 떠 있어서 유리가 그 색을 받아 낸다 — 색 면으로 깔면 빛이 끊긴다.
+/// 배포 하한이 16.0 이라 옛 기기에는 유리가 없다. `.ultraThinMaterial` 로 내려간다.
+private struct GlassCapsule: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular, in: .capsule)
+        } else {
+            content
+                .background(.ultraThinMaterial, in: Capsule())
+                .overlay(Capsule().strokeBorder(HifisColor.line, lineWidth: 1))
+        }
     }
 }
