@@ -19,6 +19,7 @@ struct MoreView: View {
     var onTab: (MainTab) -> Void = { _ in }
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
+    var onNotification: () -> Void = {}
 
     /// 제목 위에 더 붙이는 여백 — **아래와 맞추려고 있다**
     ///
@@ -28,7 +29,7 @@ struct MoreView: View {
     private static let titleTopExtra: CGFloat = 14
 
     var body: some View {
-        TabPage(onSearch: onSearch, onScan: onScan) {
+        TabPage(onSearch: onSearch, onScan: onScan, onNotification: onNotification) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer().frame(height: Self.titleTopExtra)

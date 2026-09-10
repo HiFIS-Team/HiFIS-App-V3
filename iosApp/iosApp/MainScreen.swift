@@ -30,8 +30,9 @@ import SharedKit
 /// 안드로이드는 반대로 머티리얼 3 `NavigationBar` 를 쓴다 —
 /// **네비게이션은 각자 자기 OS 표준으로 간다.**
 struct MainScreen: View {
-    /// 옆에서 밀려 들어와 셸을 덮는 잎 — 지금은 출퇴근 스캔 하나다
+    /// 옆에서 밀려 들어와 셸을 덮는 잎들 — 한 번에 하나만 뜬다 (헤더가 덮이면 더 못 연다)
     @State private var scanOpen = false
+    @State private var notificationOpen = false
     /// 왼쪽 가장자리에서 끌고 있는 거리 — 잎이 손가락을 따라온다
     @State private var drag: CGFloat = 0
 
@@ -53,25 +54,42 @@ struct MainScreen: View {
                 //
                 // 붙여도 **UIKit 이 보는 안전영역은 그대로 34pt 다** (찍어서 확인했다).
                 // 그러니 `additionalSafeAreaInsets` 를 손대면 두 번 빼는 셈이 된다 — 건드리지 않는다.
-                MainTabBar(onScan: { withAnimation(Self.push) { scanOpen = true } })
-                    .ignoresSafeArea()
-                    // 덮인 셸에는 손이 닿지 않는다
-                    .allowsHitTesting(!scanOpen)
+                MainTabBar(
+                    onScan: { withAnimation(Self.push) { scanOpen = true } },
+                    onNotification: { withAnimation(Self.push) { notificationOpen = true } }
+                )
+                .ignoresSafeArea()
+                // 덮인 셸에는 손이 닿지 않는다
+                .allowsHitTesting(!scanOpen && !notificationOpen)
 
                 if scanOpen {
-                    AttendanceScanView(onBack: back)
-                        .offset(x: drag)
-                        .zIndex(1)
-                        .transition(.move(edge: .trailing))
-                        .gesture(edgeBack(width: proxy.size.width))
+                    leaf(AttendanceScanView(onBack: back), width: proxy.size.width)
+                }
+                if notificationOpen {
+                    leaf(NotificationView(onBack: back), width: proxy.size.width)
                 }
             }
         }
     }
 
+    /// 잎 하나 — 오른쪽에서 들어와 셸을 덮고, 왼쪽 끝을 끌면 손가락을 따라온다
+    private func leaf<Leaf: View>(_ view: Leaf, width: CGFloat) -> some View {
+        view
+            .offset(x: drag)
+            .zIndex(1)
+            .transition(.move(edge: .trailing))
+            .gesture(edgeBack(width: width))
+    }
+
     private func back() {
-        withAnimation(Self.pop) { scanOpen = false }
+        withAnimation(Self.pop) { closeLeaves() }
         drag = 0
+    }
+
+    /// 어느 잎이 떠 있든 다 내린다 — 한 번에 하나뿐이라 가려 닫을 것이 없다
+    private func closeLeaves() {
+        scanOpen = false
+        notificationOpen = false
     }
 
     /// 왼쪽 가장자리에서 오른쪽으로 쓸면 잎을 걷는다 — UIKit push 의 뒤로 끌기와 같은 손짓이다
@@ -100,7 +118,7 @@ struct MainScreen: View {
                     var snap = Transaction()
                     snap.disablesAnimations = true
                     withTransaction(snap) {
-                        scanOpen = false
+                        closeLeaves()
                         drag = 0
                     }
                 }
@@ -120,8 +138,9 @@ struct MainScreen: View {
 ///
 /// 화면은 그대로 SwiftUI 다 (`UIHostingController`). 바꾼 것은 껍데기뿐이다.
 private struct MainTabBar: UIViewControllerRepresentable {
-    /// 헤더의 스캔 아이콘 — 셸이 잎을 올린다 (`MainScreen`)
+    /// 헤더의 스캔 아이콘·종 — 셸이 잎을 올린다 (`MainScreen`)
     let onScan: () -> Void
+    let onNotification: () -> Void
 
     func makeUIViewController(context: Context) -> UITabBarController {
         let controller = UITabBarController()
@@ -140,14 +159,15 @@ private struct MainTabBar: UIViewControllerRepresentable {
             guard let controller else { return }
             controller.present(SearchOverlayController(onClose: {}), animated: true)
         }
-        // **출퇴근 스캔은 셸 위에 잎으로 얹힌다** — 여기서는 셸에 알리기만 한다
+        // **출퇴근 스캔·알림함은 셸 위에 잎으로 얹힌다** — 여기서는 셸에 알리기만 한다
         let scan = onScan
+        let notification = onNotification
         if #available(iOS 18.0, *) {
             // **`tabs` 로 세운다.** `viewControllers` 로는 아래 AI 자리를 못 만든다.
             // 화면의 `tabBarItem` 은 그대로 둔다 — 고른 칸의 채운 그림이 거기 있다
             var tabs: [UITab] = MainTab.companion.ios.map { tab in
                 UITab(title: tab.label, image: UIImage(named: tab.icon), identifier: tab.name) { _ in
-                    hosted(tab, go: go, search: search, scan: scan)
+                    hosted(tab, go: go, search: search, scan: scan, notification: notification)
                 }
             }
 
@@ -171,7 +191,7 @@ private struct MainTabBar: UIViewControllerRepresentable {
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 다섯 칸만 세운다
             controller.viewControllers = MainTab.companion.ios.map {
-                hosted($0, go: go, search: search, scan: scan)
+                hosted($0, go: go, search: search, scan: scan, notification: notification)
             }
         }
 
@@ -228,9 +248,12 @@ private struct MainTabBar: UIViewControllerRepresentable {
         _ tab: MainTab,
         go: @escaping (MainTab) -> Void,
         search: @escaping () -> Void,
-        scan: @escaping () -> Void
+        scan: @escaping () -> Void,
+        notification: @escaping () -> Void
     ) -> UIHostingController<AnyView> {
-        let host = UIHostingController(rootView: screen(for: tab, go: go, search: search, scan: scan))
+        let host = UIHostingController(
+            rootView: screen(for: tab, go: go, search: search, scan: scan, notification: notification)
+        )
         host.tabBarItem = UITabBarItem(
             title: tab.label,
             image: UIImage(named: tab.icon),
@@ -243,12 +266,21 @@ private struct MainTabBar: UIViewControllerRepresentable {
         for tab: MainTab,
         go: @escaping (MainTab) -> Void,
         search: @escaping () -> Void,
-        scan: @escaping () -> Void
+        scan: @escaping () -> Void,
+        notification: @escaping () -> Void
     ) -> AnyView {
-        if tab == MainTab.home { return AnyView(HomeView(onSearch: search, onScan: scan)) }
-        if tab == MainTab.schedule { return AnyView(ScheduleView(onSearch: search, onScan: scan)) }
-        if tab == MainTab.more { return AnyView(MoreView(onTab: go, onSearch: search, onScan: scan)) }
-        return AnyView(ComingSoonView(label: tab.label, onSearch: search, onScan: scan))
+        if tab == MainTab.home {
+            return AnyView(HomeView(onSearch: search, onScan: scan, onNotification: notification))
+        }
+        if tab == MainTab.schedule {
+            return AnyView(ScheduleView(onSearch: search, onScan: scan, onNotification: notification))
+        }
+        if tab == MainTab.more {
+            return AnyView(MoreView(onTab: go, onSearch: search, onScan: scan, onNotification: notification))
+        }
+        return AnyView(
+            ComingSoonView(label: tab.label, onSearch: search, onScan: scan, onNotification: notification)
+        )
     }
 }
 
@@ -260,11 +292,12 @@ private struct ComingSoonView: View {
     let label: String
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
+    var onNotification: () -> Void = {}
 
     var body: some View {
         // **`TabPage` 를 쓴다.** 헤더와 AI 단추가 거기 있어서, 안 쓰면 이 두 탭에서만
         // 사내톡·알림으로 갈 방법도 AI 단추도 사라진다
-        TabPage(onSearch: onSearch, onScan: onScan) {
+        TabPage(onSearch: onSearch, onScan: onScan, onNotification: onNotification) {
             Text("\(label) — 준비 중")
                 .font(.system(size: 15))
                 .foregroundStyle(HifisColor.inkTertiary)

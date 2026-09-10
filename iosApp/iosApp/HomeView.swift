@@ -10,9 +10,10 @@ import SharedKit
 struct HomeView: View {
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
+    var onNotification: () -> Void = {}
 
     var body: some View {
-        TabPage(onSearch: onSearch, onScan: onScan) {
+        TabPage(onSearch: onSearch, onScan: onScan, onNotification: onNotification) {
             // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
             ScrollView {
                 VStack(spacing: 12) {
