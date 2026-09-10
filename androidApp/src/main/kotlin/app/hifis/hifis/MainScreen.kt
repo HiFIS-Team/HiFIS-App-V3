@@ -37,6 +37,7 @@ import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.ui.component.AiChatButton
 import app.hifis.hifis.more.MoreScreen
 import app.hifis.hifis.schedule.ScheduleScreen
+import app.hifis.hifis.work.WorkScreen
 import app.hifis.hifis.ui.NoInteraction
 import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.theme.Dimens
@@ -99,10 +100,14 @@ fun MainScreen() {
                     onNotification = { notificationOpen = true },
                     onChat = { chatOpen = true },
                 )
+                MainTab.WORK -> WorkScreen(
+                    onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
+                    onChat = { chatOpen = true },
+                )
                 // 나머지는 아직 화면이 없다
-                MainTab.WORK,
-                MainTab.ATTENDANCE,
-                -> ComingSoon(
+                MainTab.ATTENDANCE -> ComingSoon(
                     selected,
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
