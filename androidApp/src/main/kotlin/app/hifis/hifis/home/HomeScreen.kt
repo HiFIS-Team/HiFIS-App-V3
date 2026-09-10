@@ -28,8 +28,15 @@ fun HomeScreen(
     onSearch: () -> Unit = {},
     onScan: () -> Unit = {},
     onNotification: () -> Unit = {},
+    onChat: () -> Unit = {},
 ) {
-    TabPage(modifier, onSearch = onSearch, onScan = onScan, onNotification = onNotification) {
+    TabPage(
+        modifier,
+        onSearch = onSearch,
+        onScan = onScan,
+        onNotification = onNotification,
+        onChat = onChat,
+    ) {
         // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
         Column(
             Modifier

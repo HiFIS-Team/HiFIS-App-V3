@@ -53,6 +53,7 @@ fun ScheduleScreen(
     onSearch: () -> Unit = {},
     onScan: () -> Unit = {},
     onNotification: () -> Unit = {},
+    onChat: () -> Unit = {},
 ) {
     val today = remember {
         JavaDate.now().let { Calendar.dateOf(it.year, it.monthValue, it.dayOfMonth) }
@@ -69,7 +70,13 @@ fun ScheduleScreen(
     }
     val upcoming = remember(events, today) { Calendar.upcoming(events, today) }
 
-    TabPage(modifier, onSearch = onSearch, onScan = onScan, onNotification = onNotification) {
+    TabPage(
+        modifier,
+        onSearch = onSearch,
+        onScan = onScan,
+        onNotification = onNotification,
+        onChat = onChat,
+    ) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())

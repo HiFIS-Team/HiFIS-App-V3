@@ -51,8 +51,15 @@ fun MoreScreen(
     onSearch: () -> Unit = {},
     onScan: () -> Unit = {},
     onNotification: () -> Unit = {},
+    onChat: () -> Unit = {},
 ) {
-    TabPage(modifier, onSearch = onSearch, onScan = onScan, onNotification = onNotification) {
+    TabPage(
+        modifier,
+        onSearch = onSearch,
+        onScan = onScan,
+        onNotification = onNotification,
+        onChat = onChat,
+    ) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
