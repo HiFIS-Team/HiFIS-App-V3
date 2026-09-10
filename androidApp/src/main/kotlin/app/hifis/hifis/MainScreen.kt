@@ -121,8 +121,8 @@ fun MainScreen() {
         }
     }
 
-    // **상세 화면은 옆에서 밀려 들어온다.** 오른쪽에서 왔다가 오른쪽으로 돌아간다 —
-    // iOS 의 내비게이션 push 와 같은 결이다. 하단바까지 덮는다 (`DESIGN.md`)
+    // **상세 화면은 옆에서 밀려 들어온다.** 오른쪽에서 왔다가 오른쪽으로 돌아간다.
+    // 셸은 그대로 있고 잎이 하단바까지 **덮는다** — iOS 도 같은 그림이다 (`DESIGN.md`)
     AnimatedVisibility(
         visible = scanOpen,
         enter = slideInHorizontally(tween(320)) { it },

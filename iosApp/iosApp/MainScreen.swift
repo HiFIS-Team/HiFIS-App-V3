@@ -2,7 +2,13 @@ import SwiftUI
 import UIKit
 import SharedKit
 
-/// 앱 셸 — 하단 탭바와 탭 화면을 들고 있다
+/// 앱 셸 — 하단 탭바와 탭 화면, 그 위에 덮이는 **잎**을 들고 있다
+///
+/// ```
+/// ZStack
+/// ├── MainTabBar   ← 탭 화면 + 하단 유리 탭바. 잎이 덮어도 **안 움직인다**
+/// └── 잎           ← 오른쪽에서 밀려 들어와 셸을 통째로 덮는다 (탭바까지)
+/// ```
 ///
 /// 탭 목록은 `shared` 의 `MainTab` 하나만 읽는다. 여기서 새로 세우지 않는다
 /// (V2 는 이 목록이 플랫폼마다 따로라 화면이 목록에서 새어 나갔다).
@@ -10,17 +16,95 @@ import SharedKit
 /// 바는 **`UITabBarController` 그대로** 다 — iOS 26 이 이 탭바를 리퀴드 글래스로
 /// 그려 준다. 유리를 직접 흉내 내지 않는다.
 ///
+/// ## 상세 화면은 **탭 안에서 밀지 않는다** — 셸 위에 잎으로 얹는다
+///
+/// 처음에는 탭마다 `UINavigationController` 를 깔고 그 안에서 push 했다. 그러면
+/// **탭바가 아래로 내려가며 사라진다** (`hidesBottomBarWhenPushed`) — 대표가 보고
+/// 바로 걸렀다. V2 도 MyFIS 도 화면이 옆에서 들어와 **탭바를 덮고** 지나간다.
+/// `NavigationStack` 도 안 쓴다 — 내비 바는 화면들이 나눠 쓰는 크롬이라 화면이
+/// 바뀔 때마다 시스템이 아이템을 morph 시키고, 하단 유리 탭바를 덮지도 못한다.
+///
+/// 그래서 잎은 SwiftUI 층이다. 탭바 컨트롤러는 손대지 않고, 잎이 `.move(edge: .trailing)`
+/// 으로 들어와 덮는다. 안드로이드 `MainScreen` 의 `slideInHorizontally` 와 같은 그림이다.
+///
 /// 안드로이드는 반대로 머티리얼 3 `NavigationBar` 를 쓴다 —
 /// **네비게이션은 각자 자기 OS 표준으로 간다.**
 struct MainScreen: View {
+    /// 옆에서 밀려 들어와 셸을 덮는 잎 — 지금은 출퇴근 스캔 하나다
+    @State private var scanOpen = false
+    /// 왼쪽 가장자리에서 끌고 있는 거리 — 잎이 손가락을 따라온다
+    @State private var drag: CGFloat = 0
+
+    /// 들어올 때 — 안드로이드 `tween(320)` 과 같은 값
+    private static let push = Animation.easeOut(duration: 0.32)
+    /// 나갈 때 — 안드로이드 `tween(260)` 과 같은 값
+    private static let pop = Animation.easeIn(duration: 0.26)
+    /// 여기서 시작한 끌기만 뒤로가기로 본다
+    private static let edge: CGFloat = 24
+    /// 이만큼 끌었으면 손을 떼도 닫는다
+    private static let closeDistance: CGFloat = 90
+
     var body: some View {
-        // **`ignoresSafeArea()` 를 붙인다.** 안 붙이면 SwiftUI 가 컨테이너를 홈
-        // 인디케이터만큼 밀어 올리고 그 안에서 UIKit 이 또 제 여백을 잡아,
-        // 바가 25pt 쯤 높이 뜬다 (파일·건강 앱과 대 보고 확인했다).
-        //
-        // 붙여도 **UIKit 이 보는 안전영역은 그대로 34pt 다** (찍어서 확인했다).
-        // 그러니 `additionalSafeAreaInsets` 를 손대면 두 번 빼는 셈이 된다 — 건드리지 않는다.
-        MainTabBar().ignoresSafeArea()
+        GeometryReader { proxy in
+            ZStack {
+                // **`ignoresSafeArea()` 를 붙인다.** 안 붙이면 SwiftUI 가 컨테이너를 홈
+                // 인디케이터만큼 밀어 올리고 그 안에서 UIKit 이 또 제 여백을 잡아,
+                // 바가 25pt 쯤 높이 뜬다 (파일·건강 앱과 대 보고 확인했다).
+                //
+                // 붙여도 **UIKit 이 보는 안전영역은 그대로 34pt 다** (찍어서 확인했다).
+                // 그러니 `additionalSafeAreaInsets` 를 손대면 두 번 빼는 셈이 된다 — 건드리지 않는다.
+                MainTabBar(onScan: { withAnimation(Self.push) { scanOpen = true } })
+                    .ignoresSafeArea()
+                    // 덮인 셸에는 손이 닿지 않는다
+                    .allowsHitTesting(!scanOpen)
+
+                if scanOpen {
+                    AttendanceScanView(onBack: back)
+                        .offset(x: drag)
+                        .zIndex(1)
+                        .transition(.move(edge: .trailing))
+                        .gesture(edgeBack(width: proxy.size.width))
+                }
+            }
+        }
+    }
+
+    private func back() {
+        withAnimation(Self.pop) { scanOpen = false }
+        drag = 0
+    }
+
+    /// 왼쪽 가장자리에서 오른쪽으로 쓸면 잎을 걷는다 — UIKit push 의 뒤로 끌기와 같은 손짓이다
+    ///
+    /// 화면 전체에 걸되 **가장자리에서 시작한 것만** 받고, `minimumDistance` 를 줘서
+    /// 움직이지 않는 탭은 제스처가 되지 않게 한다 — 안 그러면 잎 안의 단추 탭을 삼킨다.
+    private func edgeBack(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 12, coordinateSpace: .local)
+            .onChanged { value in
+                guard value.startLocation.x <= Self.edge else { return }
+                // 세로로 긋는 손짓은 안쪽 몫이다
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                drag = max(0, value.translation.width)
+            }
+            .onEnded { value in
+                guard value.startLocation.x <= Self.edge else { return }
+                let flung = value.predictedEndTranslation.width > 240
+                guard drag > Self.closeDistance || flung else {
+                    withAnimation(Self.pop) { drag = 0 }
+                    return
+                }
+                // **손가락 위치에서 이어서 화면 밖까지 밀어낸 뒤 걷는다.**
+                // 바로 걷으면 `.transition` 이 `offset` 과 같이 돌아 화면이 한 번 튄다
+                withAnimation(Self.pop) { drag = width }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
+                    var snap = Transaction()
+                    snap.disablesAnimations = true
+                    withTransaction(snap) {
+                        scanOpen = false
+                        drag = 0
+                    }
+                }
+            }
     }
 }
 
@@ -36,6 +120,9 @@ struct MainScreen: View {
 ///
 /// 화면은 그대로 SwiftUI 다 (`UIHostingController`). 바꾼 것은 껍데기뿐이다.
 private struct MainTabBar: UIViewControllerRepresentable {
+    /// 헤더의 스캔 아이콘 — 셸이 잎을 올린다 (`MainScreen`)
+    let onScan: () -> Void
+
     func makeUIViewController(context: Context) -> UITabBarController {
         let controller = UITabBarController()
         // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**.
@@ -53,19 +140,8 @@ private struct MainTabBar: UIViewControllerRepresentable {
             guard let controller else { return }
             controller.present(SearchOverlayController(onClose: {}), animated: true)
         }
-        // **출퇴근 스캔은 옆에서 밀려 들어온다** — 지금 보고 있는 탭의 내비게이션이 민다.
-        // 탭바는 그 동안 숨는다 (`hidesBottomBarWhenPushed`) — 카메라 위에 탭바가 떠 있으면
-        // 딴 자리로 넘어온 것이 아니다
-        let scan: () -> Void = { [weak controller] in
-            guard let nav = controller?.selectedViewController as? UINavigationController else { return }
-            let page = UIHostingController(rootView: AttendanceScanView(onBack: {}))
-            // 컨트롤러를 약하게 잡는다 — AI 페이지와 같은 이유다 (아래 `present`)
-            page.rootView = AttendanceScanView { [weak page] in
-                page?.navigationController?.popViewController(animated: true)
-            }
-            page.hidesBottomBarWhenPushed = true
-            nav.pushViewController(page, animated: true)
-        }
+        // **출퇴근 스캔은 셸 위에 잎으로 얹힌다** — 여기서는 셸에 알리기만 한다
+        let scan = onScan
         if #available(iOS 18.0, *) {
             // **`tabs` 로 세운다.** `viewControllers` 로는 아래 AI 자리를 못 만든다.
             // 화면의 `tabBarItem` 은 그대로 둔다 — 고른 칸의 채운 그림이 거기 있다
@@ -147,24 +223,20 @@ private struct MainTabBar: UIViewControllerRepresentable {
         }
     }
 
-    /// 탭 하나를 담는 자리 — **화면을 내비게이션 컨트롤러에 넣어서** 준다
-    ///
-    /// 상세 화면은 옆에서 밀려 들어오는데 (`DESIGN.md`), 그 밀기는 `UINavigationController` 가
-    /// 하는 일이라 탭마다 하나씩 깐다. 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 은
-    /// 화면에 심는다 — 내비게이션 컨트롤러는 제 것이 없으면 뿌리 화면 것을 쓴다
+    /// 탭 하나를 담는 화면 — 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 을 같이 심는다
     private func hosted(
         _ tab: MainTab,
         go: @escaping (MainTab) -> Void,
         search: @escaping () -> Void,
         scan: @escaping () -> Void
-    ) -> UINavigationController {
+    ) -> UIHostingController<AnyView> {
         let host = UIHostingController(rootView: screen(for: tab, go: go, search: search, scan: scan))
         host.tabBarItem = UITabBarItem(
             title: tab.label,
             image: UIImage(named: tab.icon),
             selectedImage: UIImage(named: tab.iconFilled)
         )
-        return TabNavigationController(rootViewController: host)
+        return host
     }
 
     private func screen(
@@ -177,23 +249,6 @@ private struct MainTabBar: UIViewControllerRepresentable {
         if tab == MainTab.schedule { return AnyView(ScheduleView(onSearch: search, onScan: scan)) }
         if tab == MainTab.more { return AnyView(MoreView(onTab: go, onSearch: search, onScan: scan)) }
         return AnyView(ComingSoonView(label: tab.label, onSearch: search, onScan: scan))
-    }
-}
-
-/// 탭 하나의 밀어 넣기 자리 — **바는 안 보인다**
-///
-/// 바는 안 쓴다 — 우리 헤더가 그 자리다. 그런데 바를 숨기면 UIKit 이 **왼쪽 끝을
-/// 끌어 돌아가는 손짓까지 같이 끈다.** 대리자를 우리가 맡아 되살린다 — 쌓인 화면이
-/// 있을 때만 받는다. 뿌리에서까지 받으면 아무 데도 안 가는 끌기가 생긴다.
-private final class TabNavigationController: UINavigationController, UIGestureRecognizerDelegate {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setNavigationBarHidden(true, animated: false)
-        interactivePopGestureRecognizer?.delegate = self
-    }
-
-    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        viewControllers.count > 1
     }
 }
 
