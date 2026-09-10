@@ -106,4 +106,13 @@ object Dimens {
 
     /** 묶음 머리말과 첫 줄 사이 — 머리말은 그 아래 줄들에 붙어 있어야 한다 */
     val moreGroupTitleGap = 6.dp
+
+    /** 떠 있는 AI 채팅 단추 — 탭 다섯 곳에 다 뜬다 */
+    val aiChatButton = 56.dp
+
+    /** 그 단추 안의 그림 */
+    val aiChatIcon = 26.dp
+
+    /** 단추와 화면 오른쪽 끝·하단바 사이 — 좌우는 [screenEdge] 와 같은 값이다 */
+    val aiChatMargin = 20.dp
 }

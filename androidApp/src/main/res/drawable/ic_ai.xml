@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AI 채팅 (반짝임 둘) — **속을 채운 아이콘이다**
+
+  선으로 그리면 1.7 굵기가 별의 뾰족한 끝에서 뭉개진다.
+  브랜드색 원 위에 흰 도형으로 올라가는 자리라 채운 쪽이 맞다.
+  꼭짓점 좌표는 손으로 안 적었다 — 반지름과 허리 비율에서 뽑았다.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M10,6.7Q11.3,12.7 17.3,14Q11.3,15.3 10,21.3Q8.7,15.3 2.7,14Q8.7,12.7 10,6.7Z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M17.9,2.7Q18.54,5.66 21.5,6.3Q18.54,6.94 17.9,9.9Q17.26,6.94 14.3,6.3Q17.26,5.66 17.9,2.7Z"
+        android:fillColor="#000000" />
+</vector>

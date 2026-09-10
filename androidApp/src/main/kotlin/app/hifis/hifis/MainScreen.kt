@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -21,9 +22,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.home.HomeScreen
+import app.hifis.hifis.ui.component.AiChatButton
 import app.hifis.hifis.more.MoreScreen
 import app.hifis.hifis.schedule.ScheduleScreen
 import app.hifis.hifis.ui.NoInteraction
+import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.shared.nav.MainTab
 
@@ -57,6 +60,16 @@ fun MainScreen() {
                 MainTab.WORK,
                 MainTab.ATTENDANCE,
                 -> ComingSoon(selected)
+            }
+
+            // **탭이 아니라 셸이 들고 있다** — 다섯 곳에 다 떠 있어야 한다.
+            // 하단바는 이 Box 밖(아래)이라 겹칠 일이 없다
+            AiChatButton(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(Dimens.aiChatMargin),
+            ) {
+                // 아직 갈 곳이 없다 — 채팅 화면이 생기면 잇는다
             }
         }
         MainBottomBar(selected) { index = MainTab.all.indexOf(it) }

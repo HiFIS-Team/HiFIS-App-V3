@@ -60,7 +60,41 @@ private struct MainTabBar: UIViewControllerRepresentable {
         // 동적 `UIColor` 도 `UITraitCollection.current` 도 여기서 정해진다.
         // 라이트 한 벌은 그대로 두었다. 설정에서 고르게 할 때 `.unspecified` 로 되돌린다
         controller.overrideUserInterfaceStyle = .dark
+        addAiChatButton(to: controller)
         return controller
+    }
+
+    /// 떠 있는 AI 채팅 단추를 **탭바 컨트롤러에 붙인다**
+    ///
+    /// 화면(`UIHostingController`) 안에 두지 않는 이유는 둘이다 —
+    /// 다섯 탭에 다 떠 있어야 하고, **탭바가 얼마나 높은지는 UIKit 만 안다.**
+    /// iOS 26 탭바는 떠 있는 유리 캡슐이라 높이가 상수가 아니다.
+    /// `tabBar.topAnchor` 에 걸어 두면 OS 가 캡슐을 어떻게 그리든 그 위에 선다.
+    ///
+    /// 단추 자체는 그대로 SwiftUI 다 — 안드로이드와 같은 토큰을 쓴다.
+    private func addAiChatButton(to controller: UITabBarController) {
+        let host = UIHostingController(rootView: AiChatButton {
+            // 아직 갈 곳이 없다 — 채팅 화면이 생기면 잇는다
+        })
+        // 안 비우면 단추 뒤에 네모 바탕이 깔린다
+        host.view.backgroundColor = .clear
+        controller.addChild(host)
+        controller.view.addSubview(host.view)
+        host.didMove(toParent: controller)
+
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            host.view.trailingAnchor.constraint(
+                equalTo: controller.view.trailingAnchor,
+                constant: -HifisSize.aiChatMargin
+            ),
+            host.view.bottomAnchor.constraint(
+                equalTo: controller.tabBar.topAnchor,
+                constant: -HifisSize.aiChatMargin
+            ),
+            host.view.widthAnchor.constraint(equalToConstant: HifisSize.aiChatButton),
+            host.view.heightAnchor.constraint(equalToConstant: HifisSize.aiChatButton),
+        ])
     }
 
     func updateUIViewController(_ controller: UITabBarController, context: Context) {}

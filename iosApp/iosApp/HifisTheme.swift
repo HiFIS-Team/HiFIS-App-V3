@@ -128,6 +128,13 @@ enum HifisSize {
     static let moreGroupGap: CGFloat = 22
     /// 묶음 머리말과 첫 줄 사이 — 머리말은 그 아래 줄들에 붙어 있어야 한다
     static let moreGroupTitleGap: CGFloat = 6
+
+    /// 떠 있는 AI 채팅 단추 — 탭 다섯 곳에 다 뜬다
+    static let aiChatButton: CGFloat = 56
+    /// 그 단추 안의 그림
+    static let aiChatIcon: CGFloat = 26
+    /// 단추와 화면 오른쪽 끝·탭바 사이 — 좌우는 ``screenEdge`` 와 같은 값이다
+    static let aiChatMargin: CGFloat = 20
 }
 
 /// 누를 수 있는 자리 — **누름 효과(어두워짐)를 안 낸다**
