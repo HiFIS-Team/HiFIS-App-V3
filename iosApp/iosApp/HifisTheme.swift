@@ -228,6 +228,8 @@ enum HifisFont {
     static let body = Font.system(size: 16, weight: .semibold)
     /// 머리말·강조 한 줄
     static let label = Font.system(size: 14, weight: .medium)
+    /// 잎 헤더의 화면 이름 — 뒤로가기 옆 한 줄. `title`(22) 은 56 줄에 넣기엔 크다
+    static let header = Font.system(size: 18, weight: .semibold)
     /// 곁들이는 글자
     static let caption = Font.system(size: 13, weight: .regular)
 }

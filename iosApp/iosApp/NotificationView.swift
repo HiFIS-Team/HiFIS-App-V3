@@ -43,12 +43,10 @@ struct NotificationView: View {
         let sections = box.sections(items: items, unreadOnly: unreadOnly, today: now.date)
 
         VStack(spacing: 0) {
-            backRow
+            header
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer().frame(height: Self.titleTopExtra)
-                    titleRow
-                    Spacer().frame(height: Self.titleSwitchGap)
+                    Spacer().frame(height: Self.headerBodyGap)
                     ModeSwitch(
                         left: box.ALL,
                         right: box.unreadLabel(unreadCount: Int32(unreadCount)),
@@ -88,20 +86,18 @@ struct NotificationView: View {
         items = items.map { $0.id == picked.id ? $0.markRead() : $0 }
     }
 
-    /// 왼쪽 위 뒤로가기 — 탭 화면 헤더와 같은 줄 높이·같은 자리다
-    private var backRow: some View {
+    /// 잎 헤더 — 왼쪽 뒤로가기, 그 옆에 화면 이름, 오른쪽 새로고침·설정
+    ///
+    /// 탭 화면 헤더와 같은 줄 높이·같은 끝 자리다. **화면 이름이 헤더에 든다** —
+    /// 잎은 본문 위에 제목을 또 세우지 않는다 (대표 요청, 2026-09-10).
+    private var header: some View {
         HStack(spacing: 0) {
             HeaderIconButton(icon: "ic_chevron_left", label: "뒤로", action: onBack)
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, HifisSize.screenEdge - HifisSize.headerIconInset)
-        .frame(height: HifisSize.headerHeight)
-    }
-
-    /// 제목 줄 — 왼쪽 `알림`, 오른쪽 새로고침·설정 (V2 알림 화면과 같다)
-    private var titleRow: some View {
-        HStack(spacing: 0) {
-            ScreenTitle(NotificationBox.shared.TITLE)
+            Spacer().frame(width: Self.headerTitleGap)
+            Text(NotificationBox.shared.TITLE)
+                .font(HifisFont.header)
+                .foregroundStyle(HifisColor.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
             HeaderIconButton(icon: "ic_refresh", label: "새로고침") {
                 // 아직 받을 곳이 없다 — 서버가 붙으면 다시 받는다
             }
@@ -109,14 +105,14 @@ struct NotificationView: View {
                 // 아직 갈 곳이 없다 — 알림 설정 화면이 생기면 잇는다
             }
         }
-        // 그림이 화면 끝 `screenEdge` 에 서게 터치 여백만큼 뺀다 (헤더와 같은 계산)
-        .padding(.trailing, HifisSize.screenEdge - HifisSize.headerIconInset)
+        .padding(.horizontal, HifisSize.screenEdge - HifisSize.headerIconInset)
+        .frame(height: HifisSize.headerHeight)
     }
 
-    /// 제목 위에 더 붙이는 여백 — 전체 화면과 같은 값. 헤더에서 32 떨어진다
-    private static let titleTopExtra: CGFloat = 14
-    /// 제목(아래 10)과 스위치 사이에 더 두는 것 — 합쳐서 16
-    private static let titleSwitchGap: CGFloat = 6
+    /// 뒤로가기 터치 자리와 화면 이름 사이 — 그림에서 재면 13 이다 (터치 여백 11 + 2)
+    private static let headerTitleGap: CGFloat = 2
+    /// 헤더와 스위치 사이
+    private static let headerBodyGap: CGFloat = 16
     /// 스위치와 본문(카드) 사이
     private static let switchBodyGap: CGFloat = 20
     /// 묶음 사이
@@ -125,11 +121,16 @@ struct NotificationView: View {
 
 /// 전환 스위치 — 회색 트랙 위에 **알약 하나가 미끄러진다**
 ///
-/// 칸마다 따로 켜고 끄면 옮기는 동안 둘 다 켜져 보이거나 툭 튄다. 알약 하나가
-/// 자리를 옮긴다 (`matchedGeometryEffect`, 240ms — V2 `ModeSwitch` 와 같은 빠르기).
+/// 알약은 **늘 있는 하나**다. 칸마다 `if selected` 로 끼우고 빼면 옮기는 동안 글자와
+/// 알약이 다시 만들어져 흐려졌다 사라졌다 한다 (대표가 봤다). 칸은 제 자리만
+/// 알려 주고(`isSource`), 알약이 고른 칸의 자리로 옮겨 간다 (240ms — V2 와 같은 빠르기).
 ///
-/// **고른 칸이 굵어져도 폭이 안 변한다.** 폭은 늘 굵은 글자로 재 두고 안 고른 글자는
-/// 그 안에서 가운데 선다 — 안 그러면 고를 때마다 옆 칸이 밀린다.
+/// **움직이는 것은 알약뿐이다.** 전환을 `withAnimation` 으로 감싸면 그 안에서 바뀐
+/// 목록(오늘·이전 카드)까지 같이 페이드돼 안드로이드보다 느리게 보였다.
+/// 애니메이션은 알약에만 건다 — 목록은 즉시 바뀐다.
+///
+/// **고른 칸이 굵어져도 폭이 안 변한다.** 굵은 글자와 보통 글자를 둘 다 두고
+/// 투명도만 바꾼다 — 폭은 늘 굵은 것이 정하고, 글자를 다시 만들 일도 없다.
 private struct ModeSwitch: View {
     let left: String
     let right: String
@@ -139,33 +140,41 @@ private struct ModeSwitch: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            segment(left, selected: !rightSelected) { rightSelected = false }
-            segment(right, selected: rightSelected) { rightSelected = true }
+            segment(left, index: 0, selected: !rightSelected) { rightSelected = false }
+            segment(right, index: 1, selected: rightSelected) { rightSelected = true }
         }
         .padding(Self.pad)
+        // 알약 — 고른 칸(`isSource`)의 자리를 받아 그리로 옮겨 간다
+        .background {
+            Capsule()
+                .fill(HifisColor.fieldFill)
+                .matchedGeometryEffect(id: rightSelected ? 1 : 0, in: pill, isSource: false)
+                .animation(.easeOut(duration: Self.slide), value: rightSelected)
+        }
         .background(HifisColor.surface, in: Capsule())
     }
 
-    private func segment(_ label: String, selected: Bool, pick: @escaping () -> Void) -> some View {
-        Button {
-            withAnimation(.easeOut(duration: Self.slide)) { pick() }
-        } label: {
+    private func segment(
+        _ label: String,
+        index: Int,
+        selected: Bool,
+        pick: @escaping () -> Void
+    ) -> some View {
+        Button(action: pick) {
             ZStack {
-                // 폭은 늘 굵은 글자가 정한다
-                Text(label).font(.system(size: 14, weight: .bold)).opacity(0)
                 Text(label)
-                    .font(.system(size: 14, weight: selected ? .bold : .medium))
-                    .foregroundStyle(selected ? HifisColor.ink : HifisColor.inkSecondary)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(HifisColor.ink)
+                    .opacity(selected ? 1 : 0)
+                Text(label)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(HifisColor.inkSecondary)
+                    .opacity(selected ? 0 : 1)
             }
             .padding(.horizontal, Self.segmentPad)
             .frame(height: Self.height - Self.pad * 2)
-            .background {
-                if selected {
-                    Capsule()
-                        .fill(HifisColor.fieldFill)
-                        .matchedGeometryEffect(id: "pill", in: pill)
-                }
-            }
+            // 이 칸의 자리를 알약에게 알려 준다 — 그리는 것은 없다
+            .background(Color.clear.matchedGeometryEffect(id: index, in: pill, isSource: true))
             .contentShape(Rectangle())
         }
         .buttonStyle(TapStyle())

@@ -29,6 +29,9 @@ object HifisType {
     /** 머리말·강조 한 줄 */
     val label = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium, lineHeight = 20.sp)
 
+    /** 잎 헤더의 화면 이름 — 뒤로가기 옆 한 줄. `title`(22) 은 56 줄에 넣기엔 크다 */
+    val header = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, lineHeight = 24.sp)
+
     /** 곁들이는 글자 */
     val caption = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, lineHeight = 18.sp)
 

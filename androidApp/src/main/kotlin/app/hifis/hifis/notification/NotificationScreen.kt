@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
 import app.hifis.hifis.ui.component.HeaderIconButton
-import app.hifis.hifis.ui.component.ScreenTitle
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
@@ -93,15 +92,13 @@ fun NotificationScreen(onBack: () -> Unit) {
             // 셸 위에 얹힌 잎이라 빈 자리 터치가 아래 하단바로 샌다 — 이 층에서 멈춘다
             .pointerInput(Unit) {},
     ) {
-        BackRow(onBack)
+        Header(onBack)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
-            Spacer(Modifier.height(TITLE_TOP_EXTRA))
-            TitleRow()
-            Spacer(Modifier.height(TITLE_SWITCH_GAP))
+            Spacer(Modifier.height(HEADER_BODY_GAP))
             ModeSwitch(
                 left = NotificationBox.ALL,
                 right = NotificationBox.unreadLabel(unreadCount),
@@ -136,9 +133,14 @@ fun NotificationScreen(onBack: () -> Unit) {
     }
 }
 
-/** 왼쪽 위 뒤로가기 — 탭 화면 헤더와 같은 줄 높이·같은 자리다 */
+/**
+ * 잎 헤더 — 왼쪽 뒤로가기, 그 옆에 화면 이름, 오른쪽 새로고침·설정
+ *
+ * 탭 화면 헤더와 같은 줄 높이·같은 끝 자리다. **화면 이름이 헤더에 든다** —
+ * 잎은 본문 위에 제목을 또 세우지 않는다 (대표 요청, 2026-09-10).
+ */
 @Composable
-private fun BackRow(onBack: () -> Unit) {
+private fun Header(onBack: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -148,22 +150,19 @@ private fun BackRow(onBack: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         HeaderIconButton(R.drawable.ic_chevron_left, "뒤로", onBack)
-    }
-}
-
-/** 제목 줄 — 왼쪽 `알림`, 오른쪽 새로고침·설정 (V2 알림 화면과 같다) */
-@Composable
-private fun TitleRow() {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        ScreenTitle(NotificationBox.TITLE, Modifier.weight(1f))
+        Spacer(Modifier.width(HEADER_TITLE_GAP))
+        Text(
+            NotificationBox.TITLE,
+            style = HifisType.header,
+            color = HifisTheme.colors.ink,
+            modifier = Modifier.weight(1f),
+        )
         HeaderIconButton(R.drawable.ic_refresh, "새로고침", onClick = {
             // 아직 받을 곳이 없다 — 서버가 붙으면 다시 받는다
         })
         HeaderIconButton(R.drawable.ic_settings, "알림 설정", onClick = {
             // 아직 갈 곳이 없다 — 알림 설정 화면이 생기면 잇는다
         })
-        // 그림이 화면 끝 `screenEdge` 에 서게 터치 여백만큼 뺀다 (헤더와 같은 계산)
-        Spacer(Modifier.width(Dimens.screenEdge - Dimens.headerIconInset))
     }
 }
 
@@ -402,11 +401,11 @@ private fun drawableOf(kind: NotificationKind): Int = when (kind) {
     NotificationKind.OTHER -> R.drawable.ic_bell
 }
 
-/** 제목 위에 더 붙이는 여백 — 전체 화면과 같은 값. 헤더에서 32 떨어진다 */
-private val TITLE_TOP_EXTRA = 14.dp
+/** 뒤로가기 터치 자리와 화면 이름 사이 — 그림에서 재면 13 이다 (터치 여백 11 + 2) */
+private val HEADER_TITLE_GAP = 2.dp
 
-/** 제목(아래 10)과 스위치 사이에 더 두는 것 — 합쳐서 16 */
-private val TITLE_SWITCH_GAP = 6.dp
+/** 헤더와 스위치 사이 */
+private val HEADER_BODY_GAP = 16.dp
 
 /** 스위치와 본문(카드) 사이 */
 private val SWITCH_BODY_GAP = 20.dp
