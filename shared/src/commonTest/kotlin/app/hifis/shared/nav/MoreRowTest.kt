@@ -59,6 +59,15 @@ class MoreRowTest {
     }
 
     @Test
+    fun `같은 아이콘이 두 줄에 쓰이지 않는다`() {
+        // 줄에 색도 구분선도 없어서 **아이콘이 줄을 알아보는 유일한 표시**다.
+        // 둘이 같은 그림을 쓰면 훑을 때 같은 줄로 읽힌다
+        val icons = MoreRow.all.map { it.icon }
+        val dup = icons.groupBy { it }.filterValues { it.size > 1 }.keys
+        assertTrue(dup.isEmpty(), "전체 목록에서 아이콘이 겹친다: $dup")
+    }
+
+    @Test
     fun `묶음은 전부 줄을 하나 이상 가진다`() {
         // 빈 판은 머리말만 뜬 빈 상자로 보인다
         MoreGroup.all.forEach { group ->

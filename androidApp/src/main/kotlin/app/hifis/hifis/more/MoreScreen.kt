@@ -127,6 +127,7 @@ private fun MenuRow(row: MoreRow, onTab: (MainTab) -> Unit) {
  */
 private fun drawableOf(row: MoreRow): Int = when (row) {
     MoreRow.WORK -> R.drawable.ic_work
+    MoreRow.PEER -> R.drawable.ic_person_check
     MoreRow.PROJECT -> R.drawable.ic_project
     MoreRow.MEETING -> R.drawable.ic_meeting
     MoreRow.SCHEDULE -> R.drawable.ic_schedule
@@ -135,6 +136,8 @@ private fun drawableOf(row: MoreRow): Int = when (row) {
     MoreRow.MANUAL -> R.drawable.ic_manual
     MoreRow.ATTENDANCE -> R.drawable.ic_attendance
     MoreRow.SALARY -> R.drawable.ic_salary
+    MoreRow.KINDNESS -> R.drawable.ic_heart
+    MoreRow.CONTRIBUTION -> R.drawable.ic_contribution
     MoreRow.STAFF -> R.drawable.ic_staff
     MoreRow.NOTICE -> R.drawable.ic_notice
     MoreRow.RANKING -> R.drawable.ic_ranking

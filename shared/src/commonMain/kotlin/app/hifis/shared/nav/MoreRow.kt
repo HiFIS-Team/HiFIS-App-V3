@@ -47,6 +47,8 @@ enum class MoreRow(
     val tab: MainTab? = null,
 ) {
     WORK("업무", "ic_work", MoreGroup.WORK, tab = MainTab.WORK),
+    // 업무 탭에 안 든 다섯째 점수 항목 — **기한이 있는 일**이라 업무 화면 안에도 문이 하나 더 선다
+    PEER("동료 평가", "ic_person_check", MoreGroup.WORK),
     PROJECT("프로젝트", "ic_project", MoreGroup.WORK),
     MEETING("회의록", "ic_meeting", MoreGroup.WORK),
     SCHEDULE("일정", "ic_schedule", MoreGroup.WORK, tab = MainTab.SCHEDULE),
@@ -58,6 +60,10 @@ enum class MoreRow(
 
     ATTENDANCE("근태", "ic_attendance", MoreGroup.MINE, tab = MainTab.ATTENDANCE),
     SALARY("급여", "ic_salary", MoreGroup.MINE),
+    // 둘 다 **받은 것을 보는 자리**다 — 회원이 남긴 칭찬, 나에게 쌓인 기여 점수.
+    // 그래서 하는 일(업무)이 아니라 내 기록(근태·급여) 옆에 선다
+    KINDNESS("회원 친절도", "ic_heart", MoreGroup.MINE),
+    CONTRIBUTION("센터 기여도", "ic_contribution", MoreGroup.MINE),
 
     STAFF("조직도", "ic_staff", MoreGroup.COMPANY),
     NOTICE("공지", "ic_notice", MoreGroup.COMPANY),

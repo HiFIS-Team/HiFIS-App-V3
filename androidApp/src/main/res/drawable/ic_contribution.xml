@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 센터 기여도 (밑줄에서 오르는 막대 셋) — 보탠 것이 쌓여 점수가 는다 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M3.6,20.2H20.4"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M7.5,19.4V13.4"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M12,19.4V9"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M16.5,19.4V4.6"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+</vector>
