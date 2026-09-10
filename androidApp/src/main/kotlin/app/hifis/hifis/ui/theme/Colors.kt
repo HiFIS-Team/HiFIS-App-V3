@@ -2,6 +2,7 @@ package app.hifis.hifis.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import app.hifis.shared.home.Tone
 
 /**
  * 화면이 쓰는 색 한 벌 — 라이트/다크가 **같은 이름**을 갖는다
@@ -105,3 +106,19 @@ val DarkColors = HifisColors(
     brandGradientEnd = Color(0xFF2F86F5),
     isDark = true,
 )
+
+/**
+ * 뜻([Tone])에서 색을 집는다 — **쓰는 자리마다 새로 잇지 않는다**
+ *
+ * 근무 배지·홈 알림 배너·알림함이 같이 쓴다. iOS `HifisColor.tone` 과 같은 표다.
+ */
+fun HifisColors.tone(tone: Tone): Color = when (tone) {
+    Tone.NEUTRAL -> inkSecondary
+    Tone.GOOD -> success
+    Tone.CAUTION -> warning
+    Tone.BAD -> danger
+    Tone.INFO -> brand
+}
+
+/** 뜻 색을 면으로 깔 때의 진하기 — 다크는 어두운 면 위라 조금 더 준다 */
+val HifisColors.toneFillAlpha: Float get() = if (isDark) 0.20f else 0.12f

@@ -30,15 +30,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
-import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.hifis.ui.theme.tone
 import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.home.AlertKind
 import app.hifis.shared.home.HomeAlert
@@ -93,7 +92,7 @@ fun HomeAlertBanner(
 private fun AlertCard(alert: HomeAlert, onOpen: (HomeAlert) -> Unit) {
     val colors = HifisTheme.colors
     val shape = RoundedCornerShape(Dimens.cardRadius)
-    val tint = toneColor(alert.kind.tone, colors)
+    val tint = colors.tone(alert.kind.tone)
 
     Row(
         Modifier
@@ -148,14 +147,6 @@ private fun AlertCard(alert: HomeAlert, onOpen: (HomeAlert) -> Unit) {
     }
 }
 
-/** 뜻([Tone])에서 색이 온다 — 갈래마다 새로 고르지 않는다 */
-private fun toneColor(tone: Tone, colors: HifisColors): Color = when (tone) {
-    Tone.NEUTRAL -> colors.inkSecondary
-    Tone.GOOD -> colors.success
-    Tone.CAUTION -> colors.warning
-    Tone.BAD -> colors.danger
-    Tone.INFO -> colors.brand
-}
 
 /**
  * 아이콘 이름을 그림 자원으로 바꾼다 — **이미 있는 것을 다시 쓴다**

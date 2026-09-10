@@ -30,8 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.ui.theme.Dimens
-import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.hifis.ui.theme.tone
 import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.home.TodayWork
 import app.hifis.shared.home.Tone
@@ -77,7 +77,7 @@ fun TodayWorkCard(work: TodayWork, modifier: Modifier = Modifier) {
                 color = colors.inkSecondary,
                 modifier = Modifier.weight(1f),
             )
-            StatusBadge(work.status.label, toneColor(work.status.tone, colors))
+            StatusBadge(work.status.label, colors.tone(work.status.tone))
         }
 
         Spacer(Modifier.height(16.dp))
@@ -131,14 +131,6 @@ fun TodayWorkCard(work: TodayWork, modifier: Modifier = Modifier) {
     }
 }
 
-/** 상태 배지 — 색은 뜻([WorkTone])에서 온다. 여기서 상태별로 새로 고르지 않는다 */
-private fun toneColor(tone: Tone, colors: HifisColors): Color = when (tone) {
-    Tone.NEUTRAL -> colors.inkSecondary
-    Tone.GOOD -> colors.success
-    Tone.CAUTION -> colors.warning
-    Tone.BAD -> colors.danger
-    Tone.INFO -> colors.brand
-}
 
 @Composable
 private fun StatusBadge(label: String, color: Color) {
