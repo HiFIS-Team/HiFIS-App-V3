@@ -53,7 +53,9 @@ struct AiChatView: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             closeButton
-            Spacer(minLength: 0)
+            // **글은 헤더 밑에 붙는다.** 빈 자리는 보기와 입력칸 사이로 내린다 —
+            // 물음이 화면 한가운데에 있으면 눈이 먼저 닿는 자리가 아니다
+            Spacer().frame(height: 20)
             brandRow.modifier(Entrance(step: 0, shown: shown))
             Spacer().frame(height: 14)
             Text(AiPrompt.companion.TITLE)
@@ -62,7 +64,7 @@ struct AiChatView: View {
                 .modifier(Entrance(step: 1, shown: shown))
             Spacer().frame(height: 28)
             prompts
-            Spacer().frame(height: 24)
+            Spacer(minLength: 24)
             inputBar.modifier(Entrance(step: 2 + AiPrompt.companion.all.count, shown: shown))
         }
         .padding(.horizontal, HifisSize.screenEdge)
@@ -108,23 +110,27 @@ struct AiChatView: View {
     private var prompts: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(AiPrompt.companion.all.enumerated()), id: \.element.icon) { index, prompt in
-                Button { message = prompt.label } label: {
-                    HStack(spacing: 14) {
-                        Image(prompt.icon)
-                            .renderingMode(.template)
-                            .resizable()
-                            .frame(width: HifisSize.moreIcon, height: HifisSize.moreIcon)
-                            .foregroundStyle(HifisColor.ink)
-                        Text(prompt.label)
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(HifisColor.ink)
-                        Spacer(minLength: 0)
+                // **빈 자리는 안 눌린다.** 남는 폭을 `Spacer` 가 밖에서 채워서
+                // 단추는 아이콘과 글자만큼만 넓다 — 줄 전체를 누르는 자리로 두면
+                // 글 옆 빈 곳을 스쳐도 입력칸이 채워진다
+                HStack(spacing: 0) {
+                    Button { message = prompt.label } label: {
+                        HStack(spacing: 14) {
+                            Image(prompt.icon)
+                                .renderingMode(.template)
+                                .resizable()
+                                .frame(width: HifisSize.moreIcon, height: HifisSize.moreIcon)
+                                .foregroundStyle(HifisColor.ink)
+                            Text(prompt.label)
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundStyle(HifisColor.ink)
+                        }
+                        .frame(height: HifisSize.moreRow)
+                        .contentShape(Rectangle())
                     }
-                    .frame(height: HifisSize.moreRow)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
+                    .buttonStyle(TapStyle())
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(TapStyle())
                 .modifier(Entrance(step: 2 + index, shown: shown))
             }
         }
