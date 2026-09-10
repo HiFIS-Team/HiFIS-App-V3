@@ -110,8 +110,13 @@ object Dimens {
     /** 떠 있는 AI 채팅 단추 — 탭 다섯 곳에 다 뜬다 */
     val aiChatButton = 56.dp
 
-    /** 그 단추 안의 그림 */
-    val aiChatIcon = 26.dp
+    /**
+     * 그 단추 안의 FS 마크 **폭** — 마크가 가로로 길어 높이는 비율이 정한다
+     *
+     * `tools/icons/gen_brand_mark.py` 의 `BASE_WIDTH` 와 같은 값이어야 안 흐리다.
+     * iOS 도 같은 값을 쓴다.
+     */
+    val aiChatMark = 36.dp
 
     /** 단추와 화면 오른쪽 끝·하단바 사이 — 좌우는 [screenEdge] 와 같은 값이다 */
     val aiChatMargin = 20.dp
