@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.ai.AiChatScreen
 import app.hifis.hifis.attendance.AttendanceScanScreen
+import app.hifis.hifis.notification.NotificationScreen
 import app.hifis.hifis.search.SearchOverlay
 import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.ui.component.AiChatButton
@@ -65,6 +66,8 @@ fun MainScreen() {
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     // 출퇴근 스캔은 **옆에서 밀려 들어오는 상세 화면**이다 — 헤더의 스캔 아이콘이 연다
     var scanOpen by rememberSaveable { mutableStateOf(false) }
+    // 알림함도 같은 길로 온다 — 헤더의 종이 연다
+    var notificationOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -76,16 +79,19 @@ fun MainScreen() {
                 MainTab.HOME -> HomeScreen(
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
                 )
                 MainTab.SCHEDULE -> ScheduleScreen(
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
                 )
                 // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
                 MainTab.MORE -> MoreScreen(
                     onTab = { index = MainTab.all.indexOf(it) },
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
                 )
                 // 나머지는 아직 화면이 없다
                 MainTab.WORK,
@@ -94,6 +100,7 @@ fun MainScreen() {
                     selected,
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
                 )
             }
 
@@ -129,6 +136,13 @@ fun MainScreen() {
         exit = slideOutHorizontally(tween(260)) { it },
     ) {
         AttendanceScanScreen(onBack = { scanOpen = false })
+    }
+    AnimatedVisibility(
+        visible = notificationOpen,
+        enter = slideInHorizontally(tween(320)) { it },
+        exit = slideOutHorizontally(tween(260)) { it },
+    ) {
+        NotificationScreen(onBack = { notificationOpen = false })
     }
 
     // 검색은 **헤더 아래로 내려오는 판**이라 하단바까지 덮는다
@@ -216,10 +230,15 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
  * 화면이 생기면 지운다. 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
  */
 @Composable
-private fun ComingSoon(tab: MainTab, onSearch: () -> Unit, onScan: () -> Unit) {
+private fun ComingSoon(
+    tab: MainTab,
+    onSearch: () -> Unit,
+    onScan: () -> Unit,
+    onNotification: () -> Unit,
+) {
     // **`TabPage` 를 쓴다.** 헤더가 거기 있어서, 안 쓰면 이 두 탭에서만
     // 검색·사내톡·알림으로 갈 방법이 사라진다 (iOS `ComingSoonView` 도 같다)
-    TabPage(onSearch = onSearch, onScan = onScan) {
+    TabPage(onSearch = onSearch, onScan = onScan, onNotification = onNotification) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = "${tab.label} — 준비 중",
