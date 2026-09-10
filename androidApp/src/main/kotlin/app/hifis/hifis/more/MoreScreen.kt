@@ -118,6 +118,8 @@ private fun drawableOf(row: MoreRow): Int = when (row) {
     MoreRow.MEETING -> R.drawable.ic_meeting
     MoreRow.SCHEDULE -> R.drawable.ic_schedule
     MoreRow.APPROVAL -> R.drawable.ic_approval
+    MoreRow.GUIDE -> R.drawable.ic_guide
+    MoreRow.MANUAL -> R.drawable.ic_manual
     MoreRow.ATTENDANCE -> R.drawable.ic_attendance
     MoreRow.SALARY -> R.drawable.ic_salary
     MoreRow.STAFF -> R.drawable.ic_staff

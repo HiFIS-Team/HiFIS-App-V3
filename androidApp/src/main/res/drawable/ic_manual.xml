@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 업무 메뉴얼 (덮은 책 + 책갈피) — 가이드 문서(`ic_guide`, 펼친 책)와 짝이다 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M6.3,3.6H17.7A1.8,1.8 0 0 1 19.5,5.4V18.6A1.8,1.8 0 0 1 17.7,20.4H6.3A1.8,1.8 0 0 1 4.5,18.6V5.4A1.8,1.8 0 0 1 6.3,3.6Z"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M9.6,3.6V11.4L12.2,9.6L14.8,11.4V3.6"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -9,6 +9,7 @@ package app.hifis.shared.nav
  */
 enum class MoreGroup(val title: String) {
     WORK("업무"),
+    REFERENCE("자료"),
     MINE("내 근무"),
     COMPANY("회사"),
     ACCOUNT("계정"),
@@ -50,6 +51,10 @@ enum class MoreRow(
     MEETING("회의록", "ic_meeting", MoreGroup.WORK),
     SCHEDULE("일정", "ic_schedule", MoreGroup.WORK, tab = MainTab.SCHEDULE),
     APPROVAL("전자결재", "ic_approval", MoreGroup.WORK),
+
+    // 일하는 자리가 아니라 **찾아보는 자리**다 — 그래서 묶음이 따로다
+    GUIDE("가이드 문서", "ic_guide", MoreGroup.REFERENCE),
+    MANUAL("업무 메뉴얼", "ic_manual", MoreGroup.REFERENCE),
 
     ATTENDANCE("근태", "ic_attendance", MoreGroup.MINE, tab = MainTab.ATTENDANCE),
     SALARY("급여", "ic_salary", MoreGroup.MINE),

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 가이드 문서 (펼친 책) — 업무 메뉴얼(`ic_manual`, 덮은 책)과 짝이라 펼친 쪽으로 갈랐다 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12,7.2C10.2,6 7.6,5.4 4.3,5.4A0.8,0.8 0 0 0 3.5,6.2V17.6a0.8,0.8 0 0 0 0.8,0.8C7.6,18.4 10.2,19 12,20.2"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,7.2C13.8,6 16.4,5.4 19.7,5.4a0.8,0.8 0 0 1 0.8,0.8V17.6a0.8,0.8 0 0 1 -0.8,0.8C16.4,18.4 13.8,19 12,20.2"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,7.2V20.2"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round" />
+</vector>
