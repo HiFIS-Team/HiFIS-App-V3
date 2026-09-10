@@ -52,7 +52,7 @@ struct AiChatView: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
-            closeButton
+            header
             // **글은 헤더 밑에 붙는다.** 빈 자리는 보기와 입력칸 사이로 내린다 —
             // 물음이 화면 한가운데에 있으면 눈이 먼저 닿는 자리가 아니다
             Spacer().frame(height: 20)
@@ -72,14 +72,35 @@ struct AiChatView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// 닫기 — 그림이 화면 끝 `screenEdge` 에 서야 한다
+    /// 이 화면의 아이콘 줄 — **왼쪽 닫기, 오른쪽 설정**
     ///
-    /// 터치 자리(44)가 그림(22)보다 넓어서 **가운데 정렬**을 하고 그 차이만큼
-    /// 왼쪽으로 당긴다. 헤더가 하는 계산과 같다 — `.leading` 으로 두면
-    /// 그림이 터치 자리 왼쪽 끝에 붙어 화면 끝에서 11 만큼 더 나간다.
-    private var closeButton: some View {
-        Button(action: onClose) {
-            Image("ic_close")
+    /// 탭 화면의 `AppHeader` 를 안 쓴다. 여기는 덮고 올라온 딴 자리라
+    /// 지점·검색·알림으로 갈 일이 없다 — 나갈 문과 이 화면의 설정뿐이다.
+    private var header: some View {
+        HStack(spacing: 0) {
+            iconButton("ic_close", label: "닫기", action: onClose)
+                .padding(.leading, -HifisSize.headerIconInset)
+            Spacer(minLength: 0)
+            iconButton("ic_settings", label: "AI 설정") {
+                // 아직 갈 곳이 없다 — AI 설정 화면이 생기면 잇는다
+            }
+            .padding(.trailing, -HifisSize.headerIconInset)
+        }
+        .padding(.top, 4)
+    }
+
+    /// 헤더 아이콘 하나 — 그림이 화면 끝 `screenEdge` 에 서야 한다
+    ///
+    /// 터치 자리(44)가 그림(22)보다 넓어서 **가운데 정렬**을 하고, 부르는 쪽이
+    /// 그 차이만큼 바깥으로 당긴다. 탭 화면 헤더가 하는 계산과 같다 —
+    /// `.leading` 으로 두면 그림이 터치 자리 끝에 붙어 화면 끝에서 11 만큼 더 나간다.
+    private func iconButton(
+        _ icon: String,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(icon)
                 .renderingMode(.template)
                 .resizable()
                 .frame(width: HifisSize.headerIcon, height: HifisSize.headerIcon)
@@ -88,9 +109,7 @@ struct AiChatView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(TapStyle())
-        .accessibilityLabel("닫기")
-        .padding(.leading, -HifisSize.headerIconInset)
-        .padding(.top, 4)
+        .accessibilityLabel(label)
     }
 
     /// 마크 + 이름 — 마크는 **제 그라데이션 그대로** 선다 (탭바 동그라미와 같은 그림)

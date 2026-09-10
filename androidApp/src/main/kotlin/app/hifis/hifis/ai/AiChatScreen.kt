@@ -103,7 +103,7 @@ fun AiChatScreen(onClose: () -> Unit) {
                 .imePadding()
                 .padding(start = Dimens.screenEdge, end = Dimens.screenEdge, bottom = 12.dp),
         ) {
-            CloseButton(onClose)
+            Header(onClose)
             // **글은 헤더 밑에 붙는다.** 빈 자리는 보기와 입력칸 사이로 내린다
             Spacer(Modifier.height(20.dp))
             Entrance(step = 0, shown = shown) { BrandRow() }
@@ -151,25 +151,51 @@ private fun Glow(modifier: Modifier = Modifier) {
 }
 
 /**
- * 닫기 — 그림이 화면 끝 [Dimens.screenEdge] 에 서야 한다
+ * 이 화면의 아이콘 줄 — **왼쪽 닫기, 오른쪽 설정**
  *
- * 터치 자리(44)가 그림(22)보다 넓어서 **가운데 정렬**을 하고 그 차이만큼 왼쪽으로
- * 당긴다. 헤더가 하는 계산과 같다.
+ * 탭 화면의 `AppHeader` 를 안 쓴다. 여기는 덮고 올라온 딴 자리라
+ * 지점·검색·알림으로 갈 일이 없다 — 나갈 문과 이 화면의 설정뿐이다.
  */
 @Composable
-private fun CloseButton(onClose: () -> Unit) {
+private fun Header(onClose: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        HeaderIcon(R.drawable.ic_close, "닫기", -Dimens.headerIconInset, onClose)
+        Spacer(Modifier.weight(1f))
+        HeaderIcon(R.drawable.ic_settings, "AI 설정", Dimens.headerIconInset) {
+            // 아직 갈 곳이 없다 — AI 설정 화면이 생기면 잇는다
+        }
+    }
+}
+
+/**
+ * 헤더 아이콘 하나 — 그림이 화면 끝 [Dimens.screenEdge] 에 서야 한다
+ *
+ * 터치 자리(44)가 그림(22)보다 넓어서 **가운데 정렬**을 하고, 그 차이만큼
+ * 바깥으로 당긴다 ([shift]). 탭 화면 헤더가 하는 계산과 같다.
+ */
+@Composable
+private fun HeaderIcon(
+    icon: Int,
+    label: String,
+    shift: androidx.compose.ui.unit.Dp,
+    onClick: () -> Unit,
+) {
     Box(
         Modifier
-            .padding(top = 4.dp)
-            .offset(x = -Dimens.headerIconInset)
+            .offset(x = shift)
             .size(Dimens.headerIconButton)
             .clip(CircleShape)
-            .tap(label = "닫기", onClick = onClose),
+            .tap(label = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            painterResource(R.drawable.ic_close),
-            contentDescription = "닫기",
+            painterResource(icon),
+            contentDescription = label,
             tint = HifisTheme.colors.ink,
             modifier = Modifier.size(Dimens.headerIcon),
         )
