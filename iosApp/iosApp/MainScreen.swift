@@ -62,9 +62,9 @@ private struct MainTabBar: UIViewControllerRepresentable {
             // 우리가 유리를 흉내내지 않는다. 아이콘·제목은 갈아 끼울 수 있다.
             // 검색 필드로 펼쳐지는 것은 화면에 `searchable` 을 붙였을 때뿐이라,
             // 안 붙이면 그냥 그 화면으로 간다.
-            let ai = UISearchTab { _ in
-                UIHostingController(rootView: ComingSoonView(label: "AI 채팅"))
-            }
+            // 화면 제공자는 **안 쓰인다** — 아래 `shouldSelectTab` 이 선택을 막고
+            // 대신 페이지를 올린다. 그래도 nil 이면 UIKit 이 거부해서 빈 것을 하나 둔다
+            let ai = UISearchTab { _ in UIViewController() }
             ai.title = "AI"
             // **FS 마크를 제 색 그대로 세운다.** 탭바는 그림을 기본으로 template 처리해서
             // 한 가지 색으로 눌러 버린다 — `alwaysOriginal` 이라야 그라데이션이 산다.
@@ -73,6 +73,7 @@ private struct MainTabBar: UIViewControllerRepresentable {
             tabs.append(ai)
 
             controller.tabs = tabs
+            controller.delegate = context.coordinator
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 다섯 칸만 세운다
             controller.viewControllers = MainTab.companion.ios.map { hosted($0, go: go) }
@@ -87,6 +88,44 @@ private struct MainTabBar: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: UITabBarController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    /// 탭바의 대리자 — **AI 는 탭을 옮기지 않고 페이지를 올린다**
+    ///
+    /// 탭을 옮기면 지금 보던 화면을 잃는다. AI 는 **하던 일을 두고 잠깐 묻는 자리**라
+    /// 덮고 올라왔다가 닫히는 편이 맞다. `shouldSelectTab` 에서 `false` 를 돌려
+    /// 선택을 막고, 그 자리에서 띄운다.
+    final class Coordinator: NSObject, UITabBarControllerDelegate {
+        @available(iOS 18.0, *)
+        func tabBarController(
+            _ tabBarController: UITabBarController,
+            shouldSelectTab tab: UITab
+        ) -> Bool {
+            // **그 자리인지는 타입으로 알아본다.** `UITab.identifier` 는 읽기 전용이고
+            // `UISearchTab` 는 만들 때 이름표를 못 준다. 어차피 그 자리는 하나뿐이다
+            guard tab is UISearchTab else { return true }
+            present(from: tabBarController)
+            return false
+        }
+
+        private func present(from parent: UITabBarController) {
+            let controller = UIHostingController(rootView: AiChatView(onClose: {}))
+            // **컨트롤러를 약하게 잡는다.** 닫기 클로저는 화면이, 화면은 컨트롤러가
+            // 들고 있어서 강하게 잡으면 서로 물려 페이지가 영영 안 풀린다.
+            // 그래서 만든 **뒤에** 갈아 끼운다 — 만들 때는 잡을 대상이 아직 없다
+            controller.rootView = AiChatView { [weak controller] in
+                controller?.dismiss(animated: true)
+            }
+            // **이 화면만 밝다.** 앱은 다크로 못 박혀 있지만 여기는 예외라
+            // 여기서 갈라 준다 — `HifisColor` 가 알아서 라이트 값을 낸다
+            controller.overrideUserInterfaceStyle = .light
+            // 아래에서 위로 덮고 올라온다
+            controller.modalPresentationStyle = .fullScreen
+            controller.modalTransitionStyle = .coverVertical
+            parent.present(controller, animated: true)
+        }
+    }
 
     /// 탭 하나를 담는 화면 — 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 을 같이 심는다
     private func hosted(_ tab: MainTab, go: @escaping (MainTab) -> Void) -> UIHostingController<AnyView> {
