@@ -156,29 +156,42 @@ struct ScanFrame: View {
 
 /// 카메라 — **`AVCaptureSession` 하나를 열고 닫는다**
 ///
-/// 권한은 열 때 묻는다. 막혀 있거나 카메라가 없으면 `unavailable` 을 세워
-/// 화면이 안내로 갈아탄다. **시뮬레이터는 늘 여기 걸린다** — 카메라가 아예 없다.
+/// ## 답을 이미 아는 것은 **첫 프레임에** 정한다
+///
+/// 화면이 옆에서 밀려 들어오는 **도중에** 내용을 갈아 끼우면, 새로 든 글은 들어오는
+/// 움직임을 안 탄다 — 제자리(화면 가운데)에 그냥 생긴다. 뒤로가기는 페이지와 같이
+/// 움직이는데 `카메라를 열 수 없어요` 만 가운데에 서 있는 것을 재서 확인했다.
+/// 그래서 권한을 막았거나 카메라가 없는 것(시뮬레이터)은 만들 때 바로 `unavailable` 로
+/// 두어 처음부터 그 화면으로 들어온다. 아직 안 물어본 폰만 물어본 뒤에 정한다 —
+/// 그때는 시스템 창이 떠 있어서 움직임은 이미 끝나 있다.
 ///
 /// 세션은 딴 큐에서 켜고 끈다. `startRunning` 이 메인을 잡고 있으면
 /// 밀려 들어오는 애니메이션이 그 동안 멈춘다.
 final class ScanCamera: ObservableObject {
     /// 권한을 막았거나 카메라가 없다
-    @Published var unavailable = false
+    @Published var unavailable: Bool
     let session = AVCaptureSession()
     private let queue = DispatchQueue(label: "app.hifis.hifis.scan-camera")
 
+    init() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        unavailable = status == .denied || status == .restricted
+            || AVCaptureDevice.default(for: .video) == nil
+    }
+
     func start() {
+        guard !unavailable else { return }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             open()
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
                 DispatchQueue.main.async {
-                    if granted { self?.open() } else { self?.unavailable = true }
+                    if granted { self?.open() } else { self?.fail() }
                 }
             }
         default:
-            unavailable = true
+            fail()
         }
     }
 
@@ -188,6 +201,11 @@ final class ScanCamera: ObservableObject {
         }
     }
 
+    /// 나중에야 안 것 — 화면은 이미 서 있으니 **바뀌는 것만 살짝 녹여** 넣는다
+    private func fail() {
+        withAnimation(.easeInOut(duration: 0.2)) { unavailable = true }
+    }
+
     private func open() {
         queue.async { [weak self] in
             guard let self else { return }
@@ -195,7 +213,7 @@ final class ScanCamera: ObservableObject {
                   let input = try? AVCaptureDeviceInput(device: device),
                   session.canAddInput(input)
             else {
-                DispatchQueue.main.async { self.unavailable = true }
+                DispatchQueue.main.async { self.fail() }
                 return
             }
             session.beginConfiguration()
