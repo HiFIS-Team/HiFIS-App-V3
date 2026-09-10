@@ -8,6 +8,7 @@ import SharedKit
 ///
 struct ScheduleView: View {
     var onSearch: () -> Void = {}
+    var onScan: () -> Void = {}
 
     private let today: Kotlinx_datetimeLocalDate
     private let events: [ScheduleEvent]
@@ -17,10 +18,11 @@ struct ScheduleView: View {
     @State private var pickedKey: String
     @State private var adding = false
 
-    /// `onSearch` 는 셸이 준다 — 이 화면은 직접 만든 `init` 이 있어서
+    /// `onSearch`·`onScan` 은 셸이 준다 — 이 화면은 직접 만든 `init` 이 있어서
     /// 프로퍼티만 두면 인자가 안 생긴다
-    init(onSearch: @escaping () -> Void = {}) {
+    init(onSearch: @escaping () -> Void = {}, onScan: @escaping () -> Void = {}) {
         self.onSearch = onSearch
+        self.onScan = onScan
         let parts = Foundation.Calendar.current.dateComponents(
             [.year, .month, .day], from: Date()
         )
@@ -47,7 +49,7 @@ struct ScheduleView: View {
     }
 
     var body: some View {
-        TabPage(onSearch: onSearch) {
+        TabPage(onSearch: onSearch, onScan: onScan) {
             ScrollView {
                 VStack(spacing: 0) {
                     // 제목도 같이 굴러간다 — 붙어 있는 것은 헤더(아이콘 줄)뿐이다

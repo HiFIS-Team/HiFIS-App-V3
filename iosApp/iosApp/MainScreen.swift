@@ -53,12 +53,25 @@ private struct MainTabBar: UIViewControllerRepresentable {
             guard let controller else { return }
             controller.present(SearchOverlayController(onClose: {}), animated: true)
         }
+        // **출퇴근 스캔은 옆에서 밀려 들어온다** — 지금 보고 있는 탭의 내비게이션이 민다.
+        // 탭바는 그 동안 숨는다 (`hidesBottomBarWhenPushed`) — 카메라 위에 탭바가 떠 있으면
+        // 딴 자리로 넘어온 것이 아니다
+        let scan: () -> Void = { [weak controller] in
+            guard let nav = controller?.selectedViewController as? UINavigationController else { return }
+            let page = UIHostingController(rootView: AttendanceScanView(onBack: {}))
+            // 컨트롤러를 약하게 잡는다 — AI 페이지와 같은 이유다 (아래 `present`)
+            page.rootView = AttendanceScanView { [weak page] in
+                page?.navigationController?.popViewController(animated: true)
+            }
+            page.hidesBottomBarWhenPushed = true
+            nav.pushViewController(page, animated: true)
+        }
         if #available(iOS 18.0, *) {
             // **`tabs` 로 세운다.** `viewControllers` 로는 아래 AI 자리를 못 만든다.
             // 화면의 `tabBarItem` 은 그대로 둔다 — 고른 칸의 채운 그림이 거기 있다
             var tabs: [UITab] = MainTab.companion.ios.map { tab in
                 UITab(title: tab.label, image: UIImage(named: tab.icon), identifier: tab.name) { _ in
-                    hosted(tab, go: go, search: search)
+                    hosted(tab, go: go, search: search, scan: scan)
                 }
             }
 
@@ -81,7 +94,9 @@ private struct MainTabBar: UIViewControllerRepresentable {
             controller.delegate = context.coordinator
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 다섯 칸만 세운다
-            controller.viewControllers = MainTab.companion.ios.map { hosted($0, go: go, search: search) }
+            controller.viewControllers = MainTab.companion.ios.map {
+                hosted($0, go: go, search: search, scan: scan)
+            }
         }
 
         controller.tabBar.tintColor = UIColor(HifisColor.brand)
@@ -132,30 +147,53 @@ private struct MainTabBar: UIViewControllerRepresentable {
         }
     }
 
-    /// 탭 하나를 담는 화면 — 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 을 같이 심는다
+    /// 탭 하나를 담는 자리 — **화면을 내비게이션 컨트롤러에 넣어서** 준다
+    ///
+    /// 상세 화면은 옆에서 밀려 들어오는데 (`DESIGN.md`), 그 밀기는 `UINavigationController` 가
+    /// 하는 일이라 탭마다 하나씩 깐다. 고른 칸에 **채운 그림**을 쓰도록 `tabBarItem` 은
+    /// 화면에 심는다 — 내비게이션 컨트롤러는 제 것이 없으면 뿌리 화면 것을 쓴다
     private func hosted(
         _ tab: MainTab,
         go: @escaping (MainTab) -> Void,
-        search: @escaping () -> Void
-    ) -> UIHostingController<AnyView> {
-        let host = UIHostingController(rootView: screen(for: tab, go: go, search: search))
+        search: @escaping () -> Void,
+        scan: @escaping () -> Void
+    ) -> UINavigationController {
+        let host = UIHostingController(rootView: screen(for: tab, go: go, search: search, scan: scan))
         host.tabBarItem = UITabBarItem(
             title: tab.label,
             image: UIImage(named: tab.icon),
             selectedImage: UIImage(named: tab.iconFilled)
         )
-        return host
+        return TabNavigationController(rootViewController: host)
     }
 
     private func screen(
         for tab: MainTab,
         go: @escaping (MainTab) -> Void,
-        search: @escaping () -> Void
+        search: @escaping () -> Void,
+        scan: @escaping () -> Void
     ) -> AnyView {
-        if tab == MainTab.home { return AnyView(HomeView(onSearch: search)) }
-        if tab == MainTab.schedule { return AnyView(ScheduleView(onSearch: search)) }
-        if tab == MainTab.more { return AnyView(MoreView(onTab: go, onSearch: search)) }
-        return AnyView(ComingSoonView(label: tab.label, onSearch: search))
+        if tab == MainTab.home { return AnyView(HomeView(onSearch: search, onScan: scan)) }
+        if tab == MainTab.schedule { return AnyView(ScheduleView(onSearch: search, onScan: scan)) }
+        if tab == MainTab.more { return AnyView(MoreView(onTab: go, onSearch: search, onScan: scan)) }
+        return AnyView(ComingSoonView(label: tab.label, onSearch: search, onScan: scan))
+    }
+}
+
+/// 탭 하나의 밀어 넣기 자리 — **바는 안 보인다**
+///
+/// 바는 안 쓴다 — 우리 헤더가 그 자리다. 그런데 바를 숨기면 UIKit 이 **왼쪽 끝을
+/// 끌어 돌아가는 손짓까지 같이 끈다.** 대리자를 우리가 맡아 되살린다 — 쌓인 화면이
+/// 있을 때만 받는다. 뿌리에서까지 받으면 아무 데도 안 가는 끌기가 생긴다.
+private final class TabNavigationController: UINavigationController, UIGestureRecognizerDelegate {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setNavigationBarHidden(true, animated: false)
+        interactivePopGestureRecognizer?.delegate = self
+    }
+
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        viewControllers.count > 1
     }
 }
 
@@ -166,11 +204,12 @@ private struct MainTabBar: UIViewControllerRepresentable {
 private struct ComingSoonView: View {
     let label: String
     var onSearch: () -> Void = {}
+    var onScan: () -> Void = {}
 
     var body: some View {
         // **`TabPage` 를 쓴다.** 헤더와 AI 단추가 거기 있어서, 안 쓰면 이 두 탭에서만
         // 사내톡·알림으로 갈 방법도 AI 단추도 사라진다
-        TabPage(onSearch: onSearch) {
+        TabPage(onSearch: onSearch, onScan: onScan) {
             Text("\(label) — 준비 중")
                 .font(.system(size: 15))
                 .foregroundStyle(HifisColor.inkTertiary)

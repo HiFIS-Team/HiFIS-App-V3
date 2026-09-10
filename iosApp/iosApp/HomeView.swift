@@ -9,9 +9,10 @@ import SharedKit
 /// 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다.
 struct HomeView: View {
     var onSearch: () -> Void = {}
+    var onScan: () -> Void = {}
 
     var body: some View {
-        TabPage(onSearch: onSearch) {
+        TabPage(onSearch: onSearch, onScan: onScan) {
             // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
             ScrollView {
                 VStack(spacing: 12) {
