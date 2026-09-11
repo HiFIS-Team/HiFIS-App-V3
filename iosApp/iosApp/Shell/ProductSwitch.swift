@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import SharedKit
 
 /// 지금 어느 제품에 들어와 있나 — **셸이 들고 화면은 읽기만 한다**
@@ -19,16 +20,43 @@ final class ShellState: ObservableObject {
         set { move(to: Product.companion.all[min(max(newValue, 0), Product.companion.all.count - 1)]) }
     }
 
+    /// 전환 직전 화면을 얼려 둔 그림 — **이게 흐려지면서 새 셸이 드러난다**
+    ///
+    /// 셸을 통째로 `opacity` 로 녹이면 **리퀴드 글래스가 사라진다.** 유리는 뒤에 있는 것을
+    /// 퍼 와서 흐리는 효과라, 반투명한 겹 안에서는 그릴 수가 없다 — 그 동안 아이콘과
+    /// 글자만 남았다가 다 녹으면 유리가 툭 생겼다 (대표가 봤다, 2026-09-11).
+    ///
+    /// 그래서 **새 셸은 처음부터 온전히 서고**(유리도 제대로 선다), 얼려 둔 **그림**만
+    /// 그 위에서 흐려진다. 그림은 이미 그려진 픽셀이라 반투명해도 문제가 없다.
+    @Published private(set) var frozen: UIImage?
+
     func move(to next: Product) {
         guard next != product else { return }
+        frozen = Self.snapshot()
         product = next
+        // 새 셸이 한 번 그려진 **뒤에** 얼린 그림을 걷는다 — 같은 틱에 걷으면 겹칠 새가 없다
+        DispatchQueue.main.async { [weak self] in
+            withAnimation(.easeInOut(duration: Self.fade)) { self?.frozen = nil }
+        }
     }
 
-    /// 셸이 서로 녹아드는 데 걸리는 시간 — 안드로이드 `SHELL_FADE` 와 같은 값
+    /// 지금 화면을 그대로 한 장 뜬다 — 유리까지 그려진 상태로 굳는다
+    private static func snapshot() -> UIImage? {
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }
+        guard let window else { return nil }
+        return UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+            // `afterScreenUpdates: false` — **지금 떠 있는 그대로** 뜬다.
+            // true 로 두면 이미 바뀐 뒤를 떠서 얼릴 것이 없다
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
+        }
+    }
+
+    /// 얼린 그림이 흐려지는 데 걸리는 시간 — 안드로이드 `SHELL_FADE` 와 같은 값
     ///
     /// **색을 따로 물들이지 않는다.** 두 겹이 겹쳐 보이는 동안 색도 저절로 옮겨 간다.
-    /// 색까지 따로 보간하면 **나가는 겹이 중간색으로 칠해져** — HiFIS 가 빠지는 동안
-    /// 보라색이 된다. 겹마다 제 색이어야 한다.
     static let fade: CFTimeInterval = 0.42
 }
 
@@ -79,12 +107,11 @@ struct ProductSwitch: View {
     var body: some View {
         ModeSwitch(
             segments: Product.companion.labels,
-            // **셸이 서로 녹아들게 감싼다.** 색만 물들고 화면은 툭 갈리면 따로 논다
+            // **여기서 애니메이션을 걸지 않는다.** 셸은 즉시 갈리고,
+            // 얼려 둔 그림이 그 위에서 흐려진다 (`ShellState.frozen`)
             selected: Binding(
                 get: { Product.companion.all.firstIndex(of: product) ?? 0 },
-                set: { next in
-                    withAnimation(.easeInOut(duration: ShellState.fade)) { shell.index = next }
-                }
+                set: { shell.index = $0 }
             ),
             slides: false
         )

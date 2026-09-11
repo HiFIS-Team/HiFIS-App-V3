@@ -65,11 +65,25 @@ struct MainScreen: View {
                 //
                 // `if` 대신 `ForEach` 로 세우는 이유는 **정체성** 때문이다 — 제품이 바뀌면
                 // 하나가 빠지고 하나가 들어와야 `.transition` 이 걸린다
-                ForEach([shell.product], id: \.name) { shown in
-                    productShell(shown)
+                // **셸은 즉시 갈린다.** 녹이면(`opacity`) 리퀴드 글래스가 사라진다 —
+                // 유리는 뒤를 퍼 와 흐리는 효과라 반투명한 겹 안에서는 못 그린다.
+                // 대신 얼려 둔 그림이 그 **위에서** 흐려진다 (아래 `frozen`)
+                productShell(shell.product)
+                    // **`.id` 가 있어야 탭바가 새로 선다.** 없으면 SwiftUI 가 같은
+                    // `UIViewControllerRepresentable` 을 재활용해서 칸이 그대로 남는다
+                    .id(shell.product.name)
+                    // 덮인 셸에는 손이 닿지 않는다
+                    .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
+
+                // 전환 직전에 얼려 둔 화면 — 이게 흐려지면서 새 셸이 드러난다.
+                // **그림이라 반투명해도 안 깨진다** (유리와 달리)
+                if let frozen = shell.frozen {
+                    Image(uiImage: frozen)
+                        .resizable()
+                        .ignoresSafeArea()
                         .transition(.opacity)
-                        // 덮인 셸에는 손이 닿지 않는다
-                        .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
+                        .allowsHitTesting(false)
+                        .zIndex(2)
                 }
 
                 if scanOpen {
