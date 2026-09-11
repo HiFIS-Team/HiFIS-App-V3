@@ -8,11 +8,12 @@ import SwiftUI
 /// **본문 스크롤은 화면이 정한다.** 헤더는 붙어 있고 본문만 굴리는 화면도 있고
 /// (홈), 통째로 굴리는 화면도 있다 (일정).
 ///
-/// **헤더는 아이콘 줄과 제품 고르개뿐이다.** 화면 이름은 `ScreenTitle` 로 본문 **안에**
-/// 넣는다 — 굴릴 때 같이 올라가야 한다. 여기서 그리면 붙어 있는 줄이 둘이 된다.
+/// **헤더는 아이콘 줄뿐이다.** 화면 이름은 `ScreenTitle` 로 본문 **안에** 넣는다 —
+/// 굴릴 때 같이 올라가야 한다. 여기서 그리면 붙어 있는 줄이 둘이 된다.
 ///
-/// 제품 고르개(`ProductSwitch`)는 여기 있다. 탭 화면 전부에 서야 하고,
-/// 제품이 바뀌면 탭바까지 바뀌니 **탭보다 위**다.
+/// **제품 고르개(`ProductSwitch`)는 여기 없다 — 홈에만 선다** (대표 결정, 2026-09-11).
+/// 탭마다 세우면 업무 화면에서는 제품 알약과 공통/개인 알약이 위아래로 겹쳐 서서,
+/// 모양이 같은데 무게가 다른 것이 둘 나란히 보인다.
 struct TabPage<Content: View>: View {
     var onBranch: () -> Void = {}
     var onSearch: () -> Void = {}
@@ -32,24 +33,12 @@ struct TabPage<Content: View>: View {
                 onNotification: onNotification,
                 onProfile: onProfile
             )
-            // 헤더와 한 덩어리다 — 굴러가지 않고 붙어 있는다
-            ProductSwitch()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, HifisSize.screenEdge)
-                .padding(.top, productTop)
-                .padding(.bottom, productBottom)
             content()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(HifisColor.background.ignoresSafeArea())
     }
 }
-
-/// 제품 고르개를 헤더 아래에 띄우는 여백 — 아래가 조금 넓다 (본문과 갈려야 한다)
-///
-/// `TabPage` 가 제네릭이라 안에 `static let` 을 못 둔다 — 파일 상수로 뺀다.
-private let productTop: CGFloat = 10
-private let productBottom: CGFloat = 12
 
 /// 화면 이름 — **본문 맨 위에 넣는다.** 헤더가 아니다
 ///

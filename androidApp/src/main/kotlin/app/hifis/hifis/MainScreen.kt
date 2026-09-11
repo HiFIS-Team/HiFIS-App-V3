@@ -50,6 +50,7 @@ import app.hifis.shared.nav.MainTab
 import app.hifis.shared.nav.Product
 import app.hifis.hifis.ui.component.LocalProduct
 import app.hifis.hifis.ui.component.ProductScope
+import app.hifis.hifis.ui.component.ProductSwitch
 import androidx.compose.runtime.CompositionLocalProvider
 
 /**
@@ -284,6 +285,13 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
 @Composable
 private fun ProductComingSoon(product: Product) {
     TabPage {
+        // **고르개를 여기서도 그린다.** `TabPage` 가 아니라 홈이 들고 있는데
+        // 이 제품에는 홈이 없다 — 안 그리면 들어와서 못 나간다
+        ProductSwitch(
+            Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 16.dp),
+        )
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = Product.comingSoon(product),

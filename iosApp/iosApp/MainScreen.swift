@@ -352,6 +352,10 @@ private struct ProductComingSoonView: View {
     var body: some View {
         // 헤더 아이콘을 안 이으면 이 화면에서만 사내톡·알림으로 갈 길이 없어진다
         TabPage(onScan: onScan, onChat: onChat, onNotification: onNotification) {
+            // **고르개를 여기서도 그린다.** `TabPage` 가 아니라 홈이 들고 있는데
+            // 이 제품에는 홈이 없다 — 안 그리면 들어와서 못 나간다
+            ProductSwitch()
+                .padding(.top, 16)
             Text(Product.companion.comingSoon(product: product))
                 .font(.system(size: 15))
                 .foregroundStyle(HifisColor.inkTertiary)

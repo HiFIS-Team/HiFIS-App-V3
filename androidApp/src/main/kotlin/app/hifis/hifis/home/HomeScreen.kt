@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.hifis.hifis.ui.component.ProductSwitch
 import app.hifis.hifis.ui.component.TabPage
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.shared.home.HomeAlert
@@ -45,6 +47,10 @@ fun HomeScreen(
                 .padding(top = 16.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // **제품 고르개는 홈에만 선다** (대표 결정, 2026-09-11).
+            // 카드 줄의 첫 칸이라 위 16 · 아래 12 를 카드와 같이 쓴다 — 따로 띄우지 않는다.
+            // 가운데 선다. 카드는 폭을 다 쓰는데 이것만 짧아서, 왼쪽에 붙이면 줄이 시작하다 만 것처럼 보인다
+            ProductSwitch(Modifier.align(Alignment.CenterHorizontally))
             HomeAlertBanner(HomeAlert.demo, onOpen = {})
             TodayWorkCard(TodayWork.demo)
             // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다

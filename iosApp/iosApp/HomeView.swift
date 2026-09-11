@@ -18,6 +18,11 @@ struct HomeView: View {
             // 카드가 셋이라 작은 화면에서는 넘친다 — 본문만 굴린다 (헤더는 붙어 있다)
             ScrollView {
                 VStack(spacing: 12) {
+                    // **제품 고르개는 홈에만 선다** (대표 결정, 2026-09-11).
+                    // 카드 줄의 첫 칸이라 위 16 · 아래 12 를 카드와 같이 쓴다 — 따로 띄우지 않는다.
+                    // 가운데 선다. 카드는 폭을 다 쓰는데 이것만 짧아서,
+                    // 왼쪽에 붙이면 줄이 시작하다 만 것처럼 보인다
+                    ProductSwitch()
                     HomeAlertBanner(alerts: HomeAlert.companion.demo, onOpen: { _ in })
                     TodayWorkCard(work: TodayWork.companion.demo)
                     // 누르는 자리는 아직 아무 데도 안 간다 — 갈 화면이 없다
