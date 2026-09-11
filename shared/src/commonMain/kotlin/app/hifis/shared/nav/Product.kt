@@ -1,0 +1,39 @@
+package app.hifis.shared.nav
+
+/**
+ * 앱 안에 든 **제품** — 셸을 통째로 갈아 끼우는 층
+ *
+ * 한 앱에 셋이 들어간다. 로그인하면 하나를 고르고, 들어와서도 헤더 아래 고르개로 옮긴다.
+ *
+ * | | 누가 | 무엇을 |
+ * |---|---|---|
+ * | HiFIS | 직원 전원 | 출퇴근·환경정비·급여 — 센터와 본사 일 |
+ * | TeamFIS | 트레이너 (대표·관리자는 **보기만**) | 수업·세션 싸인 |
+ * | WeFIS | 회원 관리하는 사람 | 회원·등록권 — 브로제이·바디코디·다짐 자리를 대신한다 |
+ *
+ * **[MainTab] 보다 한 층 위다.** 탭은 한 제품 안의 칸이고, 제품이 바뀌면
+ * 그 탭 목록이 통째로 바뀐다. 그래서 고르개가 탭바가 아니라 헤더 아래에 선다.
+ *
+ * 앱을 셋으로 가르지 않는 이유는 `.claude/멀티테넌트.md` 에 있다 — 트레이너도
+ * 출퇴근을 찍고 환경정비를 하는 **직원**이라, 가르면 그 사람이 둘을 깔아야 한다.
+ */
+enum class Product(val label: String) {
+    HIFIS("HiFIS"),
+    TEAMFIS("TeamFIS"),
+    WEFIS("WeFIS"),
+    ;
+
+    companion object {
+        /** 고르개에 서는 **차례**. 순서를 바꾸면 양 플랫폼이 같이 바뀐다 */
+        val all: List<Product> = entries.toList()
+
+        /** 고르개가 읽는 이름들 — 화면이 `label` 을 따로 모으지 않게 */
+        val labels: List<String> = all.map { it.label }
+
+        /** 앱을 켜면 여기서 시작한다 — 직원이면 누구나 쓰는 자리다 */
+        val default: Product = HIFIS
+
+        /** 아직 화면이 없는 제품의 자리 문구 — 안 만든 탭과 같은 말을 쓴다 */
+        fun comingSoon(product: Product): String = "${product.label} — 준비 중"
+    }
+}
