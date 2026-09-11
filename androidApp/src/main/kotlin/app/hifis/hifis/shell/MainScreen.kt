@@ -79,7 +79,7 @@ fun MainScreen() {
     val product = Product.all[productIndex]
 
     // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**.
-    // 툭 갈리면 앱이 튄 것처럼 보여서 **서로 녹아든다**
+    // 툭 갈리면 앱이 튄 것처럼 보여서 서로 녹아든다
     Crossfade(product, animationSpec = tween(SHELL_FADE), label = "shell") { shown ->
         // **녹아드는 두 겹이 각자 제 제품을 그린다 — 테마까지.**
         // 테마가 이 밖에 있으면 나가는 겹이 **새 제품 색으로 먼저 칠해진 뒤** 녹아서,
@@ -96,11 +96,14 @@ fun MainScreen() {
 }
 
 /**
- * 제품이 서로 녹아드는 데 걸리는 시간 — 브랜드색(`BRAND_FADE`)과 **같은 값이어야 한다**
+ * 셸이 서로 녹아드는 데 걸리는 시간 — **잎이 들어오는 것과 같은 값**이다
  *
- * 하나만 빠르면 색이 다 물든 뒤에 화면이 뒤늦게 바뀌거나 그 반대가 된다.
+ * 화면이 통째로 바뀌는 일이라 잎(320)보다 느릴 이유가 없다.
+ * 420 으로 뒀더니 앱에서 제일 긴 애니메이션이 되어 굼떠 보였다 (대표가 봤다, 2026-09-11).
+ *
+ * iOS 도 같은 값이다 (`ShellState.fade`).
  */
-private const val SHELL_FADE = 420
+private const val SHELL_FADE = 320
 
 /**
  * 한 제품의 셸 — 하단바와 그 위에 덮이는 잎들

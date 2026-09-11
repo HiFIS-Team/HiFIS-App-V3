@@ -54,10 +54,10 @@ final class ShellState: ObservableObject {
         }
     }
 
-    /// 얼린 그림이 흐려지는 데 걸리는 시간 — 안드로이드 `SHELL_FADE` 와 같은 값
+    /// 얼린 그림이 흐려지는 데 걸리는 시간 — 안드로이드 `SHELL_FADE` 와 같은 값 (320ms)
     ///
     /// **색을 따로 물들이지 않는다.** 두 겹이 겹쳐 보이는 동안 색도 저절로 옮겨 간다.
-    static let fade: CFTimeInterval = 0.42
+    static let fade: CFTimeInterval = 0.32
 }
 
 /// 이 겹의 제품과 브랜드색을 아래로 내려보내는 껍데기
