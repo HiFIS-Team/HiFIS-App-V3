@@ -33,7 +33,6 @@ import app.hifis.hifis.ui.theme.HifisType
 @Composable
 fun TabPage(
     modifier: Modifier = Modifier,
-    onBranch: () -> Unit = {},
     onSearch: () -> Unit = {},
     onScan: () -> Unit = {},
     onChat: () -> Unit = {},
@@ -46,10 +45,14 @@ fun TabPage(
             .fillMaxSize()
             .background(HifisTheme.colors.background),
     ) {
+        // **지점 고르개는 화면이 안 받는다** — 셸이 들고 있는 값이라 여기서 읽는다
+        // (`onSearch` 처럼 화면마다 넘기게 두면 언젠가 한 화면만 빠진다)
+        val branch = LocalBranch.current
         AppHeader(
             // 헤더 오른쪽은 제품이 정한다 — TeamFIS 는 출퇴근·사내톡이 없다
             actions = HeaderAction.android(LocalProduct.current.product),
-            onBranch = onBranch,
+            onBranch = branch.open,
+            branchPicked = branch.id != null,
             onSearch = onSearch,
             onScan = onScan,
             onChat = onChat,

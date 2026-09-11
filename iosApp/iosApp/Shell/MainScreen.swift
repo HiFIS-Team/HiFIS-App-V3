@@ -353,11 +353,11 @@ private struct MainTabBar: View {
 
     private func presentSearch() {
         // **검색은 덮기만 한다** — 화면을 갈아 끼우지 않으니 닫으면 하던 자리로 돌아온다
-        Self.top()?.present(SearchOverlayController(onClose: {}), animated: true)
+        topController()?.present(SearchOverlayController(onClose: {}), animated: true)
     }
 
     private func presentAi() {
-        guard let parent = Self.top() else { return }
+        guard let parent = topController() else { return }
         let controller = UIHostingController(rootView: AiChatView(onClose: {}))
         // **컨트롤러를 약하게 잡는다.** 닫기 클로저는 화면이, 화면은 컨트롤러가
         // 들고 있어서 강하게 잡으면 서로 물려 페이지가 영영 안 풀린다.
@@ -372,19 +372,6 @@ private struct MainTabBar: View {
         controller.modalPresentationStyle = .fullScreen
         controller.modalTransitionStyle = .coverVertical
         parent.present(controller, animated: true)
-    }
-
-    /// 창의 맨 위 컨트롤러 — 이미 덮인 것이 있으면 그 위에 올린다
-    private static func top() -> UIViewController? {
-        var controller = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first { $0.isKeyWindow }?
-            .rootViewController
-        while let next = controller?.presentedViewController {
-            controller = next
-        }
-        return controller
     }
 }
 

@@ -18,7 +18,9 @@ import SharedKit
 struct TabPage<Content: View>: View {
     /// **이 겹이 그리는 제품** — 셸에서 읽지 않는다 (녹아드는 동안 겹마다 다르다)
     @Environment(\.product) private var product
-    var onBranch: () -> Void = {}
+    /// **지점 고르개는 화면이 안 받는다** — 셸이 들고 있는 값이라 여기서 읽는다
+    /// (`onSearch` 처럼 화면마다 넘기게 두면 언젠가 한 화면만 빠진다)
+    @EnvironmentObject private var shell: ShellState
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
     var onChat: () -> Void = {}
@@ -31,7 +33,8 @@ struct TabPage<Content: View>: View {
             AppHeader(
                 // 헤더 오른쪽은 제품이 정한다 — TeamFIS 는 출퇴근·사내톡·검색이 없다
                 actions: HeaderAction.companion.ios(product: product),
-                onBranch: onBranch,
+                branchPicked: shell.branch != nil,
+                onBranch: { BranchOverlayController.present(shell: shell) },
                 onSearch: onSearch,
                 onScan: onScan,
                 onChat: onChat,

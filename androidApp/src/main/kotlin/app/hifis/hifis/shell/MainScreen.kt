@@ -78,6 +78,10 @@ fun MainScreen() {
     // enum 대신 차례를 저장한다 — 탭과 같은 이유다
     var productIndex by rememberSaveable { mutableIntStateOf(Product.all.indexOf(Product.default)) }
     val product = Product.all[productIndex]
+    // **지점은 제품보다 오래 산다** — 제품을 옮겨도 보던 지점은 그대로다.
+    // null 이면 전 지점이다 (`Branch.ALL`)
+    var branchId by rememberSaveable { mutableStateOf<String?>(null) }
+    var branchOpen by rememberSaveable { mutableStateOf(false) }
 
     // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**.
     // 툭 갈리면 앱이 튄 것처럼 보여서 서로 녹아든다
@@ -88,9 +92,22 @@ fun MainScreen() {
         HifisTheme(product = shown) {
             CompositionLocalProvider(
                 LocalProduct provides ProductScope(shown) { productIndex = Product.all.indexOf(it) },
+                LocalBranch provides BranchScope(branchId) { branchOpen = true },
             ) {
                 val tabs = MainTab.android(shown)
-                if (tabs.isEmpty()) ProductComingSoon(shown) else ProductShell(shown, tabs)
+                Box {
+                    if (tabs.isEmpty()) ProductComingSoon(shown) else ProductShell(shown, tabs)
+                    // **셸 위로 덮는다** — 헤더에서 내려오는 판이라 하단바까지 가린다.
+                    // 잎(스캔·알림·사내톡)은 셸 안에 있어서 그 위로는 안 덮는데,
+                    // 잎이 떠 있으면 헤더가 가려 이 판을 열 수가 없다
+                    if (branchOpen) {
+                        BranchOverlay(
+                            picked = branchId,
+                            onPick = { branchId = it; branchOpen = false },
+                            onClose = { branchOpen = false },
+                        )
+                    }
+                }
             }
         }
     }

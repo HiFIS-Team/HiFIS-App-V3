@@ -14,6 +14,14 @@ import SharedKit
 final class ShellState: ObservableObject {
     @Published private(set) var product: Product = Product.companion.default_
 
+    /// 지금 보고 있는 지점 — **nil 이면 전 지점** (`Branch.ALL`)
+    ///
+    /// **제품보다 오래 산다.** 제품을 옮겨도 보던 지점은 그대로다 — 지점은 제품이
+    /// 아니라 *어느 센터를 보고 있나*라서다. 화면들은 이 값을 읽기만 한다
+    @Published private(set) var branch: String?
+
+    func pick(branch id: String?) { branch = id }
+
     /// 고르개가 쓰는 차례 — `Product` 를 index 로 바꿔 들고 있는다
     var index: Int {
         get { Product.companion.all.firstIndex(of: product) ?? 0 }
