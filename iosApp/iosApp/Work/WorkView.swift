@@ -17,6 +17,7 @@ import SharedKit
 ///
 /// 안드로이드 `WorkScreen` 과 같은 화면이다.
 struct WorkView: View {
+    @Environment(\.brand) private var brand
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
     var onChat: () -> Void = {}
@@ -89,7 +90,7 @@ struct WorkView: View {
                 Button {} label: {
                     Text(board.totalLabel(total: total))
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(HifisColor.brand)
+                        .foregroundStyle(brand)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .contentShape(Rectangle())
@@ -197,7 +198,7 @@ struct WorkView: View {
                 // 다 했으면 숫자 대신 `완료` 다 — 남은 것이 없다는 말이 숫자보다 빠르다
                 Text(board.progressLabel(tasks: ofDay, day: Int32(day)))
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(HifisColor.brand)
+                    .foregroundStyle(brand)
             }
             .padding(.horizontal, 4)
 
@@ -209,7 +210,7 @@ struct WorkView: View {
                 ZStack(alignment: .leading) {
                     Capsule().fill(HifisColor.fieldFill)
                     Capsule()
-                        .fill(HifisColor.brand)
+                        .fill(brand)
                         .frame(
                             width: proxy.size.width
                                 * CGFloat(board.progress(tasks: ofDay, day: Int32(day)))
@@ -289,6 +290,7 @@ struct WorkView: View {
 /// **횟수 숫자는 안 적는다.** V2 도 그랬다 — 칩에는 했는지 여부만 두고 몇 번인지는
 /// 머리말의 `총 N회` 와 내역에서 본다. 좁은 칩에 숫자까지 넣으면 이름이 그만큼 줄어든다.
 private struct CountChip: View {
+    @Environment(\.brand) private var brand
     let label: String
     let count: Int
     let fontSize: CGFloat
@@ -309,7 +311,7 @@ private struct CountChip: View {
             Button {} label: {
                 Text(label)
                     .font(.system(size: fontSize, weight: active ? .bold : .medium))
-                    .foregroundStyle(active ? HifisColor.brand : HifisColor.ink)
+                    .foregroundStyle(active ? brand : HifisColor.ink)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .contentShape(Rectangle())
@@ -319,19 +321,19 @@ private struct CountChip: View {
             AdjustButton(
                 icon: "ic_plus",
                 label: "\(label) 하나 늘리기",
-                tint: HifisColor.brand
+                tint: brand
             ) { onAdjust(1) }
         }
         .frame(maxWidth: .infinity)
         .frame(height: WorkView.chipHeight)
         .background(
-            active ? HifisColor.brand.opacity(WorkView.activeFill) : HifisColor.surface,
+            active ? brand.opacity(WorkView.activeFill) : HifisColor.surface,
             in: RoundedRectangle(cornerRadius: WorkView.chipRadius, style: .continuous)
         )
         .overlay(
             RoundedRectangle(cornerRadius: WorkView.chipRadius, style: .continuous)
                 .strokeBorder(
-                    active ? HifisColor.brand.opacity(WorkView.activeLine) : HifisColor.line,
+                    active ? brand.opacity(WorkView.activeLine) : HifisColor.line,
                     lineWidth: 1
                 )
         )
@@ -375,6 +377,7 @@ private struct AdjustButton: View {
 /// **다 한 줄이 도드라지지 않는다.** 파란 면으로 띄우면 눈이 거기 멈추는데,
 /// 봐야 하는 건 아직 안 한 줄이다 — 줄이 그어진 채로 조용히 물러난다.
 private struct TaskRow: View {
+    @Environment(\.brand) private var brand
     let task: MyTask
     let checked: Bool
     let canCheck: Bool
@@ -389,7 +392,7 @@ private struct TaskRow: View {
                     .renderingMode(.template)
                     .resizable()
                     .frame(width: Self.check, height: Self.check)
-                    .foregroundStyle(checked ? HifisColor.brand : HifisColor.inkTertiary)
+                    .foregroundStyle(checked ? brand : HifisColor.inkTertiary)
                 Spacer().frame(width: 12)
                 VStack(alignment: .leading, spacing: 3) {
                     // 다 한 줄은 **글자를 눕힌다** — 색만 바꾸면 남은 것과 한눈에 안 갈린다
@@ -401,7 +404,7 @@ private struct TaskRow: View {
                     if let value = task.value, !value.isEmpty {
                         Text(value)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(HifisColor.brand)
+                            .foregroundStyle(brand)
                     }
                 }
                 Spacer(minLength: 0)
@@ -430,6 +433,7 @@ private struct TaskRow: View {
 ///
 /// 안드로이드 `DayRow` 와 같은 값이다.
 private struct DayRow: View {
+    @Environment(\.brand) private var brand
     @Binding var selected: Int
     let today: Int
 
@@ -443,7 +447,7 @@ private struct DayRow: View {
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(picked ? HifisColor.brand : .clear)
+                            .fill(picked ? brand : .clear)
                             .frame(width: Self.circle, height: Self.circle)
                         Text(name)
                             .font(.system(size: 16, weight: picked || day == today ? .bold : .medium))
@@ -462,7 +466,7 @@ private struct DayRow: View {
 
     private func tint(_ day: Int, picked: Bool) -> Color {
         if picked { return .white }
-        if day == today { return HifisColor.brand }
+        if day == today { return brand }
         // 일요일만 붉다 — 달력에서 쉬는 날을 찾는 눈이 그대로 온다
         if day == Self.sunday { return HifisColor.danger }
         return HifisColor.inkSecondary

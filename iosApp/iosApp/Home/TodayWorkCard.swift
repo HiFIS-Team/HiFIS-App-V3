@@ -9,6 +9,7 @@ import SharedKit
 ///
 /// 진행률 계산은 `shared` 의 `TodayWork.rateAt` 이 한다.
 struct TodayWorkCard: View {
+    @Environment(\.brand) private var brand
     let work: TodayWork
 
     var body: some View {
@@ -58,7 +59,7 @@ struct TodayWorkCard: View {
                 Spacer()
                 Text("\(Int(rate * 100))%")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(HifisColor.brand)
+                    .foregroundStyle(brand)
                 Spacer()
                 Text(work.shiftEndText)
                     .font(HifisFont.caption)
@@ -125,6 +126,9 @@ private struct ScanRecord: View {
 
 /// 근무 진행 게이지 — 트랙 + 채움 + 지금 자리를 짚는 손잡이
 private struct WorkGauge: View {
+    @Environment(\.brand) private var brand
+    @Environment(\.brandGradientStart) private var brandGradientStart
+    @Environment(\.brandGradientEnd) private var brandGradientEnd
     let rate: CGFloat
 
     var body: some View {
@@ -140,7 +144,7 @@ private struct WorkGauge: View {
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [HifisColor.brandGradientStart, HifisColor.brandGradientEnd],
+                            colors: [brandGradientStart, brandGradientEnd],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -149,7 +153,7 @@ private struct WorkGauge: View {
                 Circle()
                     .fill(HifisColor.surface)
                     .frame(width: HifisSize.gaugeThumb, height: HifisSize.gaugeThumb)
-                    .overlay(Circle().strokeBorder(HifisColor.brand, lineWidth: 3))
+                    .overlay(Circle().strokeBorder(brand, lineWidth: 3))
                     .shadow(color: .black.opacity(0.2), radius: 3, y: 2)
                     .offset(x: thumbX)
             }

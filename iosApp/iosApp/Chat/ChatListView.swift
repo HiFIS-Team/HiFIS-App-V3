@@ -12,6 +12,7 @@ import SharedKit
 ///
 /// **아직 서버가 없다.** 목록은 `ChatRoom.demo` 이고 눌러도 방이 안 열린다 — 방 화면이 없다.
 struct ChatListView: View {
+    @Environment(\.brand) private var brand
     let onBack: () -> Void
 
     /// 시각은 한 번만 잡는다 — 매 프레임 흐르면 `40분` 이 보는 중에 바뀐다
@@ -137,7 +138,7 @@ struct ChatListView: View {
                     .foregroundStyle(.white)
                     .frame(width: Self.actionHeight, height: Self.actionHeight)
                     .background(
-                        HifisColor.brand,
+                        brand,
                         in: RoundedRectangle(cornerRadius: Self.actionRadius, style: .continuous)
                     )
                     .contentShape(Rectangle())
@@ -204,6 +205,7 @@ struct ChatListView: View {
 /// **안 읽은 방만 진하다.** 읽은 방은 이름도 미리보기도 가라앉아서 훑을 때 새것만 튄다.
 /// 알림 끈 방은 줄 전체가 흐려지고 시각 앞에 꺼진 종이 붙는다.
 private struct RoomRow: View {
+    @Environment(\.brand) private var brand
     let room: ChatRoom
     let now: Kotlinx_datetimeLocalDateTime
 
@@ -253,7 +255,7 @@ private struct RoomRow: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 7)
                             .frame(height: Self.badgeHeight)
-                            .background(HifisColor.brand, in: Capsule())
+                            .background(brand, in: Capsule())
                     }
                 }
             }

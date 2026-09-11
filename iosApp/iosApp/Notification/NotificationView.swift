@@ -189,6 +189,7 @@ private struct NotificationCard: View {
 ///
 /// **안 읽은 줄만 진하다.** 읽은 줄은 글자도 원도 가라앉아서 훑을 때 새것만 튄다.
 private struct NotificationRow: View {
+    @Environment(\.brand) private var brand
     let item: AppNotification
     let now: Kotlinx_datetimeLocalDateTime
     let onOpen: () -> Void
@@ -229,7 +230,7 @@ private struct NotificationRow: View {
                 if unread {
                     Spacer().frame(width: 8)
                     Circle()
-                        .fill(HifisColor.brand)
+                        .fill(brand)
                         .frame(width: HifisSize.badgeDot, height: HifisSize.badgeDot)
                         .padding(.top, 6)
                 }

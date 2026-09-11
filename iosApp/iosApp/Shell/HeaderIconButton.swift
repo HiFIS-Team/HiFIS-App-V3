@@ -8,6 +8,7 @@ import SwiftUI
 /// 아이콘은 SF Symbols 가 아니라 안드로이드에서 변환해 온 에셋이다
 /// (`tools/icons/sync_ios_icons.py`). 두 플랫폼이 같은 그림이어야 한다.
 struct HeaderIconButton: View {
+    @Environment(\.brand) private var brand
     let icon: String
     let label: String
     var active: Bool = false
@@ -20,7 +21,7 @@ struct HeaderIconButton: View {
                 .renderingMode(.template)
                 .resizable()
                 .frame(width: HifisSize.headerIcon, height: HifisSize.headerIcon)
-                .foregroundStyle(active ? HifisColor.brand : HifisColor.ink)
+                .foregroundStyle(active ? brand : HifisColor.ink)
                 .overlay(alignment: .topTrailing) {
                     if badge { badgeDot }
                 }

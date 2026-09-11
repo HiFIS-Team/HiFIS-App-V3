@@ -9,6 +9,7 @@ import SharedKit
 /// **아직 아무것도 저장되지 않는다.** 서버가 없어서 `저장` 을 누르면 그냥 닫힌다.
 /// 날짜·시각도 지금은 글자로 받는다 — 고르개는 다음이다.
 struct EventFormSheet: View {
+    @Environment(\.brand) private var brand
     let onDismiss: () -> Void
 
     @State private var title = ""
@@ -63,11 +64,11 @@ struct EventFormSheet: View {
                 .renderingMode(.template)
                 .resizable()
                 .frame(width: 24, height: 24)
-                .foregroundStyle(HifisColor.brand)
+                .foregroundStyle(brand)
                 .frame(width: 48, height: 48)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(HifisColor.brand.opacity(HifisColor.toneFillOpacity))
+                        .fill(brand.opacity(HifisColor.toneFillOpacity))
                 )
             VStack(alignment: .leading, spacing: 1) {
                 Text("일정 추가")
@@ -119,7 +120,7 @@ struct EventFormSheet: View {
             TextField("", text: text, axis: minHeight > 60 ? .vertical : .horizontal)
                 .font(HifisFont.label)
                 .foregroundStyle(HifisColor.ink)
-                .tint(HifisColor.brand)
+                .tint(brand)
                 .lineLimit(minHeight > 60 ? 4 : 1, reservesSpace: minHeight > 60)
                 .overlay(alignment: .leading) {
                     if text.wrappedValue.isEmpty {
@@ -166,18 +167,18 @@ struct EventFormSheet: View {
                             .renderingMode(.template)
                             .resizable()
                             .frame(width: 16, height: 16)
-                            .foregroundStyle(on ? HifisColor.brand : HifisColor.inkSecondary)
+                            .foregroundStyle(on ? brand : HifisColor.inkSecondary)
                         Text(item.label)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(on ? HifisColor.brand : HifisColor.ink)
+                            .foregroundStyle(on ? brand : HifisColor.ink)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(
-                        Capsule().fill(on ? HifisColor.brand.opacity(0.18) : .clear)
+                        Capsule().fill(on ? brand.opacity(0.18) : .clear)
                     )
                     .overlay(
-                        Capsule().strokeBorder(on ? HifisColor.brand : HifisColor.line, lineWidth: 1)
+                        Capsule().strokeBorder(on ? brand : HifisColor.line, lineWidth: 1)
                     )
                     .contentShape(Capsule())
                 }
@@ -200,10 +201,10 @@ struct EventFormSheet: View {
                                 .renderingMode(.template)
                                 .resizable()
                                 .frame(width: 17, height: 17)
-                                .foregroundStyle(on ? HifisColor.brand : HifisColor.inkSecondary)
+                                .foregroundStyle(on ? brand : HifisColor.inkSecondary)
                             Text(item.label)
                                 .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(on ? HifisColor.brand : HifisColor.ink)
+                                .foregroundStyle(on ? brand : HifisColor.ink)
                         }
                         Text(item.detail)
                             .font(HifisFont.caption)
@@ -215,11 +216,11 @@ struct EventFormSheet: View {
                     .padding(.vertical, 13)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(on ? HifisColor.brand.opacity(0.16) : .clear)
+                            .fill(on ? brand.opacity(0.16) : .clear)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .strokeBorder(on ? HifisColor.brand : HifisColor.line, lineWidth: 1)
+                            .strokeBorder(on ? brand : HifisColor.line, lineWidth: 1)
                     )
                     .contentShape(Rectangle())
                 }
@@ -266,7 +267,7 @@ struct EventFormSheet: View {
                 .frame(height: 54)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(enabled ? HifisColor.brand : HifisColor.fieldFill)
+                        .fill(enabled ? brand : HifisColor.fieldFill)
                 )
                 .contentShape(Rectangle())
         }

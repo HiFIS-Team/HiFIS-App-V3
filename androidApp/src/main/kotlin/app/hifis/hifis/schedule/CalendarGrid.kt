@@ -182,7 +182,7 @@ private fun DayCell(
 internal fun weekdayColor(weekday: Int, colors: HifisColors, dim: Boolean): Color {
     val base = when (weekday) {
         0 -> colors.danger
-        6 -> colors.brand
+        6 -> colors.calendarSaturday
         else -> colors.ink
     }
     return if (dim) base.copy(alpha = 0.35f) else base

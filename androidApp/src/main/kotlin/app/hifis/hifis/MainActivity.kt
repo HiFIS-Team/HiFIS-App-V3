@@ -7,7 +7,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import app.hifis.hifis.shell.MainScreen
-import app.hifis.hifis.ui.theme.HifisTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,10 +20,8 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
-        setContent {
-            HifisTheme {
-                MainScreen()
-            }
-        }
+        // **테마는 `MainScreen` 이 두른다** — 브랜드색이 제품에 따라 갈려서,
+        // 제품 상태를 들고 있는 자리가 색도 정해야 한다
+        setContent { MainScreen() }
     }
 }

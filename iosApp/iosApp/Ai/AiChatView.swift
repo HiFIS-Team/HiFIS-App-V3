@@ -16,6 +16,7 @@ import SharedKit
 ///
 /// 값은 아직 자리 표시자다 — **AI 도 서버도 안 붙였다.** 보내기는 아무 일도 안 한다.
 struct AiChatView: View {
+    @Environment(\.brand) private var brand
     let onClose: () -> Void
 
     @State private var message = ""
@@ -40,7 +41,7 @@ struct AiChatView: View {
     /// 여기서 색을 더 풀면 그 규칙이 이 화면부터 무너진다.
     private var glow: some View {
         LinearGradient(
-            colors: [HifisColor.brand.opacity(0), HifisColor.brand.opacity(0.14)],
+            colors: [brand.opacity(0), brand.opacity(0.14)],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -203,7 +204,7 @@ struct AiChatView: View {
                         .frame(width: Self.sendIcon, height: Self.sendIcon)
                         .foregroundStyle(.white)
                         .frame(width: Self.sendButton, height: Self.sendButton)
-                        .background(HifisColor.brand, in: Circle())
+                        .background(brand, in: Circle())
                         .contentShape(Circle())
                 }
                 .buttonStyle(TapStyle())

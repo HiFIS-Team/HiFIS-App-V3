@@ -51,6 +51,7 @@ struct CalendarGridView: View {
 }
 
 private struct DayCellView: View {
+    @Environment(\.brand) private var brand
     let cell: CalendarCell
     let events: [ScheduleEvent]
     let picked: Bool
@@ -67,7 +68,7 @@ private struct DayCellView: View {
                     .foregroundStyle(cell.isToday ? .white : weekdayColor(cell.weekday))
                     .frame(width: 22, height: 22)
                     .background(
-                        Circle().fill(cell.isToday ? HifisColor.brand : .clear)
+                        Circle().fill(cell.isToday ? brand : .clear)
                     )
                     .padding(.leading, 8)
                     .padding(.top, 6)
@@ -94,7 +95,7 @@ private struct DayCellView: View {
             maxHeight: HifisSize.calendarCell,
             alignment: .topLeading
         )
-        .background(picked ? HifisColor.brand.opacity(0.08) : .clear)
+        .background(picked ? brand.opacity(0.08) : .clear)
         .overlay(alignment: .trailing) {
             if drawEnd { Rectangle().fill(HifisColor.line).frame(width: 1) }
         }

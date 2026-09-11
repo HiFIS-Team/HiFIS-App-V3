@@ -7,6 +7,7 @@ import SharedKit
 /// 안드로이드 `ScheduleScreen.kt` 와 같은 화면이다 — 한쪽만 고치면 갈린다.
 ///
 struct ScheduleView: View {
+    @Environment(\.brand) private var brand
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
     var onNotification: () -> Void = {}
@@ -95,7 +96,7 @@ struct ScheduleView: View {
                         .foregroundStyle(.white)
                         .frame(width: HifisSize.stepButton, height: HifisSize.stepButton)
                         .background(
-                            HifisColor.brand,
+                            brand,
                             in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                         )
                 }
@@ -183,7 +184,7 @@ private struct StepButton: View {
 func weekdayColor(_ weekday: Int32) -> Color {
     switch weekday {
     case 0: return HifisColor.danger
-    case 6: return HifisColor.brand
+    case 6: return HifisColor.calendarSaturday
     default: return HifisColor.ink
     }
 }

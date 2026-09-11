@@ -2,6 +2,7 @@ package app.hifis.hifis.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import app.hifis.shared.nav.Product
 import app.hifis.shared.home.Tone
 
 /**
@@ -50,6 +51,15 @@ data class HifisColors(
     val brandGradientStart: Color,
     val brandGradientEnd: Color,
 
+    /**
+     * 달력 토요일 파랑 — **브랜드색이 아니다**
+     *
+     * 예전에는 [brand] 를 그대로 썼는데, 제품마다 브랜드색이 갈리면서
+     * **TeamFIS 에서 토요일이 빨개졌다** (일요일과 같은 색이 된다).
+     * 달력에서 토요일이 파란 것은 관습이지 우리 브랜드가 아니다.
+     */
+    val calendarSaturday: Color,
+
     val isDark: Boolean,
 )
 
@@ -66,6 +76,34 @@ private val Brand = Color(0xFF217FE1)
  * 밝기만 올린 게 아니라 채도도 같이 잡아 대비를 맞췄다.
  */
 private val BrandOnDark = Color(0xFF4A9BFF)
+
+/**
+ * TeamFIS 브랜드 레드 — **TeamFIS 앱 로고 마크에서 잰 값**이다 (`#FC0B21`)
+ *
+ * 눈으로 고른 값이 아니라 그 앱이 쓰던 것을 그대로 가져왔다. 같은 회사 같은 브랜드라
+ * 두 앱에서 다른 빨강이 뜨면 안 된다.
+ *
+ * `danger` 와 **다른 색이다.** 저쪽은 "잘못됐다"는 뜻이고 이쪽은 제품 정체성이다 —
+ * 값이 비슷하다고 묶으면 나중에 하나만 바꿀 때 둘이 같이 바뀐다.
+ */
+private val TeamBrand = Color(0xFFE00A1C)
+private val TeamBrandOnDark = Color(0xFFFC0B21)
+
+/**
+ * 제품이 정하는 브랜드색 한 벌 — 제품을 옮기면 이 셋이 같이 물든다
+ *
+ * WeFIS 는 **아직 안 정했다.** 지금은 HiFIS 파랑을 그대로 쓴다.
+ */
+data class BrandPalette(val brand: Color, val gradientStart: Color, val gradientEnd: Color)
+
+fun brandOf(product: Product, dark: Boolean): BrandPalette = when (product) {
+    Product.TEAMFIS ->
+        if (dark) BrandPalette(TeamBrandOnDark, Color(0xFFFD4259), Color(0xFFFB0209))
+        else BrandPalette(TeamBrand, Color(0xFFEE3346), Color(0xFFC50717))
+    Product.HIFIS, Product.WEFIS ->
+        if (dark) BrandPalette(BrandOnDark, Color(0xFF5FA9FF), Color(0xFF2F86F5))
+        else BrandPalette(Brand, Color(0xFF3590E7), Color(0xFF1A6CDD))
+}
 
 /**
  * 회색조는 **파랑 쪽으로 살짝 기울여** 놨다 (Hue 220 언저리)
@@ -86,6 +124,7 @@ val LightColors = HifisColors(
     warning = Color(0xFFFF9F0A),
     brandGradientStart = Color(0xFF3590E7),
     brandGradientEnd = Color(0xFF1A6CDD),
+    calendarSaturday = Color(0xFF217FE1),
     isDark = false,
 )
 
@@ -104,6 +143,7 @@ val DarkColors = HifisColors(
     warning = Color(0xFFFFB340),
     brandGradientStart = Color(0xFF5FA9FF),
     brandGradientEnd = Color(0xFF2F86F5),
+    calendarSaturday = Color(0xFF4A9BFF),
     isDark = true,
 )
 

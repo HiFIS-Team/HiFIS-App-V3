@@ -1,5 +1,6 @@
 import SwiftUI
 import SharedKit
+import SharedKit
 
 /// 화면이 쓰는 색 한 벌 — **안드로이드 `HifisColors` 와 같은 값**이다
 ///
@@ -45,7 +46,14 @@ enum HifisColor {
     static let brandGradientStart = dynamic(light: 0x35_90_E7, dark: 0x5F_A9_FF)
     static let brandGradientEnd = dynamic(light: 0x1A_6C_DD, dark: 0x2F_86_F5)
 
-    private static func dynamic(light: UInt32, dark: UInt32) -> Color {
+    /// 달력 토요일 파랑 — **브랜드색이 아니다**
+    ///
+    /// 예전에는 `brand` 를 그대로 썼는데, 제품마다 브랜드색이 갈리면서
+    /// **TeamFIS 에서 토요일이 빨개졌다** (일요일과 같은 색이 된다).
+    /// 달력에서 토요일이 파란 것은 관습이지 우리 브랜드가 아니다.
+    static let calendarSaturday = dynamic(light: 0x21_7F_E1, dark: 0x4A_9B_FF)
+
+    static func dynamic(light: UInt32, dark: UInt32) -> Color {
         Color(UIColor { trait in
             UIColor(rgb: trait.userInterfaceStyle == .dark ? dark : light)
         })
@@ -242,5 +250,51 @@ extension UIColor {
             blue: CGFloat(rgb & 0xFF) / 255,
             alpha: 1
         )
+    }
+}
+
+
+/// 제품이 정하는 브랜드색 한 벌 — 제품을 옮기면 이 셋이 같이 물든다
+///
+/// 안드로이드 `brandOf(product, dark)` 와 **같은 값**이다. 한쪽만 고치면 두 앱이 갈린다.
+enum HifisBrand {
+    /// TeamFIS 브랜드 레드 — **TeamFIS 앱 로고 마크에서 잰 값**이다 (`#FC0B21`)
+    ///
+    /// `danger` 와 **다른 색이다.** 저쪽은 "잘못됐다"는 뜻이고 이쪽은 제품 정체성이다.
+    static func palette(_ product: Product) -> (brand: Color, start: Color, end: Color) {
+        if product == Product.teamfis {
+            return (
+                HifisColor.dynamic(light: 0xE0_0A_1C, dark: 0xFC_0B_21),
+                HifisColor.dynamic(light: 0xEE_33_46, dark: 0xFD_42_59),
+                HifisColor.dynamic(light: 0xC5_07_17, dark: 0xFB_02_09)
+            )
+        }
+        // WeFIS 는 아직 안 정했다 — 지금은 HiFIS 파랑을 그대로 쓴다
+        return (HifisColor.brand, HifisColor.brandGradientStart, HifisColor.brandGradientEnd)
+    }
+}
+
+/// 지금 화면에 칠할 브랜드색 — **제품이 정하고, 셸이 서서히 옮긴다**
+///
+/// `HifisColor.brand` 를 직접 읽지 않는 이유는 그것이 `static` 이라
+/// **값이 바뀌어도 SwiftUI 가 다시 그리지 않기** 때문이다. 환경값으로 내려보내면
+/// 읽는 뷰만 정확히 다시 그려지고, 색 보간도 SwiftUI 가 해 준다.
+/// (안드로이드는 `LocalHifisColors` — 같은 생각을 각자 OS 방식으로 한다.)
+private struct BrandKey: EnvironmentKey { static let defaultValue = HifisColor.brand }
+private struct BrandStartKey: EnvironmentKey { static let defaultValue = HifisColor.brandGradientStart }
+private struct BrandEndKey: EnvironmentKey { static let defaultValue = HifisColor.brandGradientEnd }
+
+extension EnvironmentValues {
+    var brand: Color {
+        get { self[BrandKey.self] }
+        set { self[BrandKey.self] = newValue }
+    }
+    var brandGradientStart: Color {
+        get { self[BrandStartKey.self] }
+        set { self[BrandStartKey.self] = newValue }
+    }
+    var brandGradientEnd: Color {
+        get { self[BrandEndKey.self] }
+        set { self[BrandEndKey.self] = newValue }
     }
 }
