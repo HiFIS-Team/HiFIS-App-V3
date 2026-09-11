@@ -60,14 +60,17 @@ struct MainScreen: View {
                 //
                 // 붙여도 **UIKit 이 보는 안전영역은 그대로 34pt 다** (찍어서 확인했다).
                 // 그러니 `additionalSafeAreaInsets` 를 손대면 두 번 빼는 셈이 된다 — 건드리지 않는다.
-                // 제품이 바뀌면 **셸을 통째로 갈아 끼운다** — 탭 목록이 제품마다 다르다
-                if shell.product == Product.hifis {
+                // 제품이 바뀌면 **셸을 통째로 갈아 끼운다** — 탭 목록이 제품마다 다르다.
+                // `.id` 가 없으면 SwiftUI 가 같은 탭바를 재활용해서 칸이 안 바뀐다
+                if !MainTab.companion.ios(product: shell.product).isEmpty {
                     MainTabBar(
                         shell: shell,
+                        brand: shell.brand,
                         onScan: { withAnimation(Self.push) { scanOpen = true } },
                         onNotification: { withAnimation(Self.push) { notificationOpen = true } },
                         onChat: { withAnimation(Self.push) { chatOpen = true } }
                     )
+                    .id(shell.product.name)
                     .ignoresSafeArea()
                     // 덮인 셸에는 손이 닿지 않는다
                     .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
@@ -75,12 +78,14 @@ struct MainScreen: View {
                     // **탭바가 없다.** 탭 목록은 제품마다 다르다 —
                     // HiFIS 것을 그대로 두면 없는 화면으로 가는 칸이 네 개 선다.
                     // 헤더와 제품 고르개는 그대로라 돌아올 길이 있다
-                    ProductComingSoonView(
-                        product: shell.product,
-                        onScan: { withAnimation(Self.push) { scanOpen = true } },
-                        onNotification: { withAnimation(Self.push) { notificationOpen = true } },
-                        onChat: { withAnimation(Self.push) { chatOpen = true } }
-                    )
+                    BrandScope {
+                        ProductComingSoonView(
+                            product: shell.product,
+                            onScan: { withAnimation(Self.push) { scanOpen = true } },
+                            onNotification: { withAnimation(Self.push) { notificationOpen = true } },
+                            onChat: { withAnimation(Self.push) { chatOpen = true } }
+                        )
+                    }
                     .environmentObject(shell)
                     .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
                 }
@@ -100,7 +105,8 @@ struct MainScreen: View {
 
     /// 잎 하나 — 오른쪽에서 들어와 셸을 덮고, 왼쪽 끝을 끌면 손가락을 따라온다
     private func leaf<Leaf: View>(_ view: Leaf, width: CGFloat) -> some View {
-        view
+        BrandScope { view }
+            .environmentObject(shell)
             .offset(x: drag)
             .zIndex(1)
             .transition(.move(edge: .trailing))
@@ -167,6 +173,11 @@ struct MainScreen: View {
 private struct MainTabBar: UIViewControllerRepresentable {
     /// 탭 화면마다 심어 준다 — 화면은 이걸 읽어 제품 고르개를 그린다
     let shell: ShellState
+    /// 이 제품의 탭 — 비면 이 바를 아예 안 세운다 (`MainScreen` 이 거른다)
+    private var tabs: [MainTab] { MainTab.companion.ios(product: shell.product) }
+    /// **값으로 받아야 `updateUIViewController` 가 불린다.** 셸에서 직접 읽으면
+    /// SwiftUI 가 이 뷰가 안 바뀌었다고 보고 갱신을 건너뛴다
+    let brand: Color
     /// 헤더의 스캔 아이콘·종·말풍선 — 셸이 잎을 올린다 (`MainScreen`)
     let onScan: () -> Void
     let onNotification: () -> Void
@@ -180,7 +191,7 @@ private struct MainTabBar: UIViewControllerRepresentable {
             // **iOS 하단바 목록을 본다** — 근태는 여기 없다 (홈 바로가기로 내려갔다).
             // 없는 탭이면 아무 일도 안 한다. 화면이 생기면 그때 잇는다
             guard let controller,
-                  let index = MainTab.companion.ios.firstIndex(where: { $0 == tab })
+                  let index = tabs.firstIndex(where: { $0 == tab })
             else { return }
             controller.selectedIndex = index
         }
@@ -196,37 +207,55 @@ private struct MainTabBar: UIViewControllerRepresentable {
         if #available(iOS 18.0, *) {
             // **`tabs` 로 세운다.** `viewControllers` 로는 아래 AI 자리를 못 만든다.
             // 화면의 `tabBarItem` 은 그대로 둔다 — 고른 칸의 채운 그림이 거기 있다
-            var tabs: [UITab] = MainTab.companion.ios.map { tab in
+            var built: [UITab] = tabs.map { tab in
                 UITab(title: tab.label, image: UIImage(named: tab.icon), identifier: tab.name) { _ in
                     hosted(tab, go: go, search: search, scan: scan, notification: notification, chat: chat)
                 }
             }
 
-            // **AI 는 바가 그려 준다.** `UISearchTab` 은 바 밖에 따로 서는 자리라
+            // **동그라미는 바가 그려 준다.** `UISearchTab` 은 바 밖에 따로 서는 자리라
             // 시스템이 탭바와 **같은 유리로** 동그라미를 그린다 —
             // 우리가 유리를 흉내내지 않는다. 아이콘·제목은 갈아 끼울 수 있다.
-            // 검색 필드로 펼쳐지는 것은 화면에 `searchable` 을 붙였을 때뿐이라,
-            // 안 붙이면 그냥 그 화면으로 간다.
             // 화면 제공자는 **안 쓰인다** — 아래 `shouldSelectTab` 이 선택을 막고
             // 대신 페이지를 올린다. 그래도 nil 이면 UIKit 이 거부해서 빈 것을 하나 둔다
-            let ai = UISearchTab { _ in UIViewController() }
-            ai.title = "AI"
-            // **FS 마크를 제 색 그대로 세운다.** 탭바는 그림을 기본으로 template 처리해서
-            // 한 가지 색으로 눌러 버린다 — `alwaysOriginal` 이라야 그라데이션이 산다.
-            // 동그라미(유리)는 시스템이 그리니 우리가 댈 것은 이 그림뿐이다
-            ai.image = UIImage(named: "brand_mark")?.withRenderingMode(.alwaysOriginal)
-            tabs.append(ai)
+            //
+            // **거기 앉는 것은 제품이 정한다** — HiFIS 는 AI, TeamFIS 는 검색 (애플뮤직 자리)
+            if let slot = MainTab.companion.iosSideSlot(product: shell.product) {
+                let side = UISearchTab { _ in UIViewController() }
+                side.title = slot.label
+                if slot == MainTab.SideSlot.ai {
+                    // **FS 마크를 제 색 그대로 세운다.** 탭바는 그림을 기본으로 template 처리해서
+                    // 한 가지 색으로 눌러 버린다 — `alwaysOriginal` 이라야 그라데이션이 산다
+                    side.image = UIImage(named: slot.icon)?.withRenderingMode(.alwaysOriginal)
+                } else {
+                    // 검색은 보통 아이콘이라 바가 제 색(tint)으로 칠하게 둔다
+                    side.image = UIImage(named: slot.icon)
+                }
+                built.append(side)
+                // **TeamFIS 검색은 아직 없다.** HiFIS 검색판을 빌려 쓰지 않는다
+                // (2026-09-11 대표). 죽은 단추로 두지 않으려고 자리 문구를 띄운다
+                let product = shell.product
+                context.coordinator.onSideSlot = { [weak controller] in
+                    guard let controller else { return }
+                    if slot == MainTab.SideSlot.ai {
+                        Coordinator.presentAi(from: controller)
+                    } else {
+                        Coordinator.presentComingSoon(slot.label, from: controller)
+                    }
+                    _ = product
+                }
+            }
 
-            controller.tabs = tabs
+            controller.tabs = built
             controller.delegate = context.coordinator
         } else {
-            // iOS 17 이하에는 그 자리가 없다 — 다섯 칸만 세운다
-            controller.viewControllers = MainTab.companion.ios.map {
+            // iOS 17 이하에는 그 자리가 없다 — 탭만 세운다
+            controller.viewControllers = tabs.map {
                 hosted($0, go: go, search: search, scan: scan, notification: notification, chat: chat)
             }
         }
 
-        controller.tabBar.tintColor = UIColor(HifisColor.brand)
+        controller.tabBar.tintColor = UIColor(brand)
         // **지금은 늘 어둡게 간다.** 이 한 줄이 자식 화면과 탭바까지 다 어둡게 만든다 —
         // 동적 `UIColor` 도 `UITraitCollection.current` 도 여기서 정해진다.
         // 라이트 한 벌은 그대로 두었다. 설정에서 고르게 할 때 `.unspecified` 로 되돌린다
@@ -234,16 +263,22 @@ private struct MainTabBar: UIViewControllerRepresentable {
         return controller
     }
 
-    func updateUIViewController(_ controller: UITabBarController, context: Context) {}
+    /// 브랜드색이 옮겨 가는 동안 **바도 같이 물든다** — 매 프레임 여기로 새 색이 온다
+    func updateUIViewController(_ controller: UITabBarController, context: Context) {
+        controller.tabBar.tintColor = UIColor(brand)
+    }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    /// 탭바의 대리자 — **AI 는 탭을 옮기지 않고 페이지를 올린다**
+    /// 탭바의 대리자 — **동그라미는 탭을 옮기지 않고 덮어서 올린다**
     ///
-    /// 탭을 옮기면 지금 보던 화면을 잃는다. AI 는 **하던 일을 두고 잠깐 묻는 자리**라
-    /// 덮고 올라왔다가 닫히는 편이 맞다. `shouldSelectTab` 에서 `false` 를 돌려
+    /// 탭을 옮기면 지금 보던 화면을 잃는다. AI 도 검색도 **하던 일을 두고 잠깐 들르는
+    /// 자리**라 덮고 올라왔다가 닫히는 편이 맞다. `shouldSelectTab` 에서 `false` 를 돌려
     /// 선택을 막고, 그 자리에서 띄운다.
     final class Coordinator: NSObject, UITabBarControllerDelegate {
+        /// 동그라미를 눌렀을 때 할 일 — 제품이 정한다 (AI / 검색)
+        var onSideSlot: () -> Void = {}
+
         @available(iOS 18.0, *)
         func tabBarController(
             _ tabBarController: UITabBarController,
@@ -252,11 +287,25 @@ private struct MainTabBar: UIViewControllerRepresentable {
             // **그 자리인지는 타입으로 알아본다.** `UITab.identifier` 는 읽기 전용이고
             // `UISearchTab` 는 만들 때 이름표를 못 준다. 어차피 그 자리는 하나뿐이다
             guard tab is UISearchTab else { return true }
-            present(from: tabBarController)
+            onSideSlot()
             return false
         }
 
-        private func present(from parent: UITabBarController) {
+        /// 아직 안 만든 동그라미 — 덮고 올라왔다 닫힌다
+        static func presentComingSoon(_ label: String, from parent: UITabBarController) {
+            let controller = UIHostingController(rootView: AnyView(EmptyView()))
+            controller.rootView = AnyView(
+                SideSlotComingSoonView(label: label) { [weak controller] in
+                    controller?.dismiss(animated: true)
+                }
+            )
+            controller.overrideUserInterfaceStyle = .dark
+            controller.modalPresentationStyle = .fullScreen
+            controller.modalTransitionStyle = .coverVertical
+            parent.present(controller, animated: true)
+        }
+
+        static func presentAi(from parent: UITabBarController) {
             let controller = UIHostingController(rootView: AiChatView(onClose: {}))
             // **컨트롤러를 약하게 잡는다.** 닫기 클로저는 화면이, 화면은 컨트롤러가
             // 들고 있어서 강하게 잡으면 서로 물려 페이지가 영영 안 풀린다.
@@ -285,12 +334,15 @@ private struct MainTabBar: UIViewControllerRepresentable {
     ) -> UIHostingController<AnyView> {
         let host = UIHostingController(
             rootView: AnyView(
-                screen(
-                    for: tab, go: go, search: search, scan: scan,
-                    notification: notification, chat: chat
-                )
                 // **여기서 심어야 한다.** 탭 화면은 이 컨트롤러 안에 한 번 만들어져
-                // 앉아 있어서, 바깥에서 값을 넘기면 바뀌어도 안 따라온다
+                // 앉아 있어서, 바깥에서 값을 넘기면 바뀌어도 안 따라온다.
+                // `BrandScope` 가 셸을 지켜보다 브랜드색을 매 프레임 새로 내려 준다
+                BrandScope {
+                    screen(
+                        for: tab, go: go, search: search, scan: scan,
+                        notification: notification, chat: chat
+                    )
+                }
                 .environmentObject(shell)
             )
         )
@@ -310,6 +362,16 @@ private struct MainTabBar: UIViewControllerRepresentable {
         notification: @escaping () -> Void,
         chat: @escaping () -> Void
     ) -> AnyView {
+        // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다를 예정이라
+        // 빌려 쓰지 않는다 (2026-09-11 대표) — 아직 자리 문구만 뜬다
+        guard shell.product == Product.hifis else {
+            return AnyView(
+                ComingSoonView(
+                    label: tab.label, onSearch: search, onScan: scan,
+                    onNotification: notification, onChat: chat
+                )
+            )
+        }
         if tab == MainTab.home {
             return AnyView(
                 HomeView(onSearch: search, onScan: scan, onNotification: notification, onChat: chat)
@@ -361,6 +423,29 @@ private struct ProductComingSoonView: View {
                 .foregroundStyle(HifisColor.inkTertiary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+}
+
+/// 아직 안 만든 동그라미(검색) — **임시다.** 화면이 생기면 지운다
+private struct SideSlotComingSoonView: View {
+    let label: String
+    let onClose: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                HeaderIconButton(icon: "ic_close", label: "닫기", action: onClose)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, HifisSize.screenEdge - HifisSize.headerIconInset)
+            .frame(height: HifisSize.headerHeight)
+
+            Text("\(label) — 준비 중")
+                .font(.system(size: 15))
+                .foregroundStyle(HifisColor.inkTertiary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(HifisColor.background.ignoresSafeArea())
     }
 }
 

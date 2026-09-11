@@ -77,20 +77,30 @@ fun MainScreen() {
     var productIndex by rememberSaveable { mutableIntStateOf(Product.all.indexOf(Product.default)) }
     val product = Product.all[productIndex]
 
-    CompositionLocalProvider(
-        LocalProduct provides ProductScope(product) { productIndex = Product.all.indexOf(it) },
-    ) {
-        // **잎은 HiFIS 것이다.** 제품을 옮기면 잎도 같이 걷혀야 해서 셸을 통째로 갈아 끼운다
-        if (product == Product.HIFIS) HifisShell() else ProductComingSoon(product)
+    // **테마가 셸 바깥이다.** 제품을 옮기면 셸이 통째로 새로 서는데,
+    // 색 애니메이션이 그 안에 있으면 같이 새로 서서 물들 새가 없다
+    HifisTheme(product = product) {
+        CompositionLocalProvider(
+            LocalProduct provides ProductScope(product) { productIndex = Product.all.indexOf(it) },
+        ) {
+            // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**
+            val tabs = MainTab.android(product)
+            if (tabs.isEmpty()) ProductComingSoon(product) else ProductShell(product, tabs)
+        }
     }
 }
 
-/** HiFIS 셸 — 하단바 다섯 칸과 그 위에 덮이는 잎들 */
+/**
+ * 한 제품의 셸 — 하단바와 그 위에 덮이는 잎들
+ *
+ * 탭 목록은 제품이 정한다 ([MainTab.android]). 아직 화면이 없는 칸은 자리 문구가 뜬다.
+ */
 @Composable
-private fun HifisShell() {
-    // enum 을 그대로 저장하지 않고 차례를 저장한다 — 화면을 돌려도 탭이 남는다
-    var index by rememberSaveable { mutableIntStateOf(0) }
-    val selected = MainTab.all[index]
+private fun ProductShell(product: Product, tabs: List<MainTab>) {
+    // enum 을 그대로 저장하지 않고 차례를 저장한다 — 화면을 돌려도 탭이 남는다.
+    // **제품을 옮기면 이 셸이 새로 서서 0(홈)부터 시작한다** — 탭 목록이 달라서 이어받을 수 없다
+    var index by rememberSaveable(product) { mutableIntStateOf(0) }
+    val selected = tabs[index.coerceIn(0, tabs.lastIndex)]
     // AI 페이지는 **탭이 아니라 덮고 올라오는 자리**다 — 화면을 돌려도 열린 채로 남는다
     var aiOpen by rememberSaveable { mutableStateOf(false) }
     // 검색도 **덮기만 한다** — 화면을 갈아 끼우지 않으니 닫으면 하던 자리로 돌아온다
@@ -108,35 +118,47 @@ private fun HifisShell() {
             .background(HifisTheme.colors.background),
     ) {
         Box(Modifier.weight(1f)) {
-            when (selected) {
-                MainTab.HOME -> HomeScreen(
-                    onSearch = { searchOpen = true },
-                    onScan = { scanOpen = true },
-                    onNotification = { notificationOpen = true },
-                    onChat = { chatOpen = true },
-                )
-                MainTab.SCHEDULE -> ScheduleScreen(
-                    onSearch = { searchOpen = true },
-                    onScan = { scanOpen = true },
-                    onNotification = { notificationOpen = true },
-                    onChat = { chatOpen = true },
-                )
-                // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
-                MainTab.MORE -> MoreScreen(
-                    onTab = { index = MainTab.all.indexOf(it) },
-                    onSearch = { searchOpen = true },
-                    onScan = { scanOpen = true },
-                    onNotification = { notificationOpen = true },
-                    onChat = { chatOpen = true },
-                )
-                MainTab.WORK -> WorkScreen(
-                    onSearch = { searchOpen = true },
-                    onScan = { scanOpen = true },
-                    onNotification = { notificationOpen = true },
-                    onChat = { chatOpen = true },
-                )
-                // 나머지는 아직 화면이 없다
-                MainTab.ATTENDANCE -> ComingSoon(
+            // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다를 예정이라
+            // 빌려 쓰지 않는다 (2026-09-11 대표) — 아직 자리 문구만 뜬다
+            if (product == Product.HIFIS) {
+                when (selected) {
+                    MainTab.HOME -> HomeScreen(
+                        onSearch = { searchOpen = true },
+                        onScan = { scanOpen = true },
+                        onNotification = { notificationOpen = true },
+                        onChat = { chatOpen = true },
+                    )
+                    MainTab.SCHEDULE -> ScheduleScreen(
+                        onSearch = { searchOpen = true },
+                        onScan = { scanOpen = true },
+                        onNotification = { notificationOpen = true },
+                        onChat = { chatOpen = true },
+                    )
+                    // 전체 목록에서 하단바에 자리가 있는 화면을 누르면 **그 탭으로 옮긴다**
+                    MainTab.MORE -> MoreScreen(
+                        onTab = { tab -> tabs.indexOf(tab).let { if (it >= 0) index = it } },
+                        onSearch = { searchOpen = true },
+                        onScan = { scanOpen = true },
+                        onNotification = { notificationOpen = true },
+                        onChat = { chatOpen = true },
+                    )
+                    MainTab.WORK -> WorkScreen(
+                        onSearch = { searchOpen = true },
+                        onScan = { scanOpen = true },
+                        onNotification = { notificationOpen = true },
+                        onChat = { chatOpen = true },
+                    )
+                    // 근태는 아직 화면이 없다
+                    else -> ComingSoon(
+                        selected,
+                        onSearch = { searchOpen = true },
+                        onScan = { scanOpen = true },
+                        onNotification = { notificationOpen = true },
+                        onChat = { chatOpen = true },
+                    )
+                }
+            } else {
+                ComingSoon(
                     selected,
                     onSearch = { searchOpen = true },
                     onScan = { scanOpen = true },
@@ -153,7 +175,7 @@ private fun HifisShell() {
                     .padding(Dimens.aiChatMargin),
             ) { aiOpen = true }
         }
-        MainBottomBar(selected) { index = MainTab.all.indexOf(it) }
+        MainBottomBar(tabs, selected) { index = tabs.indexOf(it) }
     }
 
     // **셸 위로 통째로 덮는다.** 하단바까지 가려야 딴 자리로 넘어온 것이 된다.
@@ -164,7 +186,7 @@ private fun HifisShell() {
         exit = slideOutVertically(tween(260)) { it },
     ) {
         // **이 화면만 밝다.** 앱은 다크로 못 박혀 있지만 여기는 예외라 여기서 갈라 준다
-        HifisTheme(dark = false) {
+        HifisTheme(product = LocalProduct.current.product, dark = false) {
             AiChatScreen(onClose = { aiOpen = false })
         }
     }
@@ -232,17 +254,19 @@ private fun drawableOf(tab: MainTab, filled: Boolean): Int = when (tab) {
     MainTab.ATTENDANCE ->
         if (filled) R.drawable.ic_attendance_fill else R.drawable.ic_attendance
     MainTab.MORE -> if (filled) R.drawable.ic_more_fill else R.drawable.ic_more
+    MainTab.MEMBER -> if (filled) R.drawable.ic_people_fill else R.drawable.ic_people
+    MainTab.LESSON -> if (filled) R.drawable.ic_dumbbell_fill else R.drawable.ic_dumbbell
 }
 
 @Composable
-private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
+private fun MainBottomBar(tabs: List<MainTab>, selected: MainTab, onSelect: (MainTab) -> Unit) {
     val colors = HifisTheme.colors
     NavigationBar(
         containerColor = colors.surface,
         contentColor = colors.ink,
         tonalElevation = 0.dp,
     ) {
-        MainTab.all.forEach { tab ->
+        tabs.forEach { tab ->
             val picked = tab == selected
             NavigationBarItem(
                 selected = picked,

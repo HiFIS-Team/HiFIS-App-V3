@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 회원 (채움) — 사람 둘. 뒤 사람을 먼저 그려 앞 사람이 덮는다 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M16.9,4.85a3.55,3.55 0 1 1 0,7.1a3.55,3.55 0 1 1 0,-7.1z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M14.6,14.1a7.35,7.35 0 0 1 6.65,7h-4.7a8.6,8.6 0 0 0 -3.6,-6.3z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M9.25,3.65a4.25,4.25 0 1 1 0,8.5a4.25,4.25 0 1 1 0,-8.5z"
+        android:fillColor="#000000" />
+    <path
+        android:pathData="M1.9,21.1a7.35,7.35 0 0 1 14.7,0z"
+        android:fillColor="#000000" />
+</vector>

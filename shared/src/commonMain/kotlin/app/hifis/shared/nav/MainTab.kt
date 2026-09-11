@@ -12,6 +12,9 @@ package app.hifis.shared.nav
  * 알림을 눌러도 아무 일이 안 일어났고, 전자결재는 같은 이유로 버그가 났다
  * (2026-09-07). V3 는 그 목록을 여기 한 곳에만 둔다.
  *
+ * **제품마다 다른 목록을 세운다** ([android] · [ios]). 제품이 바뀌면 하단바가
+ * 통째로 바뀐다 — 그 목록도 여기 한 곳에서만 정한다.
+ *
  * **지금은 센터 근무자 기준이다.** 본사는 자주 쓰는 것이 달라서
  * (프로젝트·회의록·전자결재) 나중에 소속에 따라 다른 목록을 세우게 된다.
  * 그때도 목록이 늘어날 뿐 **읽는 자리는 여기 하나여야 한다.**
@@ -36,28 +39,79 @@ enum class MainTab(val label: String, val icon: String, val iconFilled: String) 
      * 실제로 8개밖에 못 담는다. 넣을 것이 10개라 처음부터 안 맞는다.
      */
     MORE("전체", "ic_more", "ic_more_fill"),
+
+    // ── TeamFIS ──
+    MEMBER("회원", "ic_people", "ic_people_fill"),
+    LESSON("수업", "ic_dumbbell", "ic_dumbbell_fill"),
     ;
 
     companion object {
-        /** 다섯 칸 전부 — `전체` 목록·테스트가 읽는 **명단**이다 */
+        /** 모든 탭 — 테스트가 읽는 **명단**이다. 한 제품이 이걸 다 세우지는 않는다 */
         val all: List<MainTab> = entries.toList()
 
-        /** 안드로이드 하단바 — 다섯 칸을 그대로 쓴다 */
-        val android: List<MainTab> = all
+        /** HiFIS 안드로이드 — 다섯 칸 */
+        private val hifisAndroid = listOf(HOME, WORK, SCHEDULE, ATTENDANCE, MORE)
 
         /**
-         * iOS 하단바 — **네 칸이다**
+         * HiFIS iOS — **네 칸이다**
          *
          * iOS 26 은 탭바 오른쪽에 시스템이 그리는 동그라미 자리를 하나 준다
          * (`UISearchTab`). 거기에 AI 를 앉혔는데 **그 자리가 다섯 칸 중 하나를 먹는다** —
          * 여섯으로 세우면 iOS 가 넘치는 것을 `More(…)` 로 접어 버린다.
          *
-         * 그래서 **근태가 탭에서 내려온다.** 대신 iOS 홈 바로가기가 여덟 개가 되어
-         * 근태를 받는다 ([HomeShortcut.ios]). 안드로이드에는 그 자리가 없어 그대로 다섯이다.
-         *
-         * 동그라미를 직접 그리지 않는 이유는 **바가 그려야 바와 같은 유리**이기 때문이다.
-         * 우리가 유리를 입히면 다크에서 바보다 어둡게 뜬다 (`DESIGN.md` 참고).
+         * 그래서 **근태가 탭에서 내려온다.** 대신 iOS 홈 바로가기가 근태를 받는다
+         * ([HomeShortcut.ios]). 안드로이드에는 그 자리가 없어 그대로 다섯이다.
          */
-        val ios: List<MainTab> = all - ATTENDANCE
+        private val hifisIos = hifisAndroid - ATTENDANCE
+
+        /**
+         * TeamFIS — **양 플랫폼 네 칸으로 같다** (2026-09-11 대표)
+         *
+         * 트레이너가 보는 것은 오늘 수업과 내 회원이다. 업무·근태·전체는 HiFIS 쪽 일이라
+         * 여기 안 선다 — 그래서 iOS 도 칸을 줄일 필요가 없었다.
+         *
+         * iOS 는 동그라미 자리에 **검색**이 앉는다 (애플뮤직과 같은 자리).
+         * 그래서 iOS TeamFIS 헤더에는 검색이 없다 ([HeaderAction.ios]).
+         */
+        private val teamfis = listOf(HOME, SCHEDULE, MEMBER, LESSON)
+
+        /**
+         * 안드로이드 하단바 — 제품이 정한다
+         *
+         * **비면 하단바를 안 세운다.** 없는 화면으로 가는 칸을 세울 수는 없다.
+         */
+        fun android(product: Product): List<MainTab> = when (product) {
+            Product.HIFIS -> hifisAndroid
+            Product.TEAMFIS -> teamfis
+            // 아직 화면이 하나도 없다 — 자리 문구만 뜬다
+            Product.WEFIS -> emptyList()
+        }
+
+        /** iOS 하단바 — 제품이 정한다 */
+        fun ios(product: Product): List<MainTab> = when (product) {
+            Product.HIFIS -> hifisIos
+            Product.TEAMFIS -> teamfis
+            Product.WEFIS -> emptyList()
+        }
+
+        /**
+         * iOS 탭바 오른쪽 **동그라미**에 앉는 것 — 제품마다 다르다
+         *
+         * 시스템이 탭바와 같은 유리로 그려 주는 자리다 (`UISearchTab`).
+         * 비면 그 자리를 안 쓴다.
+         */
+        fun iosSideSlot(product: Product): SideSlot? = when (product) {
+            Product.HIFIS -> SideSlot.AI
+            // 애플뮤직처럼 검색이 그 자리에 앉는다 (2026-09-11 대표)
+            Product.TEAMFIS -> SideSlot.SEARCH
+            Product.WEFIS -> null
+        }
+    }
+
+    /** iOS 탭바 오른쪽 동그라미에 앉을 수 있는 것 */
+    enum class SideSlot(val label: String, val icon: String) {
+        /** 브랜드 마크를 제 색 그대로 세운다 — 아이콘 이름이 아니라 에셋 이름이다 */
+        AI("AI", "brand_mark"),
+        SEARCH("검색", "ic_search"),
     }
 }

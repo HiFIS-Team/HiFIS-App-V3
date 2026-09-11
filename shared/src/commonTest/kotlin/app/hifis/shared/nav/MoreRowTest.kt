@@ -21,7 +21,8 @@ class MoreRowTest {
     fun `하단바 화면은 홈만 빼고 전부 전체에 있다`() {
         // 홈은 첫 칸에 늘 있고 앱이 거기서 시작한다 — 목록에서 찾을 일이 없다.
         // 전체(MORE)는 자기 자신이라 뺀다
-        val expected = MainTab.all - MainTab.HOME - MainTab.MORE
+        // **HiFIS 탭만 본다.** `전체` 는 HiFIS 의 명단이라 TeamFIS 탭(회원·수업)은 안 든다
+        val expected = MainTab.android(Product.HIFIS) - MainTab.HOME - MainTab.MORE
 
         expected.forEach { tab ->
             val row = MoreRow.all.firstOrNull { it.tab == tab }
@@ -85,14 +86,16 @@ class MoreRowTest {
     @Test
     fun `iOS 하단바는 네 칸이다`() {
         // 다섯째 칸을 시스템 AI 동그라미가 쓴다. 여섯으로 세우면 iOS 가 `More(…)` 로 접는다
-        assertEquals(4, MainTab.ios.size, "iOS 하단바가 네 칸이 아니다: ${MainTab.ios}")
-        assertEquals(5, MainTab.android.size, "안드로이드 하단바가 다섯 칸이 아니다")
+        val ios = MainTab.ios(Product.HIFIS)
+        assertEquals(4, ios.size, "iOS 하단바가 네 칸이 아니다: $ios")
+        assertEquals(5, MainTab.android(Product.HIFIS).size, "안드로이드 하단바가 다섯 칸이 아니다")
     }
 
     @Test
     fun `하단바에서 내려온 화면은 그 플랫폼 바로가기가 받는다`() {
         // iOS 는 근태가 탭에서 내려왔다 — 갈 방법이 사라지면 안 된다
-        (MainTab.android - MainTab.ios.toSet()).forEach { tab ->
+        val dropped = MainTab.android(Product.HIFIS) - MainTab.ios(Product.HIFIS).toSet()
+        dropped.forEach { tab ->
             assertTrue(
                 HomeShortcut.ios.any { it.label == tab.label },
                 "${tab.label} 이 iOS 탭에서 빠졌는데 바로가기에도 없다",
@@ -109,8 +112,52 @@ class MoreRowTest {
                 assertTrue(it.label !in labels, "$who — ${it.label} 이 하단바에도 바로가기에도 있다")
             }
         }
-        check(MainTab.android, HomeShortcut.android, "안드로이드")
-        check(MainTab.ios, HomeShortcut.ios, "iOS")
+        check(MainTab.android(Product.HIFIS), HomeShortcut.android, "안드로이드")
+        check(MainTab.ios(Product.HIFIS), HomeShortcut.ios, "iOS")
+    }
+
+    /**
+     * **TeamFIS 는 양 플랫폼이 같은 네 칸이다** — 홈·일정·회원·수업 (2026-09-11 대표).
+     *
+     * iOS 만 칸을 줄이던 이유(동그라미 자리가 한 칸을 먹는다)가 여기서는 안 걸린다.
+     * 넷뿐이라 동그라미를 더해도 다섯이다.
+     */
+    @Test
+    fun `TeamFIS 탭은 두 플랫폼이 같다`() {
+        val android = MainTab.android(Product.TEAMFIS)
+        assertEquals(android, MainTab.ios(Product.TEAMFIS))
+        assertEquals(4, android.size, "TeamFIS 탭이 넷이 아니다: $android")
+        // 업무·근태·전체는 HiFIS 쪽 일이다
+        listOf(MainTab.WORK, MainTab.ATTENDANCE, MainTab.MORE).forEach {
+            assertTrue(it !in android, "TeamFIS 탭에 ${it.label} 이 있다")
+        }
+    }
+
+    /** 화면이 하나도 없는 제품은 하단바를 안 세운다 — 없는 곳으로 가는 칸이 선다 */
+    @Test
+    fun `WeFIS 는 아직 탭이 없다`() {
+        assertTrue(MainTab.android(Product.WEFIS).isEmpty())
+        assertTrue(MainTab.ios(Product.WEFIS).isEmpty())
+        assertEquals(null, MainTab.iosSideSlot(Product.WEFIS))
+    }
+
+    /** iOS 동그라미 자리 — HiFIS 는 AI, TeamFIS 는 검색 (애플뮤직 자리) */
+    @Test
+    fun `iOS 동그라미는 제품마다 다른 것이 앉는다`() {
+        assertEquals(MainTab.SideSlot.AI, MainTab.iosSideSlot(Product.HIFIS))
+        assertEquals(MainTab.SideSlot.SEARCH, MainTab.iosSideSlot(Product.TEAMFIS))
+    }
+
+    /** 한 하단바에 같은 칸이 두 번 서지 않는다 */
+    @Test
+    fun `제품별 탭 목록에 중복이 없다`() {
+        Product.all.forEach { product ->
+            listOf("안드로이드" to MainTab.android(product), "iOS" to MainTab.ios(product))
+                .forEach { (who, tabs) ->
+                    assertEquals(tabs.size, tabs.toSet().size, "$who ${product.label} 탭에 중복이 있다")
+                    assertTrue(tabs.size <= 5, "$who ${product.label} 탭이 다섯을 넘는다: $tabs")
+                }
+        }
     }
 
     @Test
