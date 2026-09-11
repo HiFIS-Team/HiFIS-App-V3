@@ -27,13 +27,27 @@ final class ShellState: ObservableObject {
 /// 한 탭에만 두면 그 탭을 거쳐 가야 한다.
 ///
 /// 제품이 바뀌면 **탭바까지 통째로 바뀐다.** 그래서 탭바 안이 아니라 그 위에 선다.
+///
+/// ## 알약이 안 미끄러진다 (`slides: false`)
+///
+/// 제품을 옮기면 셸이 통째로 새로 서고, **이 고르개도 같이 새로 선다.**
+/// 새로 선 알약에는 미끄러져 올 자리가 없어서 그냥 제자리에 나타난다.
+///
+/// 그런데 TeamFIS ↔ WeFIS 는 둘 다 자리 화면이라 화면이 안 바뀌어서 **거기서만
+/// 미끄러졌다.** 셋 중 하나만 다르게 움직이니 그게 더 이상하게 보였다
+/// (대표가 봤다 — "하이피스랑 팀피스는 딱딱 바로, 팀피스랑 위피스는 자연스럽고").
+///
+/// 그래서 **셋 다 즉시 옮긴다.** 앱이 통째로 갈리는 자리라 알약만 천천히 따라가는 것도
+/// 어차피 맞지 않는다. 미끄러지는 것은 화면이 그대로 있는 칸 고르개(전체/안읽음 ·
+/// 공통/개인)의 몫이다.
 struct ProductSwitch: View {
     @EnvironmentObject private var shell: ShellState
 
     var body: some View {
         ModeSwitch(
             segments: Product.companion.labels,
-            selected: Binding(get: { shell.index }, set: { shell.index = $0 })
+            selected: Binding(get: { shell.index }, set: { shell.index = $0 }),
+            slides: false
         )
     }
 }

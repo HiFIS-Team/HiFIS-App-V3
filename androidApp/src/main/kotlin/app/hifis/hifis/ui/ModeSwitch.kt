@@ -1,7 +1,9 @@
 package app.hifis.hifis.ui
 
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -39,6 +41,9 @@ import app.hifis.hifis.ui.theme.HifisTheme
  *
  * **칸 수는 정해져 있지 않다.** 둘(전체/안읽음 · 공통/개인)도 셋(제품 고르개)도 같은 부품이다.
  *
+ * **폭을 다 재기 전에는 알약을 안 그린다.** 하나라도 0 이면 알약이 제 크기를 몰라
+ * 엉뚱하게 그려진다 (iOS 에서 실제로 겪었다 — `ModeSwitch.swift` 참고).
+ *
  * **고른 칸이 굵어져도 폭이 안 변한다.** 폭은 늘 굵은 글자로 재 두고 안 고른 글자는
  * 그 안에서 가운데 선다 — 안 그러면 고를 때마다 옆 칸이 밀린다.
  */
@@ -48,12 +53,19 @@ fun ModeSwitch(
     selected: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * 알약이 미끄러지는가 — **화면이 그대로 있는 자리에서만 true**
+     *
+     * 제품 고르개는 false 다. 자세한 이유는 [ProductSwitch] 에 적어 두었다.
+     */
+    slide: Boolean = true,
 ) {
     val colors = HifisTheme.colors
     val density = LocalDensity.current
     // 칸마다 폭이 다르다 — 알약이 갈 자리는 앞 칸들을 더한 값이다
     val widths = remember(segments.size) { mutableStateListOf(*Array(segments.size) { 0 }) }
-    val spec = tween<Int>(SLIDE_MILLIS, easing = CubicBezierEasing(0.33f, 1f, 0.68f, 1f))
+    val spec: AnimationSpec<Int> =
+        if (slide) tween(SLIDE_MILLIS, easing = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)) else snap()
     val at = selected.coerceIn(0, segments.lastIndex)
     val pillX by animateIntAsState(widths.take(at).sum(), spec, label = "pill-x")
     val pillWidth by animateIntAsState(widths[at], spec, label = "pill-w")
