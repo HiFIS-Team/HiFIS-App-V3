@@ -1,4 +1,4 @@
-package app.hifis.hifis.ui.component
+package app.hifis.hifis.shell
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

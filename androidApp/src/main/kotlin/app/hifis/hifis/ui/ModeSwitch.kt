@@ -1,4 +1,4 @@
-package app.hifis.hifis.ui.component
+package app.hifis.hifis.ui
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateIntAsState

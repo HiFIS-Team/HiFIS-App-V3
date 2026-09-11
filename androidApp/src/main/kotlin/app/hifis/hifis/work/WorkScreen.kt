@@ -27,9 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,9 +46,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.ModeSwitch
-import app.hifis.hifis.ui.component.ScreenTitle
-import app.hifis.hifis.ui.component.TabPage
+import app.hifis.hifis.shell.ScreenTitle
+import app.hifis.hifis.shell.TabPage
+import app.hifis.hifis.ui.ModeSwitch
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme

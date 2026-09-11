@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.HeaderIconButton
+import app.hifis.hifis.shell.HeaderIconButton
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisColors
@@ -49,8 +49,8 @@ import app.hifis.shared.chat.ChatBox
 import app.hifis.shared.chat.ChatMate
 import app.hifis.shared.chat.ChatPresence
 import app.hifis.shared.chat.ChatRoom
-import kotlinx.datetime.toKotlinLocalDateTime
 import java.time.LocalDateTime as JavaDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
 
 /**
  * 사내톡 목록 — **옆에서 밀려 들어오는 잎** (헤더의 말풍선이 연다)

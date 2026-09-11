@@ -19,8 +19,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.ScreenTitle
-import app.hifis.hifis.ui.component.TabPage
+import app.hifis.hifis.shell.ScreenTitle
+import app.hifis.hifis.shell.TabPage
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme

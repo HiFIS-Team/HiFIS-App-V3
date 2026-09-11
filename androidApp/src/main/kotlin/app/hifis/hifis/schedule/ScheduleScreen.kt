@@ -28,16 +28,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.ScreenTitle
-import app.hifis.hifis.ui.component.TabPage
+import app.hifis.hifis.shell.ScreenTitle
+import app.hifis.hifis.shell.TabPage
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.schedule.Calendar
 import app.hifis.shared.schedule.ScheduleEvent
-import kotlinx.datetime.LocalDate
 import java.time.LocalDate as JavaDate
+import kotlinx.datetime.LocalDate
 
 /**
  * 일정 — 달력 + 다가오는 일정

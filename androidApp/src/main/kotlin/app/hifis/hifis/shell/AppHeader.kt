@@ -1,4 +1,4 @@
-package app.hifis.hifis.ui.component
+package app.hifis.hifis.shell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row

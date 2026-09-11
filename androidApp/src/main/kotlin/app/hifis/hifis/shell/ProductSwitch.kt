@@ -1,8 +1,9 @@
-package app.hifis.hifis.ui.component
+package app.hifis.hifis.shell
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
+import app.hifis.hifis.ui.ModeSwitch
 import app.hifis.shared.nav.Product
 
 /**

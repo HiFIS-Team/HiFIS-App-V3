@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.hifis.hifis.ui.component.ProductSwitch
-import app.hifis.hifis.ui.component.TabPage
+import app.hifis.hifis.shell.ProductSwitch
+import app.hifis.hifis.shell.TabPage
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.shared.home.HomeAlert
 import app.hifis.shared.home.Notice

@@ -39,8 +39,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
-import app.hifis.hifis.ui.component.HeaderIconButton
-import app.hifis.hifis.ui.component.ModeSwitch
+import app.hifis.hifis.shell.HeaderIconButton
+import app.hifis.hifis.ui.ModeSwitch
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
@@ -50,8 +50,8 @@ import app.hifis.hifis.ui.theme.toneFillAlpha
 import app.hifis.shared.notification.AppNotification
 import app.hifis.shared.notification.NotificationBox
 import app.hifis.shared.notification.NotificationKind
-import kotlinx.datetime.toKotlinLocalDateTime
 import java.time.LocalDateTime as JavaDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
 
 /**
  * 알림함 — **옆에서 밀려 들어오는 잎** (헤더의 종이 연다)

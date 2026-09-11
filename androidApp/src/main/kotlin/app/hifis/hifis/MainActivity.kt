@@ -1,11 +1,12 @@
 package app.hifis.hifis
 
+import android.graphics.Color as AndroidColor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import android.graphics.Color as AndroidColor
+import app.hifis.hifis.shell.MainScreen
 import app.hifis.hifis.ui.theme.HifisTheme
 
 class MainActivity : ComponentActivity() {
