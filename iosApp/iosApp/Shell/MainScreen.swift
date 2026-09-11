@@ -248,27 +248,34 @@ private struct MainTabBar: UIViewControllerRepresentable {
             //
             // **거기 앉는 것은 제품이 정한다** — HiFIS 는 AI, TeamFIS 는 검색 (애플뮤직 자리)
             if let slot = MainTab.companion.iosSideSlot(product: product) {
-                let side = UISearchTab { _ in UIViewController() }
-                side.title = slot.label
+                let side: UISearchTab
                 if slot == MainTab.SideSlot.ai {
+                    // 화면 제공자는 **안 쓰인다** — 아래 `shouldSelectTab` 이 선택을 막고
+                    // 대신 페이지를 올린다. 그래도 nil 이면 UIKit 이 거부해서 빈 것을 하나 둔다
+                    side = UISearchTab { _ in UIViewController() }
                     // **FS 마크를 제 색 그대로 세운다.** 탭바는 그림을 기본으로 template 처리해서
                     // 한 가지 색으로 눌러 버린다 — `alwaysOriginal` 이라야 그라데이션이 산다
                     side.image = UIImage(named: slot.icon)?.withRenderingMode(.alwaysOriginal)
+                    // **AI 는 탭을 안 옮긴다** — 하던 자리를 두고 잠깐 들르는 페이지다
+                    context.coordinator.onSideSlot = { [weak controller] in
+                        guard let controller else { return }
+                        Coordinator.presentAi(from: controller)
+                    }
                 } else {
+                    // **검색은 탭으로 간다 — 바가 검색칸으로 변신한다** (애플뮤직, 2026-09-11 대표).
+                    // 그 변신은 우리가 그리는 것이 아니다. 검색칸을 `navigationItem` 에 심어 두면
+                    // iOS 26 이 **탭바 자리로 끌어와** 유리 그대로 그려 준다
+                    side = UISearchTab { _ in Coordinator.searchScreen(slot.label) }
                     // 검색은 보통 아이콘이라 바가 제 색(tint)으로 칠하게 둔다
                     side.image = UIImage(named: slot.icon)
-                }
-                built.append(side)
-                // **TeamFIS 검색은 아직 없다.** HiFIS 검색판을 빌려 쓰지 않는다
-                // (2026-09-11 대표). 죽은 단추로 두지 않으려고 자리 문구를 띄운다
-                context.coordinator.onSideSlot = { [weak controller] in
-                    guard let controller else { return }
-                    if slot == MainTab.SideSlot.ai {
-                        Coordinator.presentAi(from: controller)
-                    } else {
-                        Coordinator.presentComingSoon(slot.label, from: controller)
+                    if #available(iOS 26.0, *) {
+                        // 누르면 바로 글쇠판이 올라오고, **취소하면 하던 탭으로 돌아간다**
+                        side.automaticallyActivatesSearch = true
                     }
+                    // `onSideSlot` 은 비워 둔다 — 비면 `shouldSelectTab` 이 막지 않는다
                 }
+                side.title = slot.label
+                built.append(side)
             }
 
             controller.tabs = built
@@ -308,8 +315,11 @@ private struct MainTabBar: UIViewControllerRepresentable {
     /// 자리**라 덮고 올라왔다가 닫히는 편이 맞다. `shouldSelectTab` 에서 `false` 를 돌려
     /// 선택을 막고, 그 자리에서 띄운다.
     final class Coordinator: NSObject, UITabBarControllerDelegate {
-        /// 동그라미를 눌렀을 때 할 일 — 제품이 정한다 (AI / 검색)
-        var onSideSlot: () -> Void = {}
+        /// 동그라미를 눌렀을 때 덮어 올릴 것 — **비면 그냥 그 탭으로 간다**
+        ///
+        /// HiFIS 의 AI 는 여기 든다 (탭을 안 옮긴다). TeamFIS 의 검색은 **비어 있다** —
+        /// 탭으로 가야 바가 검색칸으로 변신한다
+        var onSideSlot: (() -> Void)?
         /// 이 바가 세운 칸들 — 채운 그림을 갈아 끼울 때 쓴다
         var tabs: [MainTab] = []
 
@@ -346,23 +356,34 @@ private struct MainTabBar: UIViewControllerRepresentable {
         ) -> Bool {
             // **그 자리인지는 타입으로 알아본다.** `UITab.identifier` 는 읽기 전용이고
             // `UISearchTab` 는 만들 때 이름표를 못 준다. 어차피 그 자리는 하나뿐이다
-            guard tab is UISearchTab else { return true }
-            onSideSlot()
+            guard tab is UISearchTab, let open = onSideSlot else { return true }
+            open()
             return false
         }
 
-        /// 아직 안 만든 동그라미 — 덮고 올라왔다 닫힌다
-        static func presentComingSoon(_ label: String, from parent: UITabBarController) {
-            let controller = UIHostingController(rootView: AnyView(EmptyView()))
-            controller.rootView = AnyView(
-                SideSlotComingSoonView(label: label) { [weak controller] in
-                    controller?.dismiss(animated: true)
-                }
-            )
-            controller.overrideUserInterfaceStyle = .dark
-            controller.modalPresentationStyle = .fullScreen
-            controller.modalTransitionStyle = .coverVertical
-            parent.present(controller, animated: true)
+        /**
+         검색 탭의 화면 — **`UINavigationController` 안에 든다**
+
+         검색칸은 `navigationItem.searchController` 에 심는다. 그 자리를 읽는 것은
+         내비게이션 컨트롤러라, 없으면 아무도 안 읽어서 **검색칸이 서지 않는다.**
+         내비 바는 숨긴다 — 우리 화면은 제 헤더를 쓴다 (`MainScreen` 의 잎 규칙).
+
+         바가 검색칸으로 변신하는 것은 **iOS 26 이 해 주는 일**이다. 우리가
+         유리를 흉내내지 않는다 (`DESIGN.md` 의 리퀴드 글래스 규칙).
+         */
+        static func searchScreen(_ placeholder: String) -> UIViewController {
+            let host = UIHostingController(rootView: SearchTabView())
+            let search = UISearchController(searchResultsController: nil)
+            // **뒤를 흐리게 덮지 않는다.** 기본값은 검색을 켜는 순간 본문 위에 막을 씌우는데,
+            // 우리 본문은 이미 거의 검정이라 그 막이 씌워지면 화면이 통째로 죽는다
+            search.obscuresBackgroundDuringPresentation = false
+            // **그 자리 이름을 그대로 쓴다** (`MainTab.SideSlot`). HiFIS 검색판의 문구는
+            // 안 가져온다 — 거기 적힌 것(사람·공지·문서)이 TeamFIS 에는 없다
+            search.searchBar.placeholder = placeholder
+            host.navigationItem.searchController = search
+            let nav = UINavigationController(rootViewController: host)
+            nav.isNavigationBarHidden = true
+            return nav
         }
 
         static func presentAi(from parent: UITabBarController) {
@@ -488,26 +509,18 @@ private struct ProductComingSoonView: View {
     }
 }
 
-/// 아직 안 만든 동그라미(검색) — **임시다.** 화면이 생기면 지운다
-private struct SideSlotComingSoonView: View {
-    let label: String
-    let onClose: () -> Void
-
+/// 검색 탭의 본문 — **검색칸은 여기 없다**
+///
+/// 칸은 탭바 자리에 시스템이 그린다 (`Coordinator.searchScreen`). 여기 드는 것은
+/// 그 위에 남는 본문뿐이라, 지금은 **뒤질 것이 없다는 말** 한 줄이다
+/// (HiFIS 검색판을 빌려 쓰지 않는다 — 2026-09-11 대표).
+private struct SearchTabView: View {
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                HeaderIconButton(icon: "ic_close", label: "닫기", action: onClose)
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, HifisSize.screenEdge - HifisSize.headerIconInset)
-            .frame(height: HifisSize.headerHeight)
-
-            Text("\(label) — 준비 중")
-                .font(.system(size: 15))
-                .foregroundStyle(HifisColor.inkTertiary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .background(HifisColor.background.ignoresSafeArea())
+        Text(AppSearch.shared.EMPTY)
+            .font(.system(size: 15))
+            .foregroundStyle(HifisColor.inkTertiary)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(HifisColor.background.ignoresSafeArea())
     }
 }
 
