@@ -22,26 +22,18 @@ package app.hifis.shared.nav
  * 아이콘 이름은 양 플랫폼이 **같은 것**을 쓴다. 안드로이드는 `R.drawable.<이름>`,
  * iOS 는 같은 이름의 에셋이다 (`tools/icons/sync_ios_icons.py` 가 맞춰 준다).
  *
- * **iOS 하단바만 예외로 애플 심볼을 쓴다** ([symbol], 2026-09-11 대표).
- * 유리가 덮는 동안 속을 채워 그리는 일을 iOS 가 해 주는데 **그것이 애플 심볼일 때만**
- * 된다 — 우리 그림으로는 어디에 걸어도 시점이 어긋났다 (`.claude/DEVLOG.md`).
- * 하단바 밖(전체 목록·바로가기·헤더)은 그대로 우리 그림이다.
+ * **iOS 하단바는 [iconFilled] 만 쓴다** (2026-09-11 대표). 거기는 유리가 덮은 칸을
+ * 색으로 말해서 안 고른 칸도 채워져 있다 — `DESIGN.md` 의 **하단바** 절에 이유가 있다.
  *
  * @property label 하단바에 찍히는 글자
- * @property icon 안 고른 칸 — **선으로만** 그린 아이콘
- * @property iconFilled 고른 칸 — **속을 채운** 아이콘
- * @property symbol iOS 하단바에 서는 애플 심볼. 채움 벌(`.fill`)은 iOS 가 알아서 쓴다
+ * @property icon 안 고른 칸 — **선으로만** 그린 아이콘 (안드로이드 하단바·전체 목록)
+ * @property iconFilled 고른 칸 — **속을 채운** 아이콘. iOS 하단바는 늘 이것이다
  */
-enum class MainTab(
-    val label: String,
-    val icon: String,
-    val iconFilled: String,
-    val symbol: String,
-) {
-    HOME("홈", "ic_home", "ic_home_fill", "house"),
-    WORK("업무", "ic_work", "ic_work_fill", "briefcase"),
-    SCHEDULE("일정", "ic_schedule", "ic_schedule_fill", "calendar"),
-    ATTENDANCE("근태", "ic_attendance", "ic_attendance_fill", "clock"),
+enum class MainTab(val label: String, val icon: String, val iconFilled: String) {
+    HOME("홈", "ic_home", "ic_home_fill"),
+    WORK("업무", "ic_work", "ic_work_fill"),
+    SCHEDULE("일정", "ic_schedule", "ic_schedule_fill"),
+    ATTENDANCE("근태", "ic_attendance", "ic_attendance_fill"),
 
     /**
      * 나머지를 전부 담는 목록 — **하단바가 변신하지 않는다**
@@ -49,11 +41,11 @@ enum class MainTab(
      * 5칸짜리 바를 2단으로 뒤집는 방식(V2 아이폰)은 한 칸을 '뒤로'에 쓰느라
      * 실제로 8개밖에 못 담는다. 넣을 것이 10개라 처음부터 안 맞는다.
      */
-    MORE("전체", "ic_more", "ic_more_fill", "square.grid.2x2"),
+    MORE("전체", "ic_more", "ic_more_fill"),
 
     // ── TeamFIS ──
-    MEMBER("회원", "ic_people", "ic_people_fill", "person.2"),
-    LESSON("수업", "ic_dumbbell", "ic_dumbbell_fill", "dumbbell"),
+    MEMBER("회원", "ic_people", "ic_people_fill"),
+    LESSON("수업", "ic_dumbbell", "ic_dumbbell_fill"),
     ;
 
     companion object {

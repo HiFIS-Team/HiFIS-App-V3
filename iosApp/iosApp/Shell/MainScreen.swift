@@ -181,15 +181,16 @@ struct MainScreen: View {
 ///
 /// 바는 iOS 26 이 리퀴드 글래스로 그린다. 유리·캡슐·움직임에 손대지 않는다.
 ///
-/// ## 칸 그림은 **애플 심볼**이다 (`MainTab.symbol`)
+/// ## 칸 그림은 **늘 채운 벌**이다 (`MainTab.iconFilled`)
 ///
-/// 하단바에서만 그렇다 — 전체 목록·바로가기·헤더는 그대로 우리 그림이다.
+/// 고른 칸만 채우려고 하면 **선 아이콘이 브랜드색으로 보이는 순간**이 생긴다.
+/// 유리가 덮은 칸에 색을 입히는 것은 iOS 인데, 그림을 바꿀 신호는 우리에게 늦게
+/// 오거나(누를 때) 아예 안 온다(**손으로 끌 때**) — 대표가 세 번 봤다 (2026-09-11).
 ///
-/// **고른 칸을 채우는 일을 우리가 하지 않는다.** 유리가 덮은 칸을 채움 벌(`.fill`)로
-/// 바꿔 그리는 것은 iOS 가 하는데, **애플 심볼일 때만** 해 준다. 우리 그림을 쓰는 동안은
-/// 우리가 시점을 재야 했고 어디에 걸어도 한쪽이 어긋났다 — 특히 **유리를 손으로 끄는
-/// 동안**에는 바꿀 신호 자체가 안 왔다 (대표가 세 번 봤다, 2026-09-11).
-/// 우리 그림을 커스텀 심볼로 담아 보는 길까지 해 봤다 — `.claude/DEVLOG.md` 에 있다.
+/// 그래서 **고른 칸 표시를 채움이 아니라 색에 맡긴다.** 유리 캡슐과 브랜드색이
+/// 이미 말하고 있어서 채움까지 갈릴 필요가 없다 — iOS 26 의 애플 앱들도 다 그렇다
+/// (애플 심볼을 끼워 보면 안 고른 칸까지 전부 채워져 나온다).
+/// 안드로이드는 그 문제가 없어 선↔채움 그대로다.
 private struct MainTabBar: View {
     /// 탭 화면마다 심어 준다 — 화면은 이걸 읽어 제품 고르개를 그린다
     let shell: ShellState
@@ -248,7 +249,7 @@ private struct MainTabBar: View {
     private var glass: some View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.name) { tab in
-                Tab(tab.label, systemImage: tab.symbol, value: tab.name) { page(tab) }
+                Tab(tab.label, image: tab.iconFilled, value: tab.name) { page(tab) }
             }
 
             // **동그라미는 바가 그려 준다.** `role: .search` 인 칸은 유리 바에서 떨어져
@@ -267,7 +268,7 @@ private struct MainTabBar: View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.name) { tab in
                 page(tab)
-                    .tabItem { Label(tab.label, systemImage: tab.symbol) }
+                    .tabItem { Label { Text(tab.label) } icon: { Image(tab.iconFilled) } }
                     .tag(tab.name)
             }
         }
