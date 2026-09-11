@@ -19,18 +19,29 @@ package app.hifis.shared.nav
  * (프로젝트·회의록·전자결재) 나중에 소속에 따라 다른 목록을 세우게 된다.
  * 그때도 목록이 늘어날 뿐 **읽는 자리는 여기 하나여야 한다.**
  *
+ * 아이콘 이름은 양 플랫폼이 **같은 것**을 쓴다. 안드로이드는 `R.drawable.<이름>`,
+ * iOS 는 같은 이름의 에셋이다 (`tools/icons/sync_ios_icons.py` 가 맞춰 준다).
+ *
+ * **iOS 하단바만 예외로 애플 심볼을 쓴다** ([symbol], 2026-09-11 대표).
+ * 유리가 덮는 동안 속을 채워 그리는 일을 iOS 가 해 주는데 **그것이 애플 심볼일 때만**
+ * 된다 — 우리 그림으로는 어디에 걸어도 시점이 어긋났다 (`.claude/DEVLOG.md`).
+ * 하단바 밖(전체 목록·바로가기·헤더)은 그대로 우리 그림이다.
+ *
  * @property label 하단바에 찍히는 글자
  * @property icon 안 고른 칸 — **선으로만** 그린 아이콘
  * @property iconFilled 고른 칸 — **속을 채운** 아이콘
- *
- * 아이콘 이름은 양 플랫폼이 **같은 것**을 쓴다. 안드로이드는 `R.drawable.<이름>`,
- * iOS 는 같은 이름의 에셋이다 (`tools/icons/sync_ios_icons.py` 가 맞춰 준다).
+ * @property symbol iOS 하단바에 서는 애플 심볼. 채움 벌(`.fill`)은 iOS 가 알아서 쓴다
  */
-enum class MainTab(val label: String, val icon: String, val iconFilled: String) {
-    HOME("홈", "ic_home", "ic_home_fill"),
-    WORK("업무", "ic_work", "ic_work_fill"),
-    SCHEDULE("일정", "ic_schedule", "ic_schedule_fill"),
-    ATTENDANCE("근태", "ic_attendance", "ic_attendance_fill"),
+enum class MainTab(
+    val label: String,
+    val icon: String,
+    val iconFilled: String,
+    val symbol: String,
+) {
+    HOME("홈", "ic_home", "ic_home_fill", "house"),
+    WORK("업무", "ic_work", "ic_work_fill", "briefcase"),
+    SCHEDULE("일정", "ic_schedule", "ic_schedule_fill", "calendar"),
+    ATTENDANCE("근태", "ic_attendance", "ic_attendance_fill", "clock"),
 
     /**
      * 나머지를 전부 담는 목록 — **하단바가 변신하지 않는다**
@@ -38,11 +49,11 @@ enum class MainTab(val label: String, val icon: String, val iconFilled: String) 
      * 5칸짜리 바를 2단으로 뒤집는 방식(V2 아이폰)은 한 칸을 '뒤로'에 쓰느라
      * 실제로 8개밖에 못 담는다. 넣을 것이 10개라 처음부터 안 맞는다.
      */
-    MORE("전체", "ic_more", "ic_more_fill"),
+    MORE("전체", "ic_more", "ic_more_fill", "square.grid.2x2"),
 
     // ── TeamFIS ──
-    MEMBER("회원", "ic_people", "ic_people_fill"),
-    LESSON("수업", "ic_dumbbell", "ic_dumbbell_fill"),
+    MEMBER("회원", "ic_people", "ic_people_fill", "person.2"),
+    LESSON("수업", "ic_dumbbell", "ic_dumbbell_fill", "dumbbell"),
     ;
 
     companion object {
@@ -56,7 +67,7 @@ enum class MainTab(val label: String, val icon: String, val iconFilled: String) 
          * HiFIS iOS — **네 칸이다**
          *
          * iOS 26 은 탭바 오른쪽에 시스템이 그리는 동그라미 자리를 하나 준다
-         * (`UISearchTab`). 거기에 AI 를 앉혔는데 **그 자리가 다섯 칸 중 하나를 먹는다** —
+         * (`Tab(role: .search)`). 거기에 AI 를 앉혔는데 **그 자리가 다섯 칸 중 하나를 먹는다** —
          * 여섯으로 세우면 iOS 가 넘치는 것을 `More(…)` 로 접어 버린다.
          *
          * 그래서 **근태가 탭에서 내려온다.** 대신 iOS 홈 바로가기가 근태를 받는다
@@ -97,7 +108,7 @@ enum class MainTab(val label: String, val icon: String, val iconFilled: String) 
         /**
          * iOS 탭바 오른쪽 **동그라미**에 앉는 것 — 제품마다 다르다
          *
-         * 시스템이 탭바와 같은 유리로 그려 주는 자리다 (`UISearchTab`).
+         * 시스템이 탭바와 같은 유리로 그려 주는 자리다 (`Tab(role: .search)`).
          * 비면 그 자리를 안 쓴다.
          */
         fun iosSideSlot(product: Product): SideSlot? = when (product) {

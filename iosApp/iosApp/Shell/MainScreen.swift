@@ -180,18 +180,16 @@ struct MainScreen: View {
 /// 하단 탭바 — **SwiftUI `TabView`**
 ///
 /// 바는 iOS 26 이 리퀴드 글래스로 그린다. 유리·캡슐·움직임에 손대지 않는다.
-/// 고른 칸 그림은 [picked] 를 보고 SwiftUI 가 다시 그린다 —
-/// MyFIS·TeamFIS 도 같은 방식이다 (대표 지시, 2026-09-11).
 ///
-/// ## UIKit 바에서 옮겨 왔다
+/// ## 칸 그림은 **애플 심볼**이다 (`MainTab.symbol`)
 ///
-/// 전에는 `UITabBarController` 였다. `UITab` 에는 고른 칸 그림 자리(`selectedImage`)가
-/// 없어서 **대리자가 올 때 우리가 손으로 갈아 끼웠는데**, 걸 자리가 둘뿐이고 둘 다 반쪽이었다 —
-/// 뒤에 걸면 도착할 칸이 늦게 채워지고, 앞에 걸면 나가는 칸이 유리 밑에서 먼저 비었다.
-/// **유리를 손으로 끄는 동안에는 그 대리자가 아예 안 온다** (대표가 세 번 봤다).
+/// 하단바에서만 그렇다 — 전체 목록·바로가기·헤더는 그대로 우리 그림이다.
 ///
-/// 커스텀 SF 심볼로 담아 iOS 에게 맡겨 보려고도 했는데 **자동 채움은 애플 심볼만 된다** —
-/// 확인한 것은 `.claude/DEVLOG.md` 에 남겼다.
+/// **고른 칸을 채우는 일을 우리가 하지 않는다.** 유리가 덮은 칸을 채움 벌(`.fill`)로
+/// 바꿔 그리는 것은 iOS 가 하는데, **애플 심볼일 때만** 해 준다. 우리 그림을 쓰는 동안은
+/// 우리가 시점을 재야 했고 어디에 걸어도 한쪽이 어긋났다 — 특히 **유리를 손으로 끄는
+/// 동안**에는 바꿀 신호 자체가 안 왔다 (대표가 세 번 봤다, 2026-09-11).
+/// 우리 그림을 커스텀 심볼로 담아 보는 길까지 해 봤다 — `.claude/DEVLOG.md` 에 있다.
 private struct MainTabBar: View {
     /// 탭 화면마다 심어 준다 — 화면은 이걸 읽어 제품 고르개를 그린다
     let shell: ShellState
@@ -250,7 +248,7 @@ private struct MainTabBar: View {
     private var glass: some View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.name) { tab in
-                Tab(tab.label, image: icon(tab), value: tab.name) { page(tab) }
+                Tab(tab.label, systemImage: tab.symbol, value: tab.name) { page(tab) }
             }
 
             // **동그라미는 바가 그려 준다.** `role: .search` 인 칸은 유리 바에서 떨어져
@@ -269,15 +267,10 @@ private struct MainTabBar: View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.name) { tab in
                 page(tab)
-                    .tabItem { Label { Text(tab.label) } icon: { Image(icon(tab)) } }
+                    .tabItem { Label(tab.label, systemImage: tab.symbol) }
                     .tag(tab.name)
             }
         }
-    }
-
-    /// 고른 칸만 **속을 채운 그림**을 쓴다 — 실루엣이 같아 바뀔 때 튀지 않는다
-    private func icon(_ tab: MainTab) -> String {
-        picked == tab.name ? tab.iconFilled : tab.icon
     }
 
     /// 탭 하나의 화면 — `ShellScope` 가 이 겹의 제품과 브랜드색을 내려 준다
