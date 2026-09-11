@@ -262,7 +262,10 @@ private struct MainTabBar: UIViewControllerRepresentable {
             controller.delegate = context.coordinator
             // **고른 칸의 채운 그림은 우리가 갈아 끼운다.** `UITab` 에는 `selectedImage` 가
             // 없고, 화면의 `tabBarItem` 도 안 본다 — 칸을 옮길 때마다 `image` 를 바꿔 준다
-            Coordinator.applyIcons(controller, tabs: tabs)
+            // **자리를 잡은 **뒤**에 갈아 끼운다.** 세우자마자 바꾸면 바가 반쯤 잡힌 상태에서
+            // 다시 재서, **안 고른 칸의 글자만 아래로 내려가 바 끝에 걸린다** (대표가 봤다).
+            // 그 어긋남은 그대로 굳어서 앱을 껐다 켜야 없어졌다
+            DispatchQueue.main.async { Coordinator.applyIcons(controller, tabs: tabs) }
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 탭만 세운다
             controller.viewControllers = tabs.map {
