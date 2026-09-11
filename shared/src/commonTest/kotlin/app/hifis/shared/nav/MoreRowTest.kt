@@ -149,6 +149,25 @@ class MoreRowTest {
     }
 
     /**
+     * **AI 를 세우는 제품은 한 곳에서 정한다** ([Product.hasAi])
+     *
+     * 자리가 둘이라 갈리기 쉽다 — 안드로이드는 떠 있는 단추, iOS 는 탭바 동그라미다.
+     * 한쪽만 고치면 딴 제품에서 답할 것 없는 AI 가 열린다.
+     */
+    @Test
+    fun `AI 는 제품 하나만 세운다`() {
+        Product.all.forEach { product ->
+            assertEquals(
+                product.hasAi,
+                MainTab.iosSideSlot(product) == MainTab.SideSlot.AI,
+                "${product.label} 의 AI 자리가 두 플랫폼에서 어긋난다",
+            )
+        }
+        assertTrue(Product.HIFIS.hasAi)
+        assertEquals(1, Product.all.count { it.hasAi })
+    }
+
+    /**
      * **어느 제품이든 첫 탭은 홈이다** — 제품 고르개가 거기 서기 때문이다.
      *
      * 고르개는 홈 화면에만 있다. 홈 탭이 없거나 첫 칸이 아니면, 그 제품에 들어간 사람이

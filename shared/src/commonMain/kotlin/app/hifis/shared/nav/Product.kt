@@ -36,4 +36,16 @@ enum class Product(val label: String) {
         /** 아직 화면이 없는 제품의 자리 문구 — 안 만든 탭과 같은 말을 쓴다 */
         fun comingSoon(product: Product): String = "${product.label} — 준비 중"
     }
+
+    /**
+     * AI 를 쓸 수 있는 제품인가 — **HiFIS 뿐이다** (2026-09-11 대표)
+     *
+     * AI 는 출퇴근·환경정비·급여를 아는 HiFIS 의 것이라, 딴 제품에서는 물어도 답할 것이 없다.
+     * 안드로이드는 이 값이 **떠 있는 단추**를 세울지를 정하고
+     * (`AiChatButton`), iOS 는 탭바 동그라미가 이걸 따른다 ([MainTab.iosSideSlot]).
+     *
+     * **자리가 둘이라 여기 한 곳에 둔다.** 화면마다 `product == HIFIS` 를 새로 적으면
+     * 언젠가 한쪽만 고쳐진다 — 권한 판정을 한 곳에 모으는 것과 같은 이유다.
+     */
+    val hasAi: Boolean get() = this == HIFIS
 }

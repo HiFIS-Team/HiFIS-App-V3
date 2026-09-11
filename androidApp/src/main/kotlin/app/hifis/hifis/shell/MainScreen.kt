@@ -182,13 +182,18 @@ private fun ProductShell(product: Product, tabs: List<MainTab>) {
                 )
             }
 
-            // **탭이 아니라 셸이 들고 있다** — 다섯 곳에 다 떠 있어야 한다.
-            // 하단바는 이 Box 밖(아래)이라 겹칠 일이 없다
-            AiChatButton(
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(Dimens.aiChatMargin),
-            ) { aiOpen = true }
+            // **탭이 아니라 셸이 들고 있다** — 그 제품의 모든 탭에 떠 있어야 한다.
+            // 하단바는 이 Box 밖(아래)이라 겹칠 일이 없다.
+            //
+            // **HiFIS 에만 뜬다** (2026-09-11 대표) — AI 가 아는 것이 출퇴근·환경정비·급여라
+            // 딴 제품에서는 물어도 답할 것이 없다. iOS 는 탭바 동그라미가 같은 값을 읽는다
+            if (product.hasAi) {
+                AiChatButton(
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(Dimens.aiChatMargin),
+                ) { aiOpen = true }
+            }
         }
         MainBottomBar(tabs, selected) { index = tabs.indexOf(it) }
     }
