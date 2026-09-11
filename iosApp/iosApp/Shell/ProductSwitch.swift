@@ -66,8 +66,11 @@ final class ShellState: ObservableObject {
         }
     }
 
-    /// 브랜드색이 옮겨 가는 데 걸리는 시간 — 안드로이드 `BRAND_FADE` 와 같은 값
-    private static let fade: CFTimeInterval = 0.42
+    /// 제품이 서로 녹아드는 데 걸리는 시간 — 안드로이드 `SHELL_FADE`·`BRAND_FADE` 와 같은 값
+    ///
+    /// 색과 화면이 **같은 빠르기**여야 한다. 하나만 빠르면 색이 다 물든 뒤에
+    /// 화면이 뒤늦게 바뀌거나 그 반대가 된다.
+    static let fade: CFTimeInterval = 0.42
 }
 
 /// 색을 섞으려면 숫자가 있어야 한다 — `Color` 는 성분을 안 내준다
@@ -93,16 +96,19 @@ private func mix(_ a: RGB, _ b: RGB, _ t: Double) -> Color {
     )
 }
 
-/// 브랜드색을 아래로 내려보내는 껍데기 — **셸 상태를 지켜보다 바뀔 때마다 다시 심는다**
+/// 이 겹의 제품과 브랜드색을 아래로 내려보내는 껍데기 — **셸을 지켜보다 다시 심는다**
 ///
 /// 탭 화면은 `UIHostingController` 안에 따로 서 있어서, 만들 때 심은 값은 안 따라온다.
 /// 이 껍데기가 셸을 지켜보다가 색이 바뀔 때마다 환경값을 새로 내려 준다.
-struct BrandScope<Content: View>: View {
+struct ShellScope<Content: View>: View {
+    /// **이 겹이 그리는 제품** — 셸에서 읽지 않는다. 녹아드는 동안 겹마다 다르다
+    let product: Product
     @EnvironmentObject private var shell: ShellState
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
+            .environment(\.product, product)
             .environment(\.brand, shell.brand)
             .environment(\.brandGradientStart, shell.brandStart)
             .environment(\.brandGradientEnd, shell.brandEnd)
@@ -131,11 +137,19 @@ struct BrandScope<Content: View>: View {
 /// 공통/개인)의 몫이다.
 struct ProductSwitch: View {
     @EnvironmentObject private var shell: ShellState
+    /// **보여주는 것은 이 겹의 제품이다** — 나가는 겹은 나가는 제품을 고른 채로 흐려진다
+    @Environment(\.product) private var product
 
     var body: some View {
         ModeSwitch(
             segments: Product.companion.labels,
-            selected: Binding(get: { shell.index }, set: { shell.index = $0 }),
+            // **셸이 서로 녹아들게 감싼다.** 색만 물들고 화면은 툭 갈리면 따로 논다
+            selected: Binding(
+                get: { Product.companion.all.firstIndex(of: product) ?? 0 },
+                set: { next in
+                    withAnimation(.easeInOut(duration: ShellState.fade)) { shell.index = next }
+                }
+            ),
             slides: false
         )
     }

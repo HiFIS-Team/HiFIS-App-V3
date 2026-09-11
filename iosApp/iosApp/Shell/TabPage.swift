@@ -16,7 +16,8 @@ import SharedKit
 /// 탭마다 세우면 업무 화면에서는 제품 알약과 공통/개인 알약이 위아래로 겹쳐 서서,
 /// 모양이 같은데 무게가 다른 것이 둘 나란히 보인다.
 struct TabPage<Content: View>: View {
-    @EnvironmentObject private var shell: ShellState
+    /// **이 겹이 그리는 제품** — 셸에서 읽지 않는다 (녹아드는 동안 겹마다 다르다)
+    @Environment(\.product) private var product
     var onBranch: () -> Void = {}
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
@@ -29,7 +30,7 @@ struct TabPage<Content: View>: View {
         VStack(spacing: 0) {
             AppHeader(
                 // 헤더 오른쪽은 제품이 정한다 — TeamFIS 는 출퇴근·사내톡·검색이 없다
-                actions: HeaderAction.companion.ios(product: shell.product),
+                actions: HeaderAction.companion.ios(product: product),
                 onBranch: onBranch,
                 onSearch: onSearch,
                 onScan: onScan,

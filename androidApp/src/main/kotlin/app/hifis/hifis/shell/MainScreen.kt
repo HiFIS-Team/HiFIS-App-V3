@@ -2,6 +2,7 @@ package app.hifis.hifis.shell
 
 import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -80,15 +81,27 @@ fun MainScreen() {
     // **테마가 셸 바깥이다.** 제품을 옮기면 셸이 통째로 새로 서는데,
     // 색 애니메이션이 그 안에 있으면 같이 새로 서서 물들 새가 없다
     HifisTheme(product = product) {
-        CompositionLocalProvider(
-            LocalProduct provides ProductScope(product) { productIndex = Product.all.indexOf(it) },
-        ) {
-            // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**
-            val tabs = MainTab.android(product)
-            if (tabs.isEmpty()) ProductComingSoon(product) else ProductShell(product, tabs)
+        // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**.
+        // 툭 갈리면 앱이 튄 것처럼 보여서 **서로 녹아든다** — 브랜드색이 물드는 것과 같은 빠르기다
+        Crossfade(product, animationSpec = tween(SHELL_FADE), label = "shell") { shown ->
+            // **녹아드는 두 겹이 각자 제 제품을 그린다.** 이 줄이 밖에 있으면
+            // 나가는 겹까지 새 제품의 헤더를 그려서, 헤더만 툭 갈리고 본문만 녹는다
+            CompositionLocalProvider(
+                LocalProduct provides ProductScope(shown) { productIndex = Product.all.indexOf(it) },
+            ) {
+                val tabs = MainTab.android(shown)
+                if (tabs.isEmpty()) ProductComingSoon(shown) else ProductShell(shown, tabs)
+            }
         }
     }
 }
+
+/**
+ * 제품이 서로 녹아드는 데 걸리는 시간 — 브랜드색(`BRAND_FADE`)과 **같은 값이어야 한다**
+ *
+ * 하나만 빠르면 색이 다 물든 뒤에 화면이 뒤늦게 바뀌거나 그 반대가 된다.
+ */
+private const val SHELL_FADE = 420
 
 /**
  * 한 제품의 셸 — 하단바와 그 위에 덮이는 잎들

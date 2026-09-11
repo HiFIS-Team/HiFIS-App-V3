@@ -280,11 +280,20 @@ enum HifisBrand {
 /// **값이 바뀌어도 SwiftUI 가 다시 그리지 않기** 때문이다. 환경값으로 내려보내면
 /// 읽는 뷰만 정확히 다시 그려지고, 색 보간도 SwiftUI 가 해 준다.
 /// (안드로이드는 `LocalHifisColors` — 같은 생각을 각자 OS 방식으로 한다.)
+/// 이 겹이 그리는 제품 — **셸이 서로 녹아드는 동안 겹마다 다르다**
+///
+/// 나가는 겹이 `ShellState.product` 를 직접 읽으면 **새 제품의 헤더를 그려서**,
+/// 헤더만 툭 갈리고 본문만 녹는다.
+private struct ProductKey: EnvironmentKey { static let defaultValue = Product.companion.default_ }
 private struct BrandKey: EnvironmentKey { static let defaultValue = HifisColor.brand }
 private struct BrandStartKey: EnvironmentKey { static let defaultValue = HifisColor.brandGradientStart }
 private struct BrandEndKey: EnvironmentKey { static let defaultValue = HifisColor.brandGradientEnd }
 
 extension EnvironmentValues {
+    var product: Product {
+        get { self[ProductKey.self] }
+        set { self[ProductKey.self] = newValue }
+    }
     var brand: Color {
         get { self[BrandKey.self] }
         set { self[BrandKey.self] = newValue }
