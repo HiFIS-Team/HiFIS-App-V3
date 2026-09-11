@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -61,7 +62,7 @@ import app.hifis.shared.nav.Product
  * 탭 목록은 `shared` 의 [MainTab] 하나만 읽는다. 여기서 새로 세우지 않는다.
  *
  * 하단바는 **머티리얼 3 표준 `NavigationBar`** 다. 색만 우리 토큰으로 바꾼다 —
- * 눌린 칸의 알약 표시·물결·간격은 OS 가 하던 대로 두는 것이 안드로이드답다.
+ * 칸 나누기·글자 자리·간격은 OS 가 하던 대로 두는 것이 안드로이드답다.
  * (iOS 는 반대로 그 OS 의 리퀴드 글래스 탭바를 쓴다 — 각자 자기 표준으로 간다.)
  *
  * ## 제품이 셸을 갈아 끼운다
@@ -291,8 +292,7 @@ private fun MainBottomBar(tabs: List<MainTab>, selected: MainTab, onSelect: (Mai
             NavigationBarItem(
                 selected = picked,
                 onClick = { onSelect(tab) },
-                // 누름 효과(물결)를 끈다 — 화면이 바뀌는 것으로 충분하다.
-                // 알약 표시는 `selected` 를 보므로 그대로 남는다
+                // 누름 효과(물결)를 끈다 — 화면이 바뀌는 것으로 충분하다
                 interactionSource = NoInteraction,
                 icon = {
                     Icon(
@@ -305,8 +305,10 @@ private fun MainBottomBar(tabs: List<MainTab>, selected: MainTab, onSelect: (Mai
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colors.brand,
                     selectedTextColor = colors.brand,
-                    // 표준 알약 표시는 그대로 두되 색만 브랜드로 옅게 깐다
-                    indicatorColor = colors.brand.copy(alpha = 0.12f),
+                    // **알약 표시를 지운다** (2026-09-11 대표). 고른 칸은 **채운 그림과
+                    // 브랜드색 글자**가 이미 말하고 있어서, 뒤에 면까지 깔면 말이 두 번이다.
+                    // 부품은 그대로 두고 색만 비운다 — 자리는 OS 가 잡던 그대로 남는다
+                    indicatorColor = Color.Transparent,
                     unselectedIconColor = colors.inkTertiary,
                     unselectedTextColor = colors.inkTertiary,
                 ),
