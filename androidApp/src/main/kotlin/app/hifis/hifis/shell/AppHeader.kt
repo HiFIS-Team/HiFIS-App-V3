@@ -13,9 +13,10 @@ import androidx.compose.ui.Modifier
 import app.hifis.hifis.R
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.shared.nav.HeaderAction
 
 /**
- * 앱 헤더 — 왼쪽 지점, 오른쪽 검색·스캔·사내톡·알림·마이
+ * 앱 헤더 — 왼쪽 지점, 오른쪽은 **제품이 정한 단추들**
  *
  * **홈 전용이 아니다.** 탭 화면(홈·업무·일정·근태)이 다 같은 줄을 쓴다 —
  * 사내톡·알림·마이가 홈에서만 열리면 다른 탭에서는 갈 방법이 없어진다.
@@ -23,7 +24,11 @@ import app.hifis.hifis.ui.theme.HifisTheme
  *
  * 글자가 없고 아이콘만 선다.
  *
- * **오른쪽 순서는 앱이 나간 뒤로는 안 바꾼다.** 자리를 외운 사람에게 순서가
+ * **오른쪽 목록은 [HeaderAction] 하나만 읽는다.** 제품마다 다르고(TeamFIS 는
+ * 출퇴근·사내톡이 없다) 플랫폼마다도 다른데, 그 목록을 여기서 새로 세우면
+ * 한쪽만 고쳐져 두 앱의 헤더가 갈린다.
+ *
+ * **순서는 앱이 나간 뒤로는 안 바꾼다.** 자리를 외운 사람에게 순서가
  * 바뀌면 못 찾는다. 지금은 아직 안 나가서 사이에 끼워 넣어도 잃을 것이 없다.
  *
  * 헤더는 `surface`, 본문은 `background` 라 **선을 안 그어도 층이 갈린다**.
@@ -31,6 +36,8 @@ import app.hifis.hifis.ui.theme.HifisTheme
  */
 @Composable
 fun AppHeader(
+    /** 오른쪽에 세울 단추들 — `HeaderAction.android(product)` 가 정한다 */
+    actions: List<HeaderAction>,
     onBranch: () -> Unit,
     onSearch: () -> Unit,
     onScan: () -> Unit,
@@ -73,34 +80,41 @@ fun AppHeader(
 
         Spacer(Modifier.weight(1f))
 
-        HeaderIconButton(
-            icon = R.drawable.ic_search,
-            label = "검색",
-            onClick = onSearch,
-        )
-        if (canScan) {
+        actions.forEach { action ->
+            // 출퇴근 스캔만 **권한으로 한 번 더 걸린다** — 제품에 있어도 안 찍는 사람이 있다
+            if (action == HeaderAction.SCAN && !canScan) return@forEach
             HeaderIconButton(
-                icon = R.drawable.ic_scan,
-                label = "출퇴근 스캔",
-                onClick = onScan,
+                icon = drawableOf(action),
+                label = action.label,
+                badge = when (action) {
+                    HeaderAction.CHAT -> chatUnread
+                    HeaderAction.NOTIFICATION -> notificationUnread
+                    else -> false
+                },
+                onClick = {
+                    when (action) {
+                        HeaderAction.SEARCH -> onSearch()
+                        HeaderAction.SCAN -> onScan()
+                        HeaderAction.CHAT -> onChat()
+                        HeaderAction.NOTIFICATION -> onNotification()
+                        HeaderAction.PROFILE -> onProfile()
+                    }
+                },
             )
         }
-        HeaderIconButton(
-            icon = R.drawable.ic_chat,
-            label = "사내톡",
-            badge = chatUnread,
-            onClick = onChat,
-        )
-        HeaderIconButton(
-            icon = R.drawable.ic_bell,
-            label = "알림",
-            badge = notificationUnread,
-            onClick = onNotification,
-        )
-        HeaderIconButton(
-            icon = R.drawable.ic_person,
-            label = "마이",
-            onClick = onProfile,
-        )
     }
+}
+
+/**
+ * 단추를 그림 자원으로 바꾼다
+ *
+ * **`when` 이 enum 을 다 덮어야 컴파일된다.** 단추를 추가하면 여기서 걸린다 —
+ * 이름으로 자원을 찾는 방식은 빠뜨려도 빌드가 통과해서 안 쓴다 (`MoreScreen` 과 같다).
+ */
+private fun drawableOf(action: HeaderAction): Int = when (action) {
+    HeaderAction.SEARCH -> R.drawable.ic_search
+    HeaderAction.SCAN -> R.drawable.ic_scan
+    HeaderAction.CHAT -> R.drawable.ic_chat
+    HeaderAction.NOTIFICATION -> R.drawable.ic_bell
+    HeaderAction.PROFILE -> R.drawable.ic_person
 }

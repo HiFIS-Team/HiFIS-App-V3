@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedKit
 
 /// 탭 화면의 공용 껍데기 — **헤더 + 본문**
 ///
@@ -15,6 +16,7 @@ import SwiftUI
 /// 탭마다 세우면 업무 화면에서는 제품 알약과 공통/개인 알약이 위아래로 겹쳐 서서,
 /// 모양이 같은데 무게가 다른 것이 둘 나란히 보인다.
 struct TabPage<Content: View>: View {
+    @EnvironmentObject private var shell: ShellState
     var onBranch: () -> Void = {}
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
@@ -26,6 +28,8 @@ struct TabPage<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             AppHeader(
+                // 헤더 오른쪽은 제품이 정한다 — TeamFIS 는 출퇴근·사내톡·검색이 없다
+                actions: HeaderAction.companion.ios(product: shell.product),
                 onBranch: onBranch,
                 onSearch: onSearch,
                 onScan: onScan,

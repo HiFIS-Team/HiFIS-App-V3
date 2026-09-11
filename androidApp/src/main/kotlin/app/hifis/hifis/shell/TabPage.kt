@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.shared.nav.HeaderAction
 import app.hifis.hifis.ui.theme.HifisType
 
 /**
@@ -46,6 +47,8 @@ fun TabPage(
             .background(HifisTheme.colors.background),
     ) {
         AppHeader(
+            // 헤더 오른쪽은 제품이 정한다 — TeamFIS 는 출퇴근·사내톡이 없다
+            actions = HeaderAction.android(LocalProduct.current.product),
             onBranch = onBranch,
             onSearch = onSearch,
             onScan = onScan,
