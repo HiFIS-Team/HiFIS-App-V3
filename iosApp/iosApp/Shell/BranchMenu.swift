@@ -131,7 +131,7 @@ final class BranchOverlayController: UIViewController {
     ///
     /// **다 걷은 뒤에 치운다.** `dismiss(animated:)` 를 같이 돌리면 그 전환이 우리
     /// 애니메이션을 가로채, 올라가던 판이 제자리로 내려앉았다가 사라진다
-    private func leave() {
+    fileprivate func leave() {
         guard let parts, let grow = parts.grow else {
             dismiss(animated: false)
             return
@@ -153,8 +153,16 @@ final class BranchOverlayController: UIViewController {
 
     /// 헤더의 지점 단추가 부른다 (`TabPage`)
     static func present(shell: ShellState) {
+        guard let top = topController() else { return }
+        // **이미 떠 있으면 하나 더 얹지 않는다 — 다시 누르면 닫는다.**
+        // 안 막으면 누를 때마다 판이 쌓여서 **두 번 내려온 것처럼** 보인다
+        // (대표가 봤다, 2026-09-11 — V2 도 사내톡 필터에서 같은 것을 겪고 자물쇠를 뒀다)
+        if let open = top as? BranchOverlayController {
+            open.leave()
+            return
+        }
         // **페이드 없이 올린다** — 들어오는 그림은 `viewWillAppear` 가 직접 그린다
-        topController()?.present(BranchOverlayController(shell: shell), animated: false)
+        top.present(BranchOverlayController(shell: shell), animated: false)
     }
 }
 
