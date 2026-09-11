@@ -63,11 +63,14 @@ import app.hifis.shared.work.WorkBoard
  * 하단바 탭이라 열자마자 오늘 점검할 것이 보여야 한다. V2 는 여기가 탭 다섯 개
  * (환경정비·동료 평가·회원 친절도·수업 개수·센터 기여도) 중 하나를 고르는 줄이었는데,
  * **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
- * V3 는 공통 업무와 내 업무만 둔다 (2026-09-10 대표 결정).
+ * V3 는 공통 업무와 개인 업무만 둔다 (2026-09-10 대표 결정).
  *
  * 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
- * 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 내 업무는 한 번씩 체크해서
+ * 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 개인 업무는 한 번씩 체크해서
  * 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
+ *
+ * **개인 업무는 요일을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
+ * 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
  */
 @Composable
 fun WorkScreen(
@@ -88,9 +91,12 @@ fun WorkScreen(
         val items = remember { EnvItem.base }
         // 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
         val counts = remember { mutableStateMapOf<String, Int>() }
-        val tasks = remember { mutableStateListOf(*MyTask.demo.toTypedArray()) }
-        // 화면을 돌려도 보던 칸에 그대로 있는다
+        // 오늘의 요일은 **공용 모듈이 센다** — 플랫폼마다 세면 iOS 가 하루 밀린다
+        val today = remember { WorkBoard.today() }
+        val tasks = remember { mutableStateListOf(*MyTask.demo(today).toTypedArray()) }
+        // 화면을 돌려도 보던 칸·보던 요일에 그대로 있는다
         var mine by rememberSaveable { mutableStateOf(false) }
+        var day by rememberSaveable { mutableStateOf(today) }
 
         Column(
             Modifier
@@ -108,10 +114,15 @@ fun WorkScreen(
             )
             Spacer(Modifier.height(SWITCH_BODY_GAP))
             if (mine) {
-                MyTasks(tasks) { picked ->
+                MyTasks(
+                    tasks = tasks,
+                    day = day,
+                    today = today,
+                    onPickDay = { day = it },
+                ) { picked ->
                     // 화면을 먼저 바꾼다. 서버가 붙으면 그 뒤에 보낸다
                     val at = tasks.indexOfFirst { it.id == picked.id }
-                    if (at >= 0) tasks[at] = tasks[at].check()
+                    if (at >= 0) tasks[at] = tasks[at].check(day)
                 }
             } else {
                 Checklist(items, counts)
@@ -121,14 +132,25 @@ fun WorkScreen(
 }
 
 /**
- * 내 업무 — **하루에 한 번씩 체크**한다
+ * 개인 업무 — **정해 둔 요일마다 한 번씩 체크**한다
  *
  * **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
  * 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
+ *
+ * 머리말·진행 막대는 **고른 요일** 것이다. 요일 줄이 그 아래에 서서
+ * 바로 밑 목록을 갈아 끼운다 — 고르는 것은 늘 바뀌는 것 위에 둔다.
  */
 @Composable
-private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
+private fun MyTasks(
+    tasks: List<MyTask>,
+    day: Int,
+    today: Int,
+    onPickDay: (Int) -> Unit,
+    onCheck: (MyTask) -> Unit,
+) {
     val colors = HifisTheme.colors
+    val ofDay = WorkBoard.tasksOf(tasks, day)
+
     Column(Modifier.padding(horizontal = Dimens.screenEdge)) {
         Row(
             Modifier
@@ -136,24 +158,47 @@ private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
                 .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // 오늘이면 `오늘 할 일`, 다른 날이면 `수요일 할 일` — 줄마다 요일을 안 적는 대신이다
             Text(
-                WorkBoard.MY_TODAY,
+                WorkBoard.dayTitle(day, today),
                 style = HifisType.label.copy(fontWeight = FontWeight.Bold),
                 color = colors.ink,
             )
             Spacer(Modifier.weight(1f))
             // 다 했으면 숫자 대신 `완료` 다 — 남은 것이 없다는 말이 숫자보다 빠르다
             Text(
-                WorkBoard.progressLabel(tasks),
+                WorkBoard.progressLabel(ofDay, day),
                 style = HifisType.caption.copy(fontWeight = FontWeight.Bold),
                 color = colors.brand,
             )
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
-        if (tasks.isEmpty()) {
+        // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**.
+        // 비는 날에도 자리를 지킨다 — 빠지면 요일을 옮길 때마다 목록이 위아래로 튄다
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(BAR_HEIGHT)
+                .clip(RoundedCornerShape(BAR_HEIGHT / 2))
+                .background(colors.fieldFill),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(WorkBoard.progress(ofDay, day))
+                    .fillMaxHeight()
+                    .background(colors.brand),
+            )
+        }
+        // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 요일 줄과 갈라 놓는다.
+        // 붙여 두면 요일 줄의 윗선처럼 읽힌다
+        Spacer(Modifier.height(BAR_DAY_GAP))
+
+        DayRow(selected = day, today = today, onPick = onPickDay)
+
+        if (ofDay.isEmpty()) {
             Text(
-                WorkBoard.EMPTY_TASKS,
+                WorkBoard.emptyLabel(day, today),
                 style = HifisType.body,
                 color = colors.inkSecondary,
                 textAlign = TextAlign.Center,
@@ -164,24 +209,10 @@ private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
             return@Column
         }
 
-        // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(BAR_HEIGHT)
-                .clip(RoundedCornerShape(BAR_HEIGHT / 2))
-                .background(colors.fieldFill),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxWidth(WorkBoard.progress(tasks))
-                    .fillMaxHeight()
-                    .background(colors.brand),
-            )
-        }
-        Spacer(Modifier.height(6.dp))
-
-        tasks.forEachIndexed { i, task ->
+        // **오늘 것만 체크할 수 있다.** 체크는 늘 오늘 날짜로 찍혀서,
+        // 다른 요일을 보다 누르면 엉뚱한 날에 남는다
+        val canCheck = WorkBoard.canCheck(day, today)
+        ofDay.forEachIndexed { i, task ->
             if (i > 0) {
                 Box(
                     Modifier
@@ -191,7 +222,67 @@ private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
                         .background(colors.line),
                 )
             }
-            TaskRow(task) { onCheck(task) }
+            TaskRow(task, checked = task.isChecked(day), canCheck = canCheck) { onCheck(task) }
+        }
+    }
+}
+
+/**
+ * 요일 줄 — 누르면 그날 목록으로 갈린다 (V2 2026-08-20)
+ *
+ * **업무마다 도는 요일이 달라서** 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
+ * 줄마다 `월·수·금` 을 적는 것보다 요일을 골라 보는 편이 읽을 것이 적다.
+ *
+ * **이레를 다 세운다.** 근무일만 세우면 쉬는 날에 넣어 둔 업무를 볼 자리가 없어진다.
+ *
+ * **안 고른 날은 면이 없다.** 일곱 칸을 다 칠하면 머리말 아래가 통째로 블록이 되어
+ * 목록보다 무거워진다. 오늘은 안 골랐어도 브랜드색으로 도드라진다 — 돌아올 자리를 잃지 않게.
+ */
+@Composable
+private fun DayRow(selected: Int, today: Int, onPick: (Int) -> Unit) {
+    val colors = HifisTheme.colors
+    Row(Modifier.fillMaxWidth()) {
+        WorkBoard.DAYS.forEach { day ->
+            val name = WorkBoard.dayName(day)
+            val picked = day == selected
+            val spec = tween<Color>(DAY_SLIDE)
+            val fill by animateColorAsState(
+                if (picked) colors.brand else Color.Transparent,
+                spec,
+                label = "day-fill",
+            )
+            val tint by animateColorAsState(
+                when {
+                    picked -> Color.White
+                    day == today -> colors.brand
+                    // 일요일만 붉다 — 달력에서 쉬는 날을 찾는 눈이 그대로 온다
+                    day == SUNDAY -> colors.danger
+                    else -> colors.inkSecondary
+                },
+                spec,
+                label = "day-tint",
+            )
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(DAY_ROW_HEIGHT)
+                    .tap(label = "${name}요일") { onPick(day) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .size(DAY_CIRCLE)
+                        .background(fill, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        name,
+                        style = HifisType.body,
+                        fontWeight = if (picked || day == today) FontWeight.Bold else FontWeight.Medium,
+                        color = tint,
+                    )
+                }
+            }
         }
     }
 }
@@ -201,18 +292,20 @@ private fun MyTasks(tasks: List<MyTask>, onCheck: (MyTask) -> Unit) {
  *
  * **다 한 줄은 잠근다** (V2 2026-08-20). 체크는 되돌릴 수 없어서 누를 자리가 아니다.
  * 눌리는 것처럼 보이는데 아무 일이 없으면 고장으로 읽힌다.
+ * **오늘이 아닌 요일도 같다** — 거기는 보는 자리다.
  *
  * **다 한 줄이 도드라지지 않는다.** 파란 면으로 띄우면 눈이 거기 멈추는데,
  * 봐야 하는 건 아직 안 한 줄이다 — 줄이 그어진 채로 조용히 물러난다.
  */
 @Composable
-private fun TaskRow(task: MyTask, onCheck: () -> Unit) {
+private fun TaskRow(task: MyTask, checked: Boolean, canCheck: Boolean, onCheck: () -> Unit) {
     val colors = HifisTheme.colors
-    val checked = task.checked
+    // 다 한 줄과 **다른 요일**은 눌러도 할 일이 없다 — 눌림 표시도 안 준다
+    val tappable = canCheck && !checked
     Row(
         Modifier
             .fillMaxWidth()
-            .then(if (checked) Modifier else Modifier.tap(label = task.content, onClick = onCheck))
+            .then(if (tappable) Modifier.tap(label = task.content, onClick = onCheck) else Modifier)
             .padding(horizontal = 4.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -502,10 +595,23 @@ private const val CHIP_FONT_MIN = 10f
 /** 스위치와 본문 사이 */
 private val SWITCH_BODY_GAP = 16.dp
 
-/** 내 업무 진행 막대 두께 */
+/** 개인 업무 진행 막대 두께 */
 private val BAR_HEIGHT = 6.dp
 
-/** 내 업무 줄 왼쪽 동그라미 */
+/** 진행 막대와 요일 줄 사이 — 머리말과 막대 사이(10)보다 넓다 */
+private val BAR_DAY_GAP = 8.dp
+
+/** 요일 줄 — 한 칸 높이와 고른 날의 동그라미 */
+private val DAY_ROW_HEIGHT = 40.dp
+private val DAY_CIRCLE = 32.dp
+
+/** 요일이 갈리는 빠르기 — 알약(240)보다 짧다. 일곱 칸이라 길면 꾸물거려 보인다 */
+private const val DAY_SLIDE = 140
+
+/** 일요일 — ISO 차례의 마지막이다 */
+private const val SUNDAY = 7
+
+/** 개인 업무 줄 왼쪽 동그라미 */
 private val CHECK_SIZE = 22.dp
 
 /** 목록이 비었을 때 그 자리의 위아래 여백 */

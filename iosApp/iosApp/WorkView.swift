@@ -6,11 +6,14 @@ import SharedKit
 /// 하단바 탭이라 열자마자 오늘 점검할 것이 보여야 한다. V2 는 여기가 탭 다섯 개
 /// (환경정비·동료 평가·회원 친절도·수업 개수·센터 기여도) 중 하나를 고르는 줄이었는데,
 /// **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
-/// V3 는 공통 업무와 내 업무만 둔다 (2026-09-10 대표 결정).
+/// V3 는 공통 업무와 개인 업무만 둔다 (2026-09-10 대표 결정).
 ///
 /// 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
-/// 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 내 업무는 한 번씩 체크해서
+/// 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 개인 업무는 한 번씩 체크해서
 /// 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
+///
+/// **개인 업무는 요일을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
+/// 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
 ///
 /// 안드로이드 `WorkScreen` 과 같은 화면이다.
 struct WorkView: View {
@@ -23,8 +26,29 @@ struct WorkView: View {
     private let items = EnvItem.companion.base
     /// 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
     @State private var counts: [String: Int] = [:]
-    @State private var tasks = MyTask.companion.demo
+    /// 오늘의 요일 (ISO 1=월 … 7=일) — **공용 모듈이 센다**
+    ///
+    /// `Calendar` 의 `.weekday` 는 **일요일이 1** 이라 여기서 세면 하루 밀린다.
+    private let today = Int(WorkBoard.shared.today())
+    @State private var tasks: [MyTask]
     @State private var mine = false
+    /// 보고 있는 요일 — **기본은 오늘**
+    @State private var day: Int
+
+    init(
+        onSearch: @escaping () -> Void = {},
+        onScan: @escaping () -> Void = {},
+        onChat: @escaping () -> Void = {},
+        onNotification: @escaping () -> Void = {}
+    ) {
+        self.onSearch = onSearch
+        self.onScan = onScan
+        self.onChat = onChat
+        self.onNotification = onNotification
+        let today = Int(WorkBoard.shared.today())
+        _tasks = State(initialValue: MyTask.companion.demo(today: Int32(today)))
+        _day = State(initialValue: today)
+    }
 
     var body: some View {
         TabPage(onSearch: onSearch, onScan: onScan, onChat: onChat, onNotification: onNotification) {
@@ -149,54 +173,75 @@ struct WorkView: View {
         return min(max(size, chipFontMin), chipFontBase)
     }
 
-    /// 내 업무 — **하루에 한 번씩 체크**한다
+    /// 개인 업무 — **정해 둔 요일마다 한 번씩 체크**한다
     ///
     /// **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
     /// 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
+    ///
+    /// 머리말·진행 막대는 **고른 요일** 것이다. 요일 줄이 그 아래에 서서
+    /// 바로 밑 목록을 갈아 끼운다 — 고르는 것은 늘 바뀌는 것 위에 둔다.
     private var myTasks: some View {
         let board = WorkBoard.shared
+        let ofDay = board.tasksOf(tasks: tasks, day: Int32(day))
+        // **오늘 것만 체크할 수 있다.** 체크는 늘 오늘 날짜로 찍혀서,
+        // 다른 요일을 보다 누르면 엉뚱한 날에 남는다
+        let canCheck = board.canCheck(day: Int32(day), today: Int32(today))
+
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 0) {
-                Text(board.MY_TODAY)
+                // 오늘이면 `오늘 할 일`, 다른 날이면 `수요일 할 일` — 줄마다 요일을 안 적는 대신이다
+                Text(board.dayTitle(day: Int32(day), today: Int32(today)))
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(HifisColor.ink)
                 Spacer(minLength: 0)
                 // 다 했으면 숫자 대신 `완료` 다 — 남은 것이 없다는 말이 숫자보다 빠르다
-                Text(board.progressLabel(tasks: tasks))
+                Text(board.progressLabel(tasks: ofDay, day: Int32(day)))
                     .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(HifisColor.brand)
             }
             .padding(.horizontal, 4)
 
-            Spacer().frame(height: 12)
+            Spacer().frame(height: 10)
 
-            if tasks.isEmpty {
-                Text(board.EMPTY_TASKS)
+            // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**.
+            // 비는 날에도 자리를 지킨다 — 빠지면 요일을 옮길 때마다 목록이 위아래로 튄다
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(HifisColor.fieldFill)
+                    Capsule()
+                        .fill(HifisColor.brand)
+                        .frame(
+                            width: proxy.size.width
+                                * CGFloat(board.progress(tasks: ofDay, day: Int32(day)))
+                        )
+                }
+            }
+            .frame(height: Self.barHeight)
+            // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 요일 줄과 갈라 놓는다.
+            // 붙여 두면 요일 줄의 윗선처럼 읽힌다
+            Spacer().frame(height: Self.barDayGap)
+
+            DayRow(selected: $day, today: today)
+
+            if ofDay.isEmpty {
+                Text(board.emptyLabel(day: Int32(day), today: Int32(today)))
                     .font(HifisFont.body)
                     .foregroundStyle(HifisColor.inkSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Self.emptyPad)
             } else {
-                // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(HifisColor.fieldFill)
-                        Capsule()
-                            .fill(HifisColor.brand)
-                            .frame(width: proxy.size.width * CGFloat(board.progress(tasks: tasks)))
-                    }
-                }
-                .frame(height: Self.barHeight)
-                Spacer().frame(height: 6)
-
-                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
+                ForEach(Array(ofDay.enumerated()), id: \.element.id) { index, task in
                     if index > 0 {
                         Rectangle()
                             .fill(HifisColor.line)
                             .frame(height: 1)
                             .padding(.horizontal, 4)
                     }
-                    TaskRow(task: task) { check(task) }
+                    TaskRow(
+                        task: task,
+                        checked: task.isChecked(day: Int32(day)),
+                        canCheck: canCheck
+                    ) { check(task) }
                 }
             }
         }
@@ -205,7 +250,7 @@ struct WorkView: View {
 
     /// 화면을 먼저 바꾼다. 서버가 붙으면 그 뒤에 보낸다
     private func check(_ picked: MyTask) {
-        tasks = tasks.map { $0.id == picked.id ? $0.check() : $0 }
+        tasks = tasks.map { $0.id == picked.id ? $0.check(day: Int32(day)) : $0 }
     }
 
     /// 격자 칸 수 — 폰은 둘이다
@@ -229,8 +274,10 @@ struct WorkView: View {
     fileprivate static let activeLine: Double = 0.45
     /// 스위치와 본문 사이
     private static let switchBodyGap: CGFloat = 16
-    /// 내 업무 진행 막대 두께
+    /// 개인 업무 진행 막대 두께
     private static let barHeight: CGFloat = 6
+    /// 진행 막대와 요일 줄 사이 — 머리말과 막대 사이(10)보다 넓다
+    private static let barDayGap: CGFloat = 8
     /// 목록이 비었을 때 그 자리의 위아래 여백
     private static let emptyPad: CGFloat = 52
 }
@@ -329,11 +376,14 @@ private struct AdjustButton: View {
 /// 봐야 하는 건 아직 안 한 줄이다 — 줄이 그어진 채로 조용히 물러난다.
 private struct TaskRow: View {
     let task: MyTask
+    let checked: Bool
+    let canCheck: Bool
     let onCheck: () -> Void
 
     var body: some View {
-        let checked = task.checked
-        Button(action: { if !checked { onCheck() } }) {
+        // 다 한 줄과 **다른 요일**은 눌러도 할 일이 없다 — 눌림 표시도 안 준다
+        let tappable = canCheck && !checked
+        Button(action: { if tappable { onCheck() } }) {
             HStack(spacing: 0) {
                 Image(checked ? "ic_check_circle_fill" : "ic_circle")
                     .renderingMode(.template)
@@ -361,10 +411,69 @@ private struct TaskRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(TapStyle())
-        .disabled(checked)
+        .disabled(!tappable)
     }
 
-    /// 내 업무 줄 왼쪽 동그라미
+    /// 개인 업무 줄 왼쪽 동그라미
     private static let check: CGFloat = 22
+}
+
+/// 요일 줄 — 누르면 그날 목록으로 갈린다 (V2 2026-08-20)
+///
+/// **업무마다 도는 요일이 달라서** 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
+/// 줄마다 `월·수·금` 을 적는 것보다 요일을 골라 보는 편이 읽을 것이 적다.
+///
+/// **이레를 다 세운다.** 근무일만 세우면 쉬는 날에 넣어 둔 업무를 볼 자리가 없어진다.
+///
+/// **안 고른 날은 면이 없다.** 일곱 칸을 다 칠하면 머리말 아래가 통째로 블록이 되어
+/// 목록보다 무거워진다. 오늘은 안 골랐어도 브랜드색으로 도드라진다 — 돌아올 자리를 잃지 않게.
+///
+/// 안드로이드 `DayRow` 와 같은 값이다.
+private struct DayRow: View {
+    @Binding var selected: Int
+    let today: Int
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(WorkBoard.shared.DAYS.map(\.intValue), id: \.self) { day in
+                let name = WorkBoard.shared.dayName(day: Int32(day))
+                let picked = day == selected
+                Button {
+                    selected = day
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(picked ? HifisColor.brand : .clear)
+                            .frame(width: Self.circle, height: Self.circle)
+                        Text(name)
+                            .font(.system(size: 16, weight: picked || day == today ? .bold : .medium))
+                            .foregroundStyle(tint(day, picked: picked))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Self.rowHeight)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(TapStyle())
+                .accessibilityLabel("\(name)요일")
+            }
+        }
+        .animation(.easeOut(duration: Self.slide), value: selected)
+    }
+
+    private func tint(_ day: Int, picked: Bool) -> Color {
+        if picked { return .white }
+        if day == today { return HifisColor.brand }
+        // 일요일만 붉다 — 달력에서 쉬는 날을 찾는 눈이 그대로 온다
+        if day == Self.sunday { return HifisColor.danger }
+        return HifisColor.inkSecondary
+    }
+
+    /// 한 칸 높이와 고른 날의 동그라미
+    private static let rowHeight: CGFloat = 40
+    private static let circle: CGFloat = 32
+    /// 요일이 갈리는 빠르기 — 알약(240ms)보다 짧다. 일곱 칸이라 길면 꾸물거려 보인다
+    private static let slide: Double = 0.14
+    /// 일요일 — ISO 차례의 마지막이다
+    private static let sunday = 7
 }
 
