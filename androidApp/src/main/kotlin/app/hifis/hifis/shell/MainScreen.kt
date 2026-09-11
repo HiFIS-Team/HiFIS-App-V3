@@ -78,14 +78,13 @@ fun MainScreen() {
     var productIndex by rememberSaveable { mutableIntStateOf(Product.all.indexOf(Product.default)) }
     val product = Product.all[productIndex]
 
-    // **테마가 셸 바깥이다.** 제품을 옮기면 셸이 통째로 새로 서는데,
-    // 색 애니메이션이 그 안에 있으면 같이 새로 서서 물들 새가 없다
-    HifisTheme(product = product) {
-        // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**.
-        // 툭 갈리면 앱이 튄 것처럼 보여서 **서로 녹아든다** — 브랜드색이 물드는 것과 같은 빠르기다
-        Crossfade(product, animationSpec = tween(SHELL_FADE), label = "shell") { shown ->
-            // **녹아드는 두 겹이 각자 제 제품을 그린다.** 이 줄이 밖에 있으면
-            // 나가는 겹까지 새 제품의 헤더를 그려서, 헤더만 툭 갈리고 본문만 녹는다
+    // 제품을 옮기면 잎도 같이 걷혀야 해서 **셸을 통째로 갈아 끼운다**.
+    // 툭 갈리면 앱이 튄 것처럼 보여서 **서로 녹아든다**
+    Crossfade(product, animationSpec = tween(SHELL_FADE), label = "shell") { shown ->
+        // **녹아드는 두 겹이 각자 제 제품을 그린다 — 테마까지.**
+        // 테마가 이 밖에 있으면 나가는 겹이 **새 제품 색으로 먼저 칠해진 뒤** 녹아서,
+        // HiFIS 가 빨개졌다가 사라지는 것처럼 보인다 (대표가 봤다, 2026-09-11)
+        HifisTheme(product = shown) {
             CompositionLocalProvider(
                 LocalProduct provides ProductScope(shown) { productIndex = Product.all.indexOf(it) },
             ) {
