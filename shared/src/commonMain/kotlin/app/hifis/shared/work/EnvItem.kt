@@ -78,40 +78,71 @@ data class EnvItem(
 }
 
 /**
- * 내 업무 한 줄 — **하루에 한 번씩 체크한다**
+ * 개인 업무 한 줄 — **정해 둔 요일마다 한 번씩 체크한다**
  *
  * 공통 업무와 도는 방식이 다르다.
  *
  * | | 하루에 |
  * |---|---|
  * | 공통 업무 | 여러 번 — 할 때마다 횟수가 는다 |
- * | 내 업무 | **한 번씩 체크** — 다 하면 완료, 남으면 누락 |
+ * | 개인 업무 | **한 번씩 체크** — 다 하면 완료, 남으면 누락 |
+ *
+ * **업무마다 도는 요일이 다르다** (V2 2026-08-20). 그래서 한 줄은 하루가 아니라
+ * **한 주**를 들고 있다 — [weekdays] 가 도는 날, [checkedDays] 가 그중 끝낸 날이다.
+ * 화면은 요일 하나를 골라 그날 도는 것만 세운다 ([WorkBoard.tasksOf]).
  *
  * **체크는 되돌릴 수 없다.** 한 번 누르면 그 줄은 잠긴다 — 누를 자리가 아니게 된다.
  *
+ * @property weekdays 도는 요일 — ISO 차례로 **1=월 … 7=일**. 비면 어느 날에도 안 뜬다
+ * @property checkedDays 끝낸 요일 — **이번 주 안의 값이다.** 주가 바뀌면 서버가 비운다
  * @property value 체크할 때 적어 넣은 값 (`신규 3 · 재등록 5`). 체크한 뒤에만 찬다
  */
 data class MyTask(
     val id: String,
     val content: String,
-    val checked: Boolean,
+    val weekdays: Set<Int>,
+    val checkedDays: Set<Int> = emptySet(),
     val value: String? = null,
 ) {
-    /** 체크한 줄 — 되돌릴 수 없어서 새 값을 만들어 갈아 끼운다 */
-    fun check(): MyTask = copy(checked = true)
+    /** 이 요일에 도는가 */
+    fun runsOn(day: Int): Boolean = day in weekdays
+
+    /** 이 요일 것을 끝냈는가 */
+    fun isChecked(day: Int): Boolean = day in checkedDays
+
+    /**
+     * 그 요일 것을 체크한다 — 되돌릴 수 없어서 새 값을 만들어 갈아 끼운다
+     *
+     * **하루씩만 찍힌다.** 월·수·금에 도는 업무를 수요일에 체크해도
+     * 월·금은 그대로 남는다 — 요일마다 따로 해야 하는 일이라서다.
+     */
+    fun check(day: Int): MyTask = copy(checkedDays = checkedDays + day)
 
     companion object {
         /**
          * 서버를 붙이기 전에 화면을 보기 위한 값 — **진짜가 아니다**
          *
          * 서버가 붙으면 지운다. 이 값을 보고 서버에 칸을 만들지 않는다.
+         *
+         * 요일마다 도는 것이 다르게 짜 두었다 — 요일 줄을 눌렀을 때 목록이
+         * 실제로 갈리는지 보려면 그래야 한다.
+         *
+         * @param today 오늘의 ISO 요일. **지난 날은 다 끝낸 것으로** 채운다 —
+         *   주 중간에 열어도 앞쪽 요일이 빈 채로 서 있지 않게
          */
-        val demo = listOf(
-            MyTask("t1", "오픈 점검 (조명·음악·온도)", checked = true),
-            MyTask("t2", "신규 상담 기록 정리", checked = true, value = "신규 3 · 재등록 5"),
-            MyTask("t3", "인바디 기기 소독", checked = false),
-            MyTask("t4", "회원 문의 회신", checked = false),
-            MyTask("t5", "마감 시재 확인", checked = false),
-        )
+        fun demo(today: Int): List<MyTask> = listOf(
+            MyTask("t1", "오픈 점검 (조명·음악·온도)", weekdays = setOf(1, 2, 3, 4, 5, 6)),
+            MyTask("t2", "신규 상담 기록 정리", weekdays = setOf(1, 3, 5), value = "신규 3 · 재등록 5"),
+            MyTask("t3", "인바디 기기 소독", weekdays = setOf(2, 4)),
+            MyTask("t4", "회원 문의 회신", weekdays = setOf(1, 2, 3, 4, 5)),
+            MyTask("t5", "마감 시재 확인", weekdays = setOf(1, 2, 3, 4, 5, 6)),
+            MyTask("t6", "주간 재고 점검", weekdays = setOf(3)),
+            MyTask("t7", "기구 나사 조임 점검", weekdays = setOf(6)),
+        ).map { task ->
+            // 지난 요일은 다 끝냈고, 오늘은 앞의 둘만 해 뒀다 — 진행 막대가 중간에 선다
+            val past = task.weekdays.filter { it < today }.toSet()
+            val doneToday = task.id in setOf("t1", "t2") && task.runsOn(today)
+            task.copy(checkedDays = if (doneToday) past + today else past)
+        }
     }
 }
