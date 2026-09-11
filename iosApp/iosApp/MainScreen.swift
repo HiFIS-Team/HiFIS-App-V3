@@ -30,6 +30,11 @@ import SharedKit
 /// 안드로이드는 반대로 머티리얼 3 `NavigationBar` 를 쓴다 —
 /// **네비게이션은 각자 자기 OS 표준으로 간다.**
 struct MainScreen: View {
+    /// 어느 제품에 들어와 있나 — **셸이 들고 화면들이 읽는다**
+    ///
+    /// 제품이 바뀌면 탭 목록이 통째로 바뀐다. HiFIS 말고는 아직 화면이 없어서
+    /// 자리 문구만 뜨고 **탭바는 아예 안 선다** — 없는 화면으로 가는 칸을 세울 수 없다.
+    @StateObject private var shell = ShellState()
     /// 옆에서 밀려 들어와 셸을 덮는 잎들 — 한 번에 하나만 뜬다 (헤더가 덮이면 더 못 연다)
     @State private var scanOpen = false
     @State private var notificationOpen = false
@@ -55,14 +60,30 @@ struct MainScreen: View {
                 //
                 // 붙여도 **UIKit 이 보는 안전영역은 그대로 34pt 다** (찍어서 확인했다).
                 // 그러니 `additionalSafeAreaInsets` 를 손대면 두 번 빼는 셈이 된다 — 건드리지 않는다.
-                MainTabBar(
-                    onScan: { withAnimation(Self.push) { scanOpen = true } },
-                    onNotification: { withAnimation(Self.push) { notificationOpen = true } },
-                    onChat: { withAnimation(Self.push) { chatOpen = true } }
-                )
-                .ignoresSafeArea()
-                // 덮인 셸에는 손이 닿지 않는다
-                .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
+                // 제품이 바뀌면 **셸을 통째로 갈아 끼운다** — 탭 목록이 제품마다 다르다
+                if shell.product == Product.hifis {
+                    MainTabBar(
+                        shell: shell,
+                        onScan: { withAnimation(Self.push) { scanOpen = true } },
+                        onNotification: { withAnimation(Self.push) { notificationOpen = true } },
+                        onChat: { withAnimation(Self.push) { chatOpen = true } }
+                    )
+                    .ignoresSafeArea()
+                    // 덮인 셸에는 손이 닿지 않는다
+                    .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
+                } else {
+                    // **탭바가 없다.** 탭 목록은 제품마다 다르다 —
+                    // HiFIS 것을 그대로 두면 없는 화면으로 가는 칸이 네 개 선다.
+                    // 헤더와 제품 고르개는 그대로라 돌아올 길이 있다
+                    ProductComingSoonView(
+                        product: shell.product,
+                        onScan: { withAnimation(Self.push) { scanOpen = true } },
+                        onNotification: { withAnimation(Self.push) { notificationOpen = true } },
+                        onChat: { withAnimation(Self.push) { chatOpen = true } }
+                    )
+                    .environmentObject(shell)
+                    .allowsHitTesting(!scanOpen && !notificationOpen && !chatOpen)
+                }
 
                 if scanOpen {
                     leaf(AttendanceScanView(onBack: back), width: proxy.size.width)
@@ -144,6 +165,8 @@ struct MainScreen: View {
 ///
 /// 화면은 그대로 SwiftUI 다 (`UIHostingController`). 바꾼 것은 껍데기뿐이다.
 private struct MainTabBar: UIViewControllerRepresentable {
+    /// 탭 화면마다 심어 준다 — 화면은 이걸 읽어 제품 고르개를 그린다
+    let shell: ShellState
     /// 헤더의 스캔 아이콘·종·말풍선 — 셸이 잎을 올린다 (`MainScreen`)
     let onScan: () -> Void
     let onNotification: () -> Void
@@ -261,8 +284,14 @@ private struct MainTabBar: UIViewControllerRepresentable {
         chat: @escaping () -> Void
     ) -> UIHostingController<AnyView> {
         let host = UIHostingController(
-            rootView: screen(
-                for: tab, go: go, search: search, scan: scan, notification: notification, chat: chat
+            rootView: AnyView(
+                screen(
+                    for: tab, go: go, search: search, scan: scan,
+                    notification: notification, chat: chat
+                )
+                // **여기서 심어야 한다.** 탭 화면은 이 컨트롤러 안에 한 번 만들어져
+                // 앉아 있어서, 바깥에서 값을 넘기면 바뀌어도 안 따라온다
+                .environmentObject(shell)
             )
         )
         host.tabBarItem = UITabBarItem(
@@ -307,6 +336,27 @@ private struct MainTabBar: UIViewControllerRepresentable {
                 onNotification: notification, onChat: chat
             )
         )
+    }
+}
+
+/// 아직 셸이 없는 제품 — **탭바가 없다**
+///
+/// 헤더와 제품 고르개는 `TabPage` 가 그려 줘서 **돌아올 길이 있다.**
+/// TeamFIS·WeFIS 셸이 생기면 지운다.
+private struct ProductComingSoonView: View {
+    let product: Product
+    var onScan: () -> Void = {}
+    var onNotification: () -> Void = {}
+    var onChat: () -> Void = {}
+
+    var body: some View {
+        // 헤더 아이콘을 안 이으면 이 화면에서만 사내톡·알림으로 갈 길이 없어진다
+        TabPage(onScan: onScan, onChat: onChat, onNotification: onNotification) {
+            Text(Product.companion.comingSoon(product: product))
+                .font(.system(size: 15))
+                .foregroundStyle(HifisColor.inkTertiary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }
 

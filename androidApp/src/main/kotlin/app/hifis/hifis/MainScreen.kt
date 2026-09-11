@@ -47,6 +47,10 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.shared.nav.MainTab
+import app.hifis.shared.nav.Product
+import app.hifis.hifis.ui.component.LocalProduct
+import app.hifis.hifis.ui.component.ProductScope
+import androidx.compose.runtime.CompositionLocalProvider
 
 /**
  * 앱 셸 — 하단바와 탭 화면을 들고 있다
@@ -56,9 +60,32 @@ import app.hifis.shared.nav.MainTab
  * 하단바는 **머티리얼 3 표준 `NavigationBar`** 다. 색만 우리 토큰으로 바꾼다 —
  * 눌린 칸의 알약 표시·물결·간격은 OS 가 하던 대로 두는 것이 안드로이드답다.
  * (iOS 는 반대로 그 OS 의 리퀴드 글래스 탭바를 쓴다 — 각자 자기 표준으로 간다.)
+ *
+ * ## 제품이 셸을 갈아 끼운다
+ *
+ * 앱 안에 제품이 셋이다 ([Product]). 제품을 옮기면 **하단바까지 통째로 바뀐다** —
+ * 탭 목록이 그 제품 것이라서다. 그래서 고르개는 탭바가 아니라 헤더 아래에 서고,
+ * 값은 여기 셸이 들고 [LocalProduct] 로 내려 준다.
+ *
+ * **HiFIS 말고는 아직 화면이 없다.** 고르면 자리 문구만 뜬다.
  */
 @Composable
 fun MainScreen() {
+    // enum 대신 차례를 저장한다 — 탭과 같은 이유다
+    var productIndex by rememberSaveable { mutableIntStateOf(Product.all.indexOf(Product.default)) }
+    val product = Product.all[productIndex]
+
+    CompositionLocalProvider(
+        LocalProduct provides ProductScope(product) { productIndex = Product.all.indexOf(it) },
+    ) {
+        // **잎은 HiFIS 것이다.** 제품을 옮기면 잎도 같이 걷혀야 해서 셸을 통째로 갈아 끼운다
+        if (product == Product.HIFIS) HifisShell() else ProductComingSoon(product)
+    }
+}
+
+/** HiFIS 셸 — 하단바 다섯 칸과 그 위에 덮이는 잎들 */
+@Composable
+private fun HifisShell() {
     // enum 을 그대로 저장하지 않고 차례를 저장한다 — 화면을 돌려도 탭이 남는다
     var index by rememberSaveable { mutableIntStateOf(0) }
     val selected = MainTab.all[index]
@@ -248,6 +275,25 @@ private fun MainBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
  * 빈 화면으로 두면 하단바를 눌렀을 때 앱이 멈춘 것처럼 보인다.
  * 화면이 생기면 지운다. 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
  */
+/**
+ * 아직 셸이 없는 제품 — **하단바가 없다**
+ *
+ * 탭 목록은 제품마다 다르다. HiFIS 것을 그대로 두면 없는 화면으로 가는 칸이 다섯 개 선다.
+ * 헤더와 제품 고르개는 그대로라 **돌아올 길이 있다.**
+ */
+@Composable
+private fun ProductComingSoon(product: Product) {
+    TabPage {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = Product.comingSoon(product),
+                color = HifisTheme.colors.inkTertiary,
+                fontSize = 15.sp,
+            )
+        }
+    }
+}
+
 @Composable
 private fun ComingSoon(
     tab: MainTab,
