@@ -367,7 +367,8 @@ private struct MainTabBar: UIViewControllerRepresentable {
         guard shell.product == Product.hifis else {
             return AnyView(
                 ComingSoonView(
-                    label: tab.label, onSearch: search, onScan: scan,
+                    label: tab.label, isHome: tab == MainTab.home,
+                    onSearch: search, onScan: scan,
                     onNotification: notification, onChat: chat
                 )
             )
@@ -394,7 +395,8 @@ private struct MainTabBar: UIViewControllerRepresentable {
         }
         return AnyView(
             ComingSoonView(
-                label: tab.label, onSearch: search, onScan: scan,
+                label: tab.label, isHome: tab == MainTab.home,
+                onSearch: search, onScan: scan,
                 onNotification: notification, onChat: chat
             )
         )
@@ -455,6 +457,8 @@ private struct SideSlotComingSoonView: View {
 /// 글꼴·타입 스케일이 정해지기 전이라 크기를 직접 적었다.
 private struct ComingSoonView: View {
     let label: String
+    /// 홈 탭인가 — **고르개가 여기 선다.** 자리 문구여도 세워야 제품에서 나올 수 있다
+    var isHome: Bool = false
     var onSearch: () -> Void = {}
     var onScan: () -> Void = {}
     var onNotification: () -> Void = {}
@@ -464,6 +468,12 @@ private struct ComingSoonView: View {
         // **`TabPage` 를 쓴다.** 헤더와 AI 단추가 거기 있어서, 안 쓰면 이 두 탭에서만
         // 사내톡·알림으로 갈 방법도 AI 단추도 사라진다
         TabPage(onSearch: onSearch, onScan: onScan, onChat: onChat, onNotification: onNotification) {
+            // **고르개는 홈 탭에 선다 — 화면이 자리 문구여도 마찬가지다.**
+            // 안 그리면 그 제품에 들어간 사람이 나올 길을 잃는다 (대표가 걸렸다, 2026-09-11)
+            if isHome {
+                ProductSwitch()
+                    .padding(.top, 16)
+            }
             Text("\(label) — 준비 중")
                 .font(.system(size: 15))
                 .foregroundStyle(HifisColor.inkTertiary)

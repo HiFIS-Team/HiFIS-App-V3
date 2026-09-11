@@ -343,6 +343,15 @@ private fun ComingSoon(
         onNotification = onNotification,
         onChat = onChat,
     ) {
+        // **고르개는 홈 탭에 선다 — 화면이 자리 문구여도 마찬가지다.**
+        // 안 그리면 그 제품에 들어간 사람이 나올 길을 잃는다 (대표가 걸렸다, 2026-09-11)
+        if (tab == MainTab.HOME) {
+            ProductSwitch(
+                Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp),
+            )
+        }
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = "${tab.label} — 준비 중",

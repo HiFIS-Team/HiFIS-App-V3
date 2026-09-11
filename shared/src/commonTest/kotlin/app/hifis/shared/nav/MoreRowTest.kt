@@ -148,6 +148,28 @@ class MoreRowTest {
         assertEquals(MainTab.SideSlot.SEARCH, MainTab.iosSideSlot(Product.TEAMFIS))
     }
 
+    /**
+     * **어느 제품이든 첫 탭은 홈이다** — 제품 고르개가 거기 서기 때문이다.
+     *
+     * 고르개는 홈 화면에만 있다. 홈 탭이 없거나 첫 칸이 아니면, 그 제품에 들어간 사람이
+     * **다른 제품으로 나올 길을 잃는다.** 실제로 TeamFIS 홈을 자리 문구로 바꿨다가
+     * 고르개가 같이 사라져 갇혔다 (2026-09-11, 대표가 걸렸다).
+     */
+    @Test
+    fun `제품마다 첫 탭은 홈이다`() {
+        Product.all.forEach { product ->
+            listOf("안드로이드" to MainTab.android(product), "iOS" to MainTab.ios(product))
+                .filter { it.second.isNotEmpty() }
+                .forEach { (who, tabs) ->
+                    assertEquals(
+                        MainTab.HOME,
+                        tabs.first(),
+                        "$who ${product.label} 의 첫 탭이 홈이 아니다 — 제품 고르개에 못 닿는다",
+                    )
+                }
+        }
+    }
+
     /** 한 하단바에 같은 칸이 두 번 서지 않는다 */
     @Test
     fun `제품별 탭 목록에 중복이 없다`() {
