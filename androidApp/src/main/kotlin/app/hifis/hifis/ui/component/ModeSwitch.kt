@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,24 +37,26 @@ import app.hifis.hifis.ui.theme.HifisTheme
  * 칸마다 따로 켜고 끄면 옮기는 동안 둘 다 켜져 보이거나 툭 튄다. 알약 하나가
  * 자리를 옮긴다 (V2 `ModeSwitch`, 240ms).
  *
+ * **칸 수는 정해져 있지 않다.** 둘(전체/안읽음 · 공통/개인)도 셋(제품 고르개)도 같은 부품이다.
+ *
  * **고른 칸이 굵어져도 폭이 안 변한다.** 폭은 늘 굵은 글자로 재 두고 안 고른 글자는
  * 그 안에서 가운데 선다 — 안 그러면 고를 때마다 옆 칸이 밀린다.
  */
 @Composable
 fun ModeSwitch(
-    left: String,
-    right: String,
-    rightSelected: Boolean,
-    onChange: (Boolean) -> Unit,
+    segments: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = HifisTheme.colors
     val density = LocalDensity.current
-    var leftWidth by remember { mutableIntStateOf(0) }
-    var rightWidth by remember { mutableIntStateOf(0) }
+    // 칸마다 폭이 다르다 — 알약이 갈 자리는 앞 칸들을 더한 값이다
+    val widths = remember(segments.size) { mutableStateListOf(*Array(segments.size) { 0 }) }
     val spec = tween<Int>(SLIDE_MILLIS, easing = CubicBezierEasing(0.33f, 1f, 0.68f, 1f))
-    val pillX by animateIntAsState(if (rightSelected) leftWidth else 0, spec, label = "pill-x")
-    val pillWidth by animateIntAsState(if (rightSelected) rightWidth else leftWidth, spec, label = "pill-w")
+    val at = selected.coerceIn(0, segments.lastIndex)
+    val pillX by animateIntAsState(widths.take(at).sum(), spec, label = "pill-x")
+    val pillWidth by animateIntAsState(widths[at], spec, label = "pill-w")
 
     Box(
         modifier
@@ -63,8 +65,9 @@ fun ModeSwitch(
             .background(colors.surface)
             .padding(PAD),
     ) {
-        // 첫 프레임에는 폭을 모른다 — 재고 나서 그린다
-        if (leftWidth > 0 && rightWidth > 0) {
+        // 첫 프레임에는 폭을 모른다 — **다 재고 나서** 그린다.
+        // 하나라도 0 이면 알약이 왼쪽 끝에서 튀어나온다
+        if (widths.all { it > 0 }) {
             Box(
                 Modifier
                     .offset { IntOffset(pillX, 0) }
@@ -74,11 +77,35 @@ fun ModeSwitch(
             )
         }
         Row {
-            Segment(left, selected = !rightSelected, onWidth = { leftWidth = it }) { onChange(false) }
-            Segment(right, selected = rightSelected, onWidth = { rightWidth = it }) { onChange(true) }
+            segments.forEachIndexed { index, label ->
+                Segment(
+                    label,
+                    selected = index == at,
+                    onWidth = { widths[index] = it },
+                ) { onSelect(index) }
+            }
         }
     }
 }
+
+/**
+ * 두 칸짜리 — 켜고 끄는 자리(전체/안읽음 · 공통/개인)가 쓰는 짧은 길
+ *
+ * 차례를 `Boolean` 으로 들고 있는 화면이 굳이 0·1 로 바꿔 부르지 않게 한다.
+ */
+@Composable
+fun ModeSwitch(
+    left: String,
+    right: String,
+    rightSelected: Boolean,
+    onChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) = ModeSwitch(
+    segments = listOf(left, right),
+    selected = if (rightSelected) 1 else 0,
+    onSelect = { onChange(it == 1) },
+    modifier = modifier,
+)
 
 @Composable
 private fun Segment(label: String, selected: Boolean, onWidth: (Int) -> Unit, onClick: () -> Unit) {
