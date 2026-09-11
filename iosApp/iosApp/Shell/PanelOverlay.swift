@@ -21,14 +21,14 @@ enum PanelOverlay {
     ///   - height: 판 높이. **비우면 내용이 정한다** (줄 수가 달라지는 판)
     ///   - attached: **헤더에 붙여 내려올 것인가.** 붙이면 좌우 여백 없이 화면을 꽉 채우고
     ///     헤더 줄은 덮지 않는다 — 판이 거기서 풀려 나온 것처럼 보여야 한다
-    /// - Returns: 판의 뷰. 붙여서 내려오는 판은 이걸 움직여 애니메이션을 건다
+    /// - Returns: 판과 흐림. 붙여서 내려오는 판은 이 둘을 직접 움직인다
     @discardableResult
     static func install<Panel: View>(
         in controller: UIViewController,
         panel: Panel,
         height: CGFloat? = nil,
         attached: Bool = false
-    ) -> UIView {
+    ) -> Installed {
         controller.view.backgroundColor = .clear
 
         // **세기는 투명도로 잡는다.** 재질을 그대로 씌우면 뒤가 통째로 지워지는데,
@@ -71,6 +71,12 @@ enum PanelOverlay {
 
         let edge = attached ? 0 : HifisSize.screenEdge
         host.view.translatesAutoresizingMaskIntoConstraints = false
+        // **붙는 판은 상자가 자라면서 드러난다.** 판을 통째로 끌어내리면 *아래 줄부터*
+        // 나와서 잡아당긴 것처럼 보인다 (대표가 봤다) — 판은 제자리에 두고 잘리는
+        // 만큼만 보이게 한다. 안드로이드 `expandVertically(Top)` 와 같은 그림이다
+        let grow: NSLayoutConstraint? = attached
+            ? box.heightAnchor.constraint(equalToConstant: 0)
+            : nil
         var rules = [
             box.leadingAnchor.constraint(equalTo: controller.view.leadingAnchor, constant: edge),
             box.trailingAnchor.constraint(equalTo: controller.view.trailingAnchor, constant: -edge),
@@ -82,13 +88,34 @@ enum PanelOverlay {
             host.view.leadingAnchor.constraint(equalTo: box.leadingAnchor),
             host.view.trailingAnchor.constraint(equalTo: box.trailingAnchor),
             host.view.topAnchor.constraint(equalTo: box.topAnchor),
-            box.bottomAnchor.constraint(equalTo: host.view.bottomAnchor),
         ]
+        if let grow {
+            rules.append(grow)
+        } else {
+            rules.append(box.bottomAnchor.constraint(equalTo: host.view.bottomAnchor))
+        }
         if let height {
             rules.append(host.view.heightAnchor.constraint(equalToConstant: height))
         }
         NSLayoutConstraint.activate(rules)
-        return host.view
+        return Installed(panel: host.view, blur: blur, grow: grow)
+    }
+
+    /// 판·흐림·자라는 자리 — 전환을 직접 잡는 판이 이것들을 움직인다
+    struct Installed {
+        let panel: UIView
+        let blur: UIView
+        /// 붙는 판이 드러나는 높이 — 0 에서 판 키까지 자란다 (뜨는 판은 없다)
+        let grow: NSLayoutConstraint?
+
+        /// 판이 다 펼쳐졌을 때의 키 — 줄 수가 달라서 그때그때 잰다
+        func fullHeight(width: CGFloat) -> CGFloat {
+            panel.systemLayoutSizeFitting(
+                CGSize(width: width, height: 0),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+        }
     }
 
     /// 헤더와 판 사이 — 헤더에 붙으면 헤더가 늘어난 것처럼 보인다

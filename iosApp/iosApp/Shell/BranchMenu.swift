@@ -15,6 +15,11 @@ import SharedKit
 struct BranchPanel: View {
     /// 고른 지점 — **nil 이면 전 지점**
     let picked: String?
+    /// 지금 제품의 브랜드색 — **값으로 받는다**
+    ///
+    /// 이 판은 셸의 SwiftUI 나무 **밖**(`UIHostingController`)에 서서 `\.brand` 환경값이
+    /// 안 따라온다. `HifisColor.brand` 를 쓰면 TeamFIS 에서도 체크가 파랗다 (대표가 봤다)
+    let brand: Color
     let onPick: (String?) -> Void
 
     var body: some View {
@@ -53,7 +58,7 @@ struct BranchPanel: View {
                         .renderingMode(.template)
                         .resizable()
                         .frame(width: HifisSize.headerIcon, height: HifisSize.headerIcon)
-                        .foregroundStyle(HifisColor.brand)
+                        .foregroundStyle(brand)
                 }
             }
             .padding(.horizontal, Self.rowEdge)
@@ -72,14 +77,15 @@ struct BranchPanel: View {
 /// 지점 고르개를 덮어 올리는 자리 — 검색판과 같은 껍데기를 쓴다 (`PanelOverlay`)
 final class BranchOverlayController: UIViewController {
     private let shell: ShellState
-    /// 헤더 뒤에서 풀려 나오는 판 — 상자가 잘라 주고 이 뷰가 내려온다
-    private var panel: UIView?
+    /// 헤더 뒤에서 풀려 나오는 판과 뒤를 덮는 흐림 — **전환을 우리가 잡는다**
+    private var parts: PanelOverlay.Installed?
 
     init(shell: ShellState) {
         self.shell = shell
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .overFullScreen
-        modalTransitionStyle = .crossDissolve
+        // **시스템 전환을 안 쓴다.** 페이드가 우리 애니메이션을 가로채서, 걷을 때 판이
+        // 제자리로 툭 내려앉았다가 사라졌다 (대표가 봤다, 2026-09-11)
     }
 
     @available(*, unavailable)
@@ -87,9 +93,12 @@ final class BranchOverlayController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        panel = PanelOverlay.install(
+        parts = PanelOverlay.install(
             in: self,
-            panel: BranchPanel(picked: shell.branch) { [weak self] id in
+            panel: BranchPanel(
+                picked: shell.branch,
+                brand: HifisBrand.palette(shell.product).brand
+            ) { [weak self] id in
                 self?.shell.pick(branch: id)
                 self?.leave()
             },
@@ -106,23 +115,34 @@ final class BranchOverlayController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.layoutIfNeeded()
-        guard let panel else { return }
-        panel.transform = CGAffineTransform(translationX: 0, y: -panel.bounds.height)
+        guard let parts, let grow = parts.grow else { return }
+        let full = parts.fullHeight(width: view.bounds.width)
+        grow.constant = 0
+        parts.blur.alpha = 0
+        view.layoutIfNeeded()
+        grow.constant = full
         UIView.animate(withDuration: Self.enter, delay: 0, options: .curveEaseOut) {
-            panel.transform = .identity
+            self.view.layoutIfNeeded()
+            parts.blur.alpha = PanelOverlay.blurAlpha
         }
     }
 
     /// 되말리면서 닫는다 — 툭 사라지면 헤더로 들어간 것이 안 보인다
+    ///
+    /// **다 걷은 뒤에 치운다.** `dismiss(animated:)` 를 같이 돌리면 그 전환이 우리
+    /// 애니메이션을 가로채, 올라가던 판이 제자리로 내려앉았다가 사라진다
     private func leave() {
-        guard let panel else {
-            dismiss(animated: true)
+        guard let parts, let grow = parts.grow else {
+            dismiss(animated: false)
             return
         }
+        grow.constant = 0
         UIView.animate(withDuration: Self.exit, delay: 0, options: .curveEaseIn) {
-            panel.transform = CGAffineTransform(translationX: 0, y: -panel.bounds.height)
+            self.view.layoutIfNeeded()
+            parts.blur.alpha = 0
+        } completion: { [weak self] _ in
+            self?.dismiss(animated: false)
         }
-        dismiss(animated: true)
     }
 
     @objc private func close() { leave() }
@@ -133,7 +153,8 @@ final class BranchOverlayController: UIViewController {
 
     /// 헤더의 지점 단추가 부른다 (`TabPage`)
     static func present(shell: ShellState) {
-        topController()?.present(BranchOverlayController(shell: shell), animated: true)
+        // **페이드 없이 올린다** — 들어오는 그림은 `viewWillAppear` 가 직접 그린다
+        topController()?.present(BranchOverlayController(shell: shell), animated: false)
     }
 }
 
