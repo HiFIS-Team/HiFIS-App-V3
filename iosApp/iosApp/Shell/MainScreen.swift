@@ -92,7 +92,7 @@ struct MainScreen: View {
             MainTabBar(
                 shell: shell,
                 product: shown,
-                brand: shell.brand,
+                brand: HifisBrand.palette(shown).brand,
                 onScan: { withAnimation(Self.push) { scanOpen = true } },
                 onNotification: { withAnimation(Self.push) { notificationOpen = true } },
                 onChat: { withAnimation(Self.push) { chatOpen = true } }
@@ -258,7 +258,11 @@ private struct MainTabBar: UIViewControllerRepresentable {
             }
 
             controller.tabs = built
+            context.coordinator.tabs = tabs
             controller.delegate = context.coordinator
+            // **고른 칸의 채운 그림은 우리가 갈아 끼운다.** `UITab` 에는 `selectedImage` 가
+            // 없고, 화면의 `tabBarItem` 도 안 본다 — 칸을 옮길 때마다 `image` 를 바꿔 준다
+            Coordinator.applyIcons(controller, tabs: tabs)
         } else {
             // iOS 17 이하에는 그 자리가 없다 — 탭만 세운다
             controller.viewControllers = tabs.map {
@@ -289,6 +293,34 @@ private struct MainTabBar: UIViewControllerRepresentable {
     final class Coordinator: NSObject, UITabBarControllerDelegate {
         /// 동그라미를 눌렀을 때 할 일 — 제품이 정한다 (AI / 검색)
         var onSideSlot: () -> Void = {}
+        /// 이 바가 세운 칸들 — 채운 그림을 갈아 끼울 때 쓴다
+        var tabs: [MainTab] = []
+
+        /**
+         고른 칸만 **속을 채운 그림**으로 바꾼다
+
+         `UITab` 에는 `selectedImage` 가 없다. 화면(`UIHostingController`)의 `tabBarItem` 에
+         채운 그림을 심어 봐도 **바가 그걸 안 본다** — 칸의 화면은 누를 때 비로소 만들어지는데
+         바는 그 전에 이미 그림을 그린다. 그래서 칸을 옮길 때마다 여기서 갈아 끼운다.
+         */
+        static func applyIcons(_ controller: UITabBarController, tabs: [MainTab]) {
+            guard #available(iOS 18.0, *) else { return }
+            let picked = controller.selectedTab?.identifier
+            for tab in controller.tabs {
+                guard let mine = tabs.first(where: { $0.name == tab.identifier }) else { continue }
+                let on = tab.identifier == picked
+                tab.image = UIImage(named: on ? mine.iconFilled : mine.icon)
+            }
+        }
+
+        @available(iOS 18.0, *)
+        func tabBarController(
+            _ tabBarController: UITabBarController,
+            didSelectTab selectedTab: UITab,
+            previousTab: UITab?
+        ) {
+            Self.applyIcons(tabBarController, tabs: tabs)
+        }
 
         @available(iOS 18.0, *)
         func tabBarController(
