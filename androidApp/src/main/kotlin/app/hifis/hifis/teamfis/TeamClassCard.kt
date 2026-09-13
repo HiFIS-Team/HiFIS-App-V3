@@ -18,34 +18,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisColors
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
-import app.hifis.hifis.ui.theme.eventColor
-import app.hifis.shared.chat.ChatBox
 import app.hifis.shared.teamfis.ClassStatus
 import app.hifis.shared.teamfis.TeamClass
 import app.hifis.shared.teamfis.TeamSchedule
 
 /**
- * 수업 카드 — 달력에서 고른 날의 수업 하나 (2026-09-13 대표, 참고 사진의 짜임)
+ * 수업 카드 — 달력에서 고른 날의 수업 하나
+ *
+ * **무엇을 어디에 적는지는 TeamFIS 것과 같다** (2026-09-14 대표가 그 레포를 지목).
  *
  * ```
- * ● PT 30회                 [ 12/30회차 ]   ← 상태 점 + 상품 · 회차 알약
- * 18:00 ~ 19:00                             ← 눈이 먼저 닿는 줄
- * Ⓐ 김수현                          예정    ← 회원 · 상태
+ * ● 김수현 회원님              [ 수업예정 ]   ← 상태 점 + 회원 · 상태 배지
+ * 오후 2:00 ~ 3:00                           ← 눈이 먼저 닿는 줄
+ * PT 30회                        12/30회차   ← 상품 · 회차
  * ```
  *
- * **지나간 수업은 조용히 물러난다** (업무 목록과 같은 규칙). 끝난 것을 색으로 띄우면
- * 눈이 거기 멈추는데, 봐야 하는 건 아직 안 한 수업이다.
+ * **시간이 제일 크다.** 하루를 시간 순으로 훑는 자리라 "누가"보다 "몇 시에"가 먼저 걸려야 한다.
+ * 왼쪽 점은 **상태를 색으로만** 말한다 — 배지 글자를 안 읽고도 세로로 훑을 수 있다.
  */
 @Composable
 fun TeamClassCard(item: TeamClass, modifier: Modifier = Modifier) {
     val colors = HifisTheme.colors
-    val done = item.status == ClassStatus.DONE
-    val mark = statusColor(item.status, colors)
 
     Column(
         modifier
@@ -54,66 +51,73 @@ fun TeamClassCard(item: TeamClass, modifier: Modifier = Modifier) {
             .padding(CARD_PADDING),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(DOT).background(mark, CircleShape))
+            Box(Modifier.size(DOT).background(dotColor(item.status, colors), CircleShape))
             Spacer(Modifier.size(DOT_GAP))
             Text(
-                item.product,
-                style = HifisType.label.copy(fontWeight = FontWeight.SemiBold),
-                color = if (done) colors.inkSecondary else colors.ink,
+                item.memberLabel,
+                style = HifisType.label,
+                color = colors.inkSecondary,
             )
             Spacer(Modifier.weight(1f))
-            // 회차는 **알약에 담는다** — 상품 이름 옆에 그냥 두면 한 줄이 둘로 안 갈린다
-            Text(
-                item.roundLabel,
-                style = HifisType.caption,
-                color = colors.inkSecondary,
-                modifier = Modifier
-                    .background(colors.fieldFill, CircleShape)
-                    .padding(horizontal = PILL_H, vertical = PILL_V),
-            )
+            StatusBadge(item.status)
         }
         Spacer(Modifier.height(TIME_GAP))
         Text(
             item.timeLabel,
-            // 시각이 카드에서 제일 큰 글자다 — 목록을 훑을 때 먼저 읽는 것이 시간이다
+            // 시간은 자릿수가 바뀌어도 줄이 안 흔들려야 한다
             style = HifisType.title.copy(fontFeatureSettings = HifisType.TABULAR),
-            color = if (done) colors.inkTertiary else colors.ink,
+            color = colors.ink,
         )
         Spacer(Modifier.height(FOOT_GAP))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // **사진이 없다.** 이름 글자를 색 원에 넣는다 (사내톡과 같은 자리에서 뽑는다)
-            Box(
-                Modifier
-                    .size(AVATAR)
-                    .background(eventColor(ChatBox.colorIndex(item.member)), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    ChatBox.initial(item.member),
-                    fontSize = AVATAR_FONT,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-            }
-            Spacer(Modifier.size(DOT_GAP))
-            Text(
-                item.member,
-                style = HifisType.label,
-                color = if (done) colors.inkTertiary else colors.inkSecondary,
-            )
+            Text(item.product, style = HifisType.caption, color = colors.inkTertiary)
             Spacer(Modifier.weight(1f))
             Text(
-                TeamSchedule.statusLabel(item.status),
-                style = HifisType.caption.copy(fontWeight = FontWeight.Bold),
-                color = mark,
+                item.roundLabel,
+                style = HifisType.caption.copy(fontFeatureSettings = HifisType.TABULAR),
+                color = colors.inkTertiary,
             )
         }
     }
 }
 
-/** 아직 안 한 것만 색을 쓴다 — 끝난 것은 물러난다 */
-private fun statusColor(status: ClassStatus, colors: HifisColors): Color =
-    if (status == ClassStatus.DONE) colors.inkTertiary else colors.brand
+/**
+ * 상태 배지 — **예정만 채운다**
+ *
+ * 지나간 것(완료·노쇼)을 채우면 눈이 거기 멈추는데, 봐야 하는 건 아직 안 한 수업이다.
+ */
+@Composable
+private fun StatusBadge(status: ClassStatus) {
+    val colors = HifisTheme.colors
+    val filled = status == ClassStatus.SCHEDULED
+    Text(
+        TeamSchedule.statusLabel(status),
+        style = HifisType.caption,
+        color = when {
+            filled -> Color.White
+            status == ClassStatus.NO_SHOW -> colors.danger
+            else -> colors.inkTertiary
+        },
+        modifier = Modifier
+            .background(
+                if (filled) colors.brand else colors.fieldFill,
+                RoundedCornerShape(BADGE_RADIUS),
+            )
+            .padding(horizontal = BADGE_H, vertical = BADGE_V),
+    )
+}
+
+/**
+ * 훑을 때 쓰는 점 색 — 예정만 제품색이다
+ *
+ * 노쇼는 `danger` 다. TeamFIS 는 브랜드 레드를 노쇼에 쓰는데, 우리는 제품색이 곧
+ * 그 레드라 그대로 쓰면 **예정과 노쇼가 같은 색**이 된다 (`DESIGN.md` 상태색 규칙).
+ */
+private fun dotColor(status: ClassStatus, colors: HifisColors): Color = when (status) {
+    ClassStatus.SCHEDULED -> colors.brand
+    ClassStatus.DONE -> colors.inkTertiary
+    ClassStatus.NO_SHOW -> colors.danger
+}
 
 /** 카드 안쪽 여백 — 세 줄짜리라 카드 기본값(24)보다 좁다 */
 private val CARD_PADDING = 16.dp
@@ -122,22 +126,14 @@ private val CARD_PADDING = 16.dp
 private val DOT = 8.dp
 private val DOT_GAP = 8.dp
 
-/** 회차 알약 안쪽 여백 */
-private val PILL_H = 10.dp
-private val PILL_V = 4.dp
+/** 상태 배지 — 모서리·안쪽 여백 */
+private val BADGE_RADIUS = 8.dp
+private val BADGE_H = 8.dp
+private val BADGE_V = 3.dp
 
 /** 머리말 → 시각 → 아래 줄 사이 */
 private val TIME_GAP = 8.dp
-private val FOOT_GAP = 10.dp
-
-/**
- * 회원 아바타와 그 안 글자 — **두 글자가 들어간다**
- *
- * `ChatBox.initial` 은 이름에서 **두 글자**를 뽑는다 (사내톡과 같은 규칙이라 안 바꾼다).
- * 22 로 뒀더니 글자가 원에 꽉 차서 답답했다.
- */
-private val AVATAR = 28.dp
-private val AVATAR_FONT = 10.sp
+private val FOOT_GAP = 12.dp
 
 /** 카드 사이 */
 internal val CARD_GAP = 10.dp

@@ -4,8 +4,8 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
-/** 수업이 지나갔나 — **둘뿐이다.** 결석·취소는 정해지면 그때 는다 */
-enum class ClassStatus { SCHEDULED, DONE }
+/** 수업이 어떻게 됐나 — TeamFIS 것과 같은 셋이다 */
+enum class ClassStatus { SCHEDULED, DONE, NO_SHOW }
 
 /**
  * TeamFIS 수업 한 칸 — **트레이너가 그날 맡은 PT**
@@ -16,6 +16,8 @@ enum class ClassStatus { SCHEDULED, DONE }
  *
  * **시각은 글자로 든다.** `LocalTime` 을 쓰면 두 플랫폼이 각자 포맷을 짜게 되고,
  * 그러면 같은 수업이 한쪽에서만 `18:00`, 다른 쪽에서 `오후 6:00` 이 된다.
+ *
+ * 카드에 무엇을 어디에 적는지는 **TeamFIS 것과 같다** (2026-09-14 대표가 그 레포를 지목).
  */
 data class TeamClass(
     val id: String,
@@ -33,11 +35,42 @@ data class TeamClass(
     val member: String,
     val status: ClassStatus,
 ) {
-    /** 카드 가운데 큰 줄 */
-    val timeLabel: String get() = "$start ~ $end"
+    /**
+     * 카드 가운데 큰 줄 — `오후 2:00 ~ 3:00`
+     *
+     * 끝 시각에는 오전·오후를 **넘어갈 때만** 붙인다 (TeamFIS 와 같은 규칙).
+     * 한 줄 안에서 같은 말을 두 번 하면 정작 다른 쪽인 시각이 안 보인다.
+     */
+    val timeLabel: String
+        get() {
+            val (sh, sm) = parse(start)
+            val (eh, em) = parse(end)
+            val tail = if ((sh < 12) == (eh < 12)) clock(eh, em) else "${ampm(eh)} ${clock(eh, em)}"
+            return "${ampm(sh)} ${clock(sh, sm)} ~ $tail"
+        }
 
-    /** 머리말 오른쪽 알약 — `12/30회차` */
+    /** 시작 시각만 — 하단바 위 줄이 쓴다 */
+    val startLabel: String get() = parse(start).let { (h, m) -> "${ampm(h)} ${clock(h, m)}" }
+
+    /** 카드 아래 오른쪽 — `12/30회차` */
     val roundLabel: String get() = "$round/${rounds}회차"
+
+    /** 카드 머리말 왼쪽 — `박승규 회원님` */
+    val memberLabel: String get() = "$member 회원님"
+
+    /** `18:30` → (18, 30) */
+    private fun parse(hhmm: String): Pair<Int, Int> {
+        val at = hhmm.split(":")
+        return (at.getOrNull(0)?.toIntOrNull() ?: 0) to (at.getOrNull(1)?.toIntOrNull() ?: 0)
+    }
+
+    private fun ampm(hour: Int): String = if (hour < 12) "오전" else "오후"
+
+    /** `2:00` — 12시간제. 0 시와 12 시는 둘 다 `12` 다 */
+    private fun clock(hour: Int, minute: Int): String {
+        val h = hour % 12
+        return "${if (h == 0) 12 else h}:${minute.toString().padStart(2, '0')}"
+    }
 }
 
 /**
@@ -46,9 +79,20 @@ data class TeamClass(
  * 값은 아직 [demo] 다 — **서버를 안 붙였다.**
  */
 object TeamSchedule {
-    /** 카드 오른쪽 아래 — 지나간 수업은 조용히 물러난다 */
-    fun statusLabel(status: ClassStatus): String =
-        if (status == ClassStatus.DONE) "완료" else "예정"
+    /** 카드 머리말 오른쪽 배지 — TeamFIS 와 같은 말이다 */
+    fun statusLabel(status: ClassStatus): String = when (status) {
+        ClassStatus.SCHEDULED -> "수업예정"
+        ClassStatus.DONE -> "수업완료"
+        ClassStatus.NO_SHOW -> "노쇼"
+    }
+
+    /**
+     * 하단바 위 줄에 세울 수업 — **오늘 남은 것 중 가장 이른 예정**
+     *
+     * 없으면 줄을 안 세운다. 다 끝난 날에 `다음 수업` 이 떠 있으면 거짓말이 된다.
+     */
+    fun next(classes: List<TeamClass>, today: LocalDate): TeamClass? =
+        of(classes, today).firstOrNull { it.status == ClassStatus.SCHEDULED }
 
     /** 그날 수업만 — **이른 시각부터** */
     fun of(classes: List<TeamClass>, date: LocalDate): List<TeamClass> =
@@ -72,7 +116,7 @@ object TeamSchedule {
     fun demo(today: LocalDate): List<TeamClass> = listOf(
         TeamClass("t1", today, "10:00", "11:00", "얼리버드 20회", 12, 20, "박승규", ClassStatus.DONE),
         TeamClass("t2", today, "14:00", "15:00", "PT 30회", 12, 30, "김수현", ClassStatus.SCHEDULED),
-        TeamClass("t3", today, "16:00", "17:00", "PT 20회", 3, 20, "정민준", ClassStatus.SCHEDULED),
+        TeamClass("t3", today, "16:00", "17:00", "PT 20회", 3, 20, "정민준", ClassStatus.NO_SHOW),
         TeamClass("t4", today, "18:30", "19:30", "얼리버드 10회", 8, 10, "이건주", ClassStatus.SCHEDULED),
         TeamClass(
             "t5", today.plus(1, DateTimeUnit.DAY), "11:00", "12:00",
