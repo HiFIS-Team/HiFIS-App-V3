@@ -50,9 +50,9 @@ import kotlinx.datetime.LocalDate
  * 평소에는 **이번 주 한 줄**, `펼쳐보기` 를 누르면 **그 달 전체**로 늘어난다.
  * 달을 늘 펴 두면 업무 목록이 화면 밖으로 밀린다.
  *
- * **브랜드색을 안 쓴다.** 고른 날은 [HifisColors.surface] 알약과 [HifisColors.ink] 로
- * 표시한다 — 상시 떠 있는 것에 액센트 예산을 쓰지 않는다. 브랜드색이 남는 자리는
- * **오늘**뿐이다 (아래 [dayColor] 참고).
+ * **브랜드색을 아예 안 쓴다.** 고른 날은 [HifisColors.surface] 알약과 [HifisColors.ink] 로
+ * 표시한다 — 상시 떠 있는 것에 액센트 예산을 쓰지 않는다. 오늘은 굵기로만 선다
+ * (아래 [dayColor] · [todayWeight] 참고).
  *
  * 격자를 어떻게 자르는지는 `shared` 의 [Calendar] 가 정한다. 여기는 그리기만 한다 —
  * 두 플랫폼이 각자의 날짜 API 로 세면 같은 주인데 첫 칸이 다른 날이 된다.
@@ -233,7 +233,7 @@ private fun DayCell(
                 cell.day.toString(),
                 // 날짜는 자릿수가 바뀌어도 칸 안에서 흔들리면 안 된다
                 style = HifisType.body.copy(
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = todayWeight(cell, FontWeight.SemiBold),
                     fontFeatureSettings = HifisType.TABULAR,
                 ),
                 color = dateTint,
@@ -342,7 +342,10 @@ private fun MonthDay(cell: CalendarCell, picked: Boolean, onPick: (LocalDate) ->
         Box(Modifier.size(STAMP), contentAlignment = Alignment.Center) {
             Text(
                 cell.day.toString(),
-                style = HifisType.label.copy(fontFeatureSettings = HifisType.TABULAR),
+                style = HifisType.label.copy(
+                    fontWeight = todayWeight(cell, FontWeight.Medium),
+                    fontFeatureSettings = HifisType.TABULAR,
+                ),
                 color = tint,
             )
         }
@@ -357,11 +360,12 @@ private fun MonthDay(cell: CalendarCell, picked: Boolean, onPick: (LocalDate) ->
 }
 
 /**
- * 날짜 글자색 — **고른 날 > 오늘 > 주말 > 보통** 차례로 이긴다
+ * 날짜 글자색 — **고른 날 > 주말 > 보통** 차례로 이긴다
  *
- * **오늘만 브랜드색이다** (업무 요일 줄에서 그대로 온 규칙). 달을 넘겨 보다가도
- * 돌아올 자리를 잃지 않게 한다 — 고른 날은 이미 알약·점이 말하고 있어서
- * 색까지 브랜드로 가져가면 둘이 싸운다.
+ * **오늘은 색으로 말하지 않는다** (2026-09-13 대표 — "일요일은 빨간색이어야지").
+ * 한때 오늘을 브랜드색으로 뒀는데, 그러면 오늘이 일요일인 날 **빨강이 파랑에 덮인다.**
+ * 일요일 빨강·토요일 파랑은 달력을 읽는 관습이라 그게 이겨야 한다 —
+ * 오늘은 [todayWeight] 로 굵기만 준다.
  *
  * @param dim 요일 한 글자 — 날짜보다 한 단 옅다
  */
@@ -372,10 +376,18 @@ private fun dayColor(
     dim: Boolean = false,
 ): Color = when {
     picked -> colors.ink
-    cell.isToday -> colors.brand
     else -> weekendColor(cell.weekday, colors)
         ?: if (dim) colors.inkTertiary else colors.inkSecondary
 }
+
+/**
+ * 오늘의 굵기 — **색을 안 건드린다**
+ *
+ * 달을 넘겨 보다가도 돌아올 자리를 잃지 않게 하는 표시다. 색으로 주면 주말색과 싸우고,
+ * 점·동그라미로 주면 고른 날 표시(알약·점)와 겹친다. 남은 축이 굵기다.
+ */
+private fun todayWeight(cell: CalendarCell, base: FontWeight): FontWeight =
+    if (cell.isToday) FontWeight.Bold else base
 
 /** 일요일 빨강 · 토요일 파랑 — 달력에서 늘 그렇게 읽는다 (일정 달력과 같다) */
 private fun weekendColor(weekday: Int, colors: HifisColors): Color? = when (weekday) {

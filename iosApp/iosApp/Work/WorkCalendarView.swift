@@ -6,8 +6,8 @@ import SharedKit
 /// 평소에는 **이번 주 한 줄**, `펼쳐보기` 를 누르면 **그 달 전체**로 늘어난다.
 /// 달을 늘 펴 두면 업무 목록이 화면 밖으로 밀린다.
 ///
-/// **브랜드색을 안 쓴다.** 고른 날은 `surface` 알약과 `ink` 로 표시한다 —
-/// 상시 떠 있는 것에 액센트 예산을 쓰지 않는다. 브랜드색이 남는 자리는 **오늘**뿐이다.
+/// **브랜드색을 아예 안 쓴다.** 고른 날은 `surface` 알약과 `ink` 로 표시한다 —
+/// 상시 떠 있는 것에 액센트 예산을 쓰지 않는다. 오늘은 굵기로만 선다.
 ///
 /// 격자를 어떻게 자르는지는 `shared` 의 `Calendar` 가 정한다. 여기는 그리기만 한다 —
 /// 두 플랫폼이 각자의 날짜 API 로 세면 같은 주인데 첫 칸이 다른 날이 된다.
@@ -105,7 +105,7 @@ struct WorkCalendarView: View {
                 .background { if picked { Circle().fill(HifisColor.ink) } }
             Text("\(cell.day)")
                 // 날짜는 자릿수가 바뀌어도 칸 안에서 흔들리면 안 된다
-                .font(HifisFont.body.monospacedDigit())
+                .font(HifisFont.body.weight(Self.todayWeight(cell, .semibold)).monospacedDigit())
                 .foregroundStyle(dayColor(cell, picked: picked))
                 .frame(width: Self.stamp, height: Self.stamp)
         }
@@ -193,7 +193,7 @@ struct WorkCalendarView: View {
 
         return VStack(spacing: 0) {
             Text("\(cell.day)")
-                .font(HifisFont.label.monospacedDigit())
+                .font(HifisFont.label.weight(Self.todayWeight(cell, .medium)).monospacedDigit())
                 .foregroundStyle(dayColor(cell, picked: picked))
                 .frame(width: Self.stamp, height: Self.stamp)
             // 고른 날은 **동그라미 대신 밑에 점**이다 — 달을 다 펴면 칸이 서른 개라
@@ -212,17 +212,25 @@ struct WorkCalendarView: View {
 
     // MARK: - 색
 
-    /// 날짜 글자색 — **고른 날 > 오늘 > 주말 > 보통** 차례로 이긴다
+    /// 날짜 글자색 — **고른 날 > 주말 > 보통** 차례로 이긴다
     ///
-    /// **오늘만 브랜드색이다** (업무 요일 줄에서 그대로 온 규칙). 달을 넘겨 보다가도
-    /// 돌아올 자리를 잃지 않게 한다 — 고른 날은 이미 알약·점이 말하고 있어서
-    /// 색까지 브랜드로 가져가면 둘이 싸운다.
+    /// **오늘은 색으로 말하지 않는다** (2026-09-13 대표 — "일요일은 빨간색이어야지").
+    /// 한때 오늘을 브랜드색으로 뒀는데, 그러면 오늘이 일요일인 날 **빨강이 파랑에 덮인다.**
+    /// 일요일 빨강·토요일 파랑은 달력을 읽는 관습이라 그게 이겨야 한다 —
+    /// 오늘은 `todayWeight` 로 굵기만 준다.
     ///
     /// - Parameter dim: 요일 한 글자 — 날짜보다 한 단 옅다
     private func dayColor(_ cell: CalendarCell, picked: Bool, dim: Bool = false) -> Color {
         if picked { return HifisColor.ink }
-        if cell.isToday { return brand }
         return Self.weekendColor(cell.weekday) ?? (dim ? HifisColor.inkTertiary : HifisColor.inkSecondary)
+    }
+
+    /// 오늘의 굵기 — **색을 안 건드린다**
+    ///
+    /// 달을 넘겨 보다가도 돌아올 자리를 잃지 않게 하는 표시다. 색으로 주면 주말색과 싸우고,
+    /// 점·동그라미로 주면 고른 날 표시(알약·점)와 겹친다. 남은 축이 굵기다.
+    private static func todayWeight(_ cell: CalendarCell, _ base: Font.Weight) -> Font.Weight {
+        cell.isToday ? .bold : base
     }
 
     /// 일요일 빨강 · 토요일 파랑 — 달력에서 늘 그렇게 읽는다 (일정 달력과 같다)
@@ -233,8 +241,6 @@ struct WorkCalendarView: View {
         default: nil
         }
     }
-
-    @Environment(\.brand) private var brand
 
     /// 접힌 줄의 한 칸 높이 — **알약 높이가 곧 줄 높이다**
     ///
