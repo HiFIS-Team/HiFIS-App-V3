@@ -19,7 +19,13 @@ struct WorkCalendarView: View {
     let today: Kotlinx_datetimeLocalDate
     /// 펼쳤을 때 보이는 달 (그 달의 아무 날). 화살표는 이것만 옮긴다
     let month: Kotlinx_datetimeLocalDate
-    let expanded: Bool
+    /// 얼마나 펼쳐졌나 — **0 이 접힘, 1 이 펼침**
+    ///
+    /// `Bool` 이 아니라 **움직이는 값**이다. 애플은 `withAnimation` 하나가 화면 배치를
+    /// 통째로 물어서, `Bool` 을 전환에 넣으면 `펼쳐보기` 줄의 글자 폭이 줄어드는 것까지
+    /// 물려 옆 아이콘이 따라 미끄러진다 (대표가 봤다, 2026-09-13).
+    /// **움직일 값만 떼어** 걸면 안드로이드와 같다 — 거기도 키와 각도만 애니메이션 값이다.
+    let fold: Double
     let onPick: (Kotlinx_datetimeLocalDate) -> Void
     let onMonth: (Kotlinx_datetimeLocalDate) -> Void
 
@@ -48,17 +54,17 @@ struct WorkCalendarView: View {
                 // **제 키로 먼저 선다.** 안 박으면 `frame(height:)` 이 자르는 게 아니라
                 // 키를 *제안*해서, 안쪽 줄들이 그 키에 맞춰 다시 앉는다 (줄이 겹쳐 보였다)
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(height: expanded ? 0 : Self.stripRow, alignment: .bottom)
-                .opacity(expanded ? 0 : 1)
+                .frame(height: Self.stripRow * (1 - fold), alignment: .bottom)
+                .opacity(1 - fold)
                 .clipped()
                 // 잘려 안 보이는 것은 눌리지도 않아야 한다 — 그림만 잘릴 뿐 자리는 남는다
-                .allowsHitTesting(!expanded)
+                .allowsHitTesting(fold < 0.5)
             monthBlock
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(height: expanded ? monthHeight : 0, alignment: .bottom)
-                .opacity(expanded ? 1 : 0)
+                .frame(height: monthHeight * fold, alignment: .bottom)
+                .opacity(fold)
                 .clipped()
-                .allowsHitTesting(expanded)
+                .allowsHitTesting(fold > 0.5)
         }
         .padding(.horizontal, HifisSize.screenEdge)
     }
@@ -281,7 +287,16 @@ struct WorkCalendarView: View {
 /// **화살표가 뒤집히며** 달력이 그 달로 늘어난다. 줄 전체를 누르는 자리로 두지 않고
 /// 글자 폭만큼만 잡는다 — 옆의 빈 자리를 눌러도 펴지면 실수로 여닫힌다.
 struct WorkCalendarBar: View {
+    /// 글자 — **전환 밖에서 바뀐다**
+    ///
+    /// 이것을 `withAnimation` 에 넣으면 **글자 폭이 줄어드는 것까지** 전환이 물어서,
+    /// `펼쳐보기`(4자) → `접기`(2자) 로 바뀌는 동안 옆 아이콘이 따라 미끄러진다
+    /// (대표가 봤다, 2026-09-13). 안드로이드 `Row` 는 바로 다시 앉는다.
     let expanded: Bool
+    /// 화살표가 도는 정도 — **달력 키와 같은 값**을 쓴다 (0 → 0° · 1 → 180°)
+    ///
+    /// 안드로이드도 애니메이션 값은 이 각도뿐이다 (`animateFloatAsState`).
+    let fold: Double
     let onToggle: () -> Void
 
     var body: some View {
@@ -294,8 +309,7 @@ struct WorkCalendarBar: View {
                         .renderingMode(.template)
                         .resizable()
                         .frame(width: Self.icon, height: Self.icon)
-                        // **제 애니메이션을 안 건다.** 달력과 같은 전환을 타야 같이 움직인다
-                        .rotationEffect(.degrees(expanded ? 180 : 0))
+                        .rotationEffect(.degrees(180 * fold))
                 }
                 .foregroundStyle(HifisColor.inkSecondary)
                 .padding(.horizontal, Self.inset)

@@ -36,6 +36,8 @@ struct WorkView: View {
     @State private var tasks: [MyTask]
     @State private var mine = false
     @State private var expanded = false
+    /// 달력이 얼마나 펼쳐졌나 — **이것만 전환 안에 든다** (0 접힘 · 1 펼침)
+    @State private var fold: Double = 0
     /// 고른 날과 펼쳤을 때 보이는 달 — **화살표는 달만 옮긴다** (고른 날은 그대로 둔다)
     @State private var picked: Kotlinx_datetimeLocalDate
     @State private var month: Kotlinx_datetimeLocalDate
@@ -78,7 +80,7 @@ struct WorkView: View {
                         picked: picked,
                         today: todayDate,
                         month: month,
-                        expanded: expanded,
+                        fold: fold,
                         onPick: {
                             picked = $0
                             // 고른 날이 든 달을 보여 준다 — 옆 달을 눌러 넘어갔을 때 뒤에 남지 않게
@@ -88,10 +90,13 @@ struct WorkView: View {
                     )
                     .padding(.top, Self.calendarTop)
 
-                    // **전환을 한 곳에서 건다.** 안 감싸면 달력 안쪽만 제 애니메이션으로
-                    // 움직이고 그 아래는 즉시 튀어서, 화살표만 혼자 늦게 따라오는 것처럼 보인다
-                    WorkCalendarBar(expanded: expanded) {
-                        withAnimation(WorkCalendarView.foldMotion) { expanded.toggle() }
+                    // **글자는 전환 밖, 키는 전환 안.** 애플은 `withAnimation` 하나가
+                    // 화면 배치를 통째로 물어서, `expanded` 를 그 안에 넣으면 이 줄의
+                    // 글자 폭이 줄어드는 것까지 물려 옆 아이콘이 따라 미끄러진다.
+                    // 안드로이드도 애니메이션 값은 키와 각도뿐이다 (`animateFloatAsState`)
+                    WorkCalendarBar(expanded: expanded, fold: fold) {
+                        expanded.toggle()
+                        withAnimation(WorkCalendarView.foldMotion) { fold = expanded ? 1 : 0 }
                     }
                         .padding(.top, Self.barCalendarGap)
                         .padding(.bottom, Self.barSwitchGap)
