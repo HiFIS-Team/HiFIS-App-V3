@@ -1,5 +1,6 @@
 package app.hifis.shared.work
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.todayIn
@@ -15,7 +16,8 @@ import kotlin.time.ExperimentalTime
  * 수업 개수는 PT 라 TeamFIS 로 간다 — 이 앱에 없다.
  */
 object WorkBoard {
-    const val TITLE = "업무"
+    // **화면 이름을 안 적는다** (2026-09-13 대표). 헤더 바로 밑이 달력 자리다 —
+    // 제목 한 줄을 더 두면 달력이 그만큼 밀려 내려와 첫 화면에서 오늘이 안 보인다.
 
     /** 위 두 칸 — 왼쪽이 공통, 오른쪽이 내 것이다 */
     const val COMMON = "공통 업무"
@@ -44,7 +46,7 @@ object WorkBoard {
      */
     val DAY_NAMES: List<String> = listOf("월", "화", "수", "목", "금", "토", "일")
 
-    /** 이레 — 요일 줄이 세우는 값 */
+    /** 이레 — 요일로 도는 것을 훑을 때 쓴다 */
     val DAYS: List<Int> = (1..7).toList()
 
     /**
@@ -54,10 +56,17 @@ object WorkBoard {
      * `Calendar` 의 `.weekday` 는 **일요일이 1** 이라 그대로 쓰면 하루씩 밀린다.
      */
     @OptIn(ExperimentalTime::class)
-    fun today(): Int =
-        Clock.System.todayIn(TimeZone.currentSystemDefault()).dayOfWeek.isoDayNumber
+    fun today(): Int = isoDay(Clock.System.todayIn(TimeZone.currentSystemDefault()))
 
-    /** `월` · `일` — 요일 줄의 한 글자 */
+    /**
+     * 그 날짜의 ISO 요일 (1=월 … 7=일)
+     *
+     * 달력이 **날짜**를 주면 요일은 여기서 센다. [today] 와 같은 이유다 —
+     * `Calendar` 의 `.weekday` 는 **일요일이 1** 이라 iOS 에서 세면 하루씩 밀린다.
+     */
+    fun isoDay(date: LocalDate): Int = date.dayOfWeek.isoDayNumber
+
+    /** `월` · `일` — 달력 칸의 요일 한 글자 */
     fun dayName(day: Int): String = DAY_NAMES[day - 1]
 
     /** 보고 있는 날이 오늘인가 */
@@ -66,7 +75,7 @@ object WorkBoard {
     /**
      * 목록 머리말 — 오늘이면 `오늘 할 일`, 아니면 `수요일 할 일`
      *
-     * **줄마다 요일을 안 적는다** (V2 2026-08-20). 이 한 줄과 요일 줄이 이미
+     * **줄마다 요일을 안 적는다** (V2 2026-08-20). 이 한 줄과 달력이 이미
      * 어느 날을 보고 있는지 말한다 — 줄마다 `월·수·금` 을 달면 읽을 것만 는다.
      */
     fun dayTitle(day: Int, today: Int): String =
@@ -74,6 +83,15 @@ object WorkBoard {
 
     /** 오늘 목록의 머리말 */
     const val MY_TODAY = "오늘 할 일"
+
+    // ── 달력 ──
+
+    /**
+     * 달력 아래 한 줄 — 누르면 그 주가 **그 달 전체**로 늘어난다
+     *
+     * 평소에는 이번 주 한 줄만 둔다. 달을 통째로 펴 두면 업무 목록이 화면 밖으로 밀린다.
+     */
+    fun foldLabel(expanded: Boolean): String = if (expanded) "접기" else "펼쳐보기"
 
     /** 다 했다 — 숫자 대신 이 말이 뜬다 */
     const val DONE_ALL = "완료"
