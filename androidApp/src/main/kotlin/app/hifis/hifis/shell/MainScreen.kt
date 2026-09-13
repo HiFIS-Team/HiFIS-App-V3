@@ -43,6 +43,7 @@ import app.hifis.hifis.home.HomeScreen
 import app.hifis.hifis.more.MoreScreen
 import app.hifis.hifis.notification.NotificationScreen
 import app.hifis.hifis.schedule.ScheduleScreen
+import app.hifis.hifis.teamfis.TeamScheduleScreen
 import app.hifis.hifis.search.SearchOverlay
 import app.hifis.hifis.shell.AiChatButton
 import app.hifis.hifis.shell.LocalProduct
@@ -151,9 +152,16 @@ private fun ProductShell(product: Product, tabs: List<MainTab>) {
             .background(HifisTheme.colors.background),
     ) {
         Box(Modifier.weight(1f)) {
-            // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다를 예정이라
-            // 빌려 쓰지 않는다 (2026-09-11 대표) — 아직 자리 문구만 뜬다
-            if (product == Product.HIFIS) {
+            // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다르다 —
+            // 빌려 쓰지 않는다 (2026-09-11 대표). 아직 안 만든 칸은 자리 문구가 뜬다
+            if (product == Product.TEAMFIS && selected == MainTab.SCHEDULE) {
+                TeamScheduleScreen(
+                    onSearch = { searchOpen = true },
+                    onScan = { scanOpen = true },
+                    onNotification = { notificationOpen = true },
+                    onChat = { chatOpen = true },
+                )
+            } else if (product == Product.HIFIS) {
                 when (selected) {
                     MainTab.HOME -> HomeScreen(
                         onSearch = { searchOpen = true },

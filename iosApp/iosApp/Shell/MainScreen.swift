@@ -305,8 +305,13 @@ private struct MainTabBar: View {
             picked = target.name
         }
         let search = presentSearch
-        // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다를 예정이라
-        // 빌려 쓰지 않는다 (2026-09-11 대표) — 아직 자리 문구만 뜬다
+        // **화면은 제품이 가진다.** TeamFIS 의 홈·일정은 HiFIS 것과 디자인이 다르다 —
+        // 빌려 쓰지 않는다 (2026-09-11 대표). 아직 안 만든 칸은 자리 문구가 뜬다
+        if product == Product.teamfis, tab == MainTab.schedule {
+            return AnyView(
+                TeamScheduleView(onSearch: search, onScan: onScan, onChat: onChat, onNotification: onNotification)
+            )
+        }
         guard product == Product.hifis else {
             return AnyView(
                 ComingSoonView(
