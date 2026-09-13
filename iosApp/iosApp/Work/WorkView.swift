@@ -76,7 +76,7 @@ struct WorkView: View {
         TabPage(onSearch: onSearch, onScan: onScan, onChat: onChat, onNotification: onNotification) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    WorkCalendarView(
+                    FoldCalendarView(
                         picked: picked,
                         today: todayDate,
                         month: month,
@@ -94,9 +94,9 @@ struct WorkView: View {
                     // 화면 배치를 통째로 물어서, `expanded` 를 그 안에 넣으면 이 줄의
                     // 글자 폭이 줄어드는 것까지 물려 옆 아이콘이 따라 미끄러진다.
                     // 안드로이드도 애니메이션 값은 키와 각도뿐이다 (`animateFloatAsState`)
-                    WorkCalendarBar(expanded: expanded, fold: fold) {
+                    FoldCalendarBar(expanded: expanded, fold: fold) {
                         expanded.toggle()
-                        withAnimation(WorkCalendarView.foldMotion) { fold = expanded ? 1 : 0 }
+                        withAnimation(FoldCalendarView.foldMotion) { fold = expanded ? 1 : 0 }
                     }
                         .padding(.top, Self.barCalendarGap)
                         .padding(.bottom, Self.barSwitchGap)

@@ -141,13 +141,6 @@ class WorkBoardTest {
         assertEquals("일", WorkBoard.dayName(WorkBoard.isoDay(LocalDate(2026, 9, 13))))
     }
 
-    /** 달력 아래 한 줄 — 펼친 상태에서는 되돌아가는 말이어야 한다 */
-    @Test
-    fun `달력 줄은 펼침에 따라 말이 갈린다`() {
-        assertEquals("펼쳐보기", WorkBoard.foldLabel(expanded = false))
-        assertEquals("접기", WorkBoard.foldLabel(expanded = true))
-    }
-
     /** 달력에서 날을 옮겼을 때 목록이 실제로 갈리는지 보려면 데모가 요일마다 달라야 한다 */
     @Test
     fun `데모는 요일마다 다른 목록을 준다`() {

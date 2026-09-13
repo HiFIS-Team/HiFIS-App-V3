@@ -1,7 +1,7 @@
 import SwiftUI
 import SharedKit
 
-/// 업무 달력 — **헤더 바로 밑** (2026-09-13 대표, TeamFIS 일정 달력을 그대로)
+/// 접히는 달력 — **헤더 바로 밑** (2026-09-13 대표, TeamFIS 일정 달력을 그대로)
 ///
 /// 평소에는 **이번 주 한 줄**, `펼쳐보기` 를 누르면 **그 달 전체**로 늘어난다.
 /// 달을 늘 펴 두면 업무 목록이 화면 밖으로 밀린다.
@@ -12,9 +12,9 @@ import SharedKit
 /// 격자를 어떻게 자르는지는 `shared` 의 `Calendar` 가 정한다. 여기는 그리기만 한다 —
 /// 두 플랫폼이 각자의 날짜 API 로 세면 같은 주인데 첫 칸이 다른 날이 된다.
 ///
-/// 안드로이드 `WorkCalendar` 와 같은 값이다.
-struct WorkCalendarView: View {
-    /// 고른 날 — 개인 업무 목록이 이 날의 요일로 갈린다
+/// 안드로이드 `FoldCalendar` 와 같은 값이다.
+struct FoldCalendarView: View {
+    /// 고른 날 — 아래 목록이 이 날 것으로 갈린다
     let picked: Kotlinx_datetimeLocalDate
     let today: Kotlinx_datetimeLocalDate
     /// 펼쳤을 때 보이는 달 (그 달의 아무 날). 화살표는 이것만 옮긴다
@@ -288,7 +288,7 @@ struct WorkCalendarView: View {
 ///
 /// **화살표가 뒤집히며** 달력이 그 달로 늘어난다. 줄 전체를 누르는 자리로 두지 않고
 /// 글자 폭만큼만 잡는다 — 옆의 빈 자리를 눌러도 펴지면 실수로 여닫힌다.
-struct WorkCalendarBar: View {
+struct FoldCalendarBar: View {
     /// 글자 — **전환 밖에서 바뀐다**
     ///
     /// 이것을 `withAnimation` 에 넣으면 **글자 폭이 줄어드는 것까지** 전환이 물어서,
@@ -305,7 +305,7 @@ struct WorkCalendarBar: View {
         HStack(spacing: 0) {
             Button(action: onToggle) {
                 HStack(spacing: 2) {
-                    Text(WorkBoard.shared.foldLabel(expanded: expanded))
+                    Text(SharedKit.Calendar.shared.foldLabel(expanded: expanded))
                         .font(HifisFont.label)
                     Image("ic_chevron_down")
                         .renderingMode(.template)

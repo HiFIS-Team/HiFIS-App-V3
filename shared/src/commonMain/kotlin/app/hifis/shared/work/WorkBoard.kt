@@ -84,14 +84,6 @@ object WorkBoard {
     /** 오늘 목록의 머리말 */
     const val MY_TODAY = "오늘 할 일"
 
-    // ── 달력 ──
-
-    /**
-     * 달력 아래 한 줄 — 누르면 그 주가 **그 달 전체**로 늘어난다
-     *
-     * 평소에는 이번 주 한 줄만 둔다. 달을 통째로 펴 두면 업무 목록이 화면 밖으로 밀린다.
-     */
-    fun foldLabel(expanded: Boolean): String = if (expanded) "접기" else "펼쳐보기"
 
     /** 다 했다 — 숫자 대신 이 말이 뜬다 */
     const val DONE_ALL = "완료"

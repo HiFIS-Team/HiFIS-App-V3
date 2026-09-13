@@ -69,6 +69,13 @@ object Calendar {
     /** 요일 머리말 — **일요일부터**다 (V2 달력과 같다) */
     val weekdayLabels = listOf("일", "월", "화", "수", "목", "금", "토")
 
+    /**
+     * 접히는 달력 아래 한 줄 — 누르면 그 주가 **그 달 전체**로 늘어난다
+     *
+     * 평소에는 이번 주 한 줄만 둔다. 달을 통째로 펴 두면 아래 목록이 화면 밖으로 밀린다.
+     */
+    fun foldLabel(expanded: Boolean): String = if (expanded) "접기" else "펼쳐보기"
+
     /** `2026년 7월` */
     fun monthLabel(anyDayInMonth: LocalDate): String =
         "${anyDayInMonth.year}년 ${anyDayInMonth.monthOfYear}월"

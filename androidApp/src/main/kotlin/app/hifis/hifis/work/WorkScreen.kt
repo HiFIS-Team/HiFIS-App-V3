@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
 import app.hifis.hifis.shell.TabPage
+import app.hifis.hifis.ui.FoldCalendar
+import app.hifis.hifis.ui.FoldCalendarBar
 import app.hifis.hifis.ui.ModeSwitch
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
@@ -113,7 +115,7 @@ fun WorkScreen(
                 // 떠 있는 AI 단추가 마지막 칩의 `+` 를 덮는다 — 그만큼 더 둬서 굴려 올릴 수 있게 한다
                 .padding(bottom = Dimens.aiChatClear),
         ) {
-            WorkCalendar(
+            FoldCalendar(
                 picked = picked,
                 today = todayDate,
                 month = month,
@@ -126,7 +128,7 @@ fun WorkScreen(
                 onMonth = { month = it },
                 modifier = Modifier.padding(top = CALENDAR_TOP),
             )
-            WorkCalendarBar(
+            FoldCalendarBar(
                 expanded = expanded,
                 onToggle = { expanded = !expanded },
                 modifier = Modifier.padding(top = BAR_CALENDAR_GAP, bottom = BAR_SWITCH_GAP),

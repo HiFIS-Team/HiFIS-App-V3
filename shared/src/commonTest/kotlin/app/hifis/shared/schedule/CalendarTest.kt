@@ -110,6 +110,13 @@ class CalendarTest {
         assertTrue(EventScope.all.all { it.icon.startsWith("ic_") })
     }
 
+    /** 접히는 달력 아래 한 줄 — 펼친 상태에서는 되돌아가는 말이어야 한다 */
+    @Test
+    fun `접히는 달력 줄은 펼침에 따라 말이 갈린다`() {
+        assertEquals("펼쳐보기", Calendar.foldLabel(expanded = false))
+        assertEquals("접기", Calendar.foldLabel(expanded = true))
+    }
+
     @Test
     fun `달 이름은 년월로 찍는다`() {
         assertEquals("2026년 7월", Calendar.monthLabel(july))
