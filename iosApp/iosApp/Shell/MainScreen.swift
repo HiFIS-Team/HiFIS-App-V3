@@ -245,8 +245,29 @@ private struct MainTabBar: View {
         )
     }
 
+    /// 탭 바 위 유리 줄 — **TeamFIS 에만 선다** (2026-09-14 대표)
+    ///
+    /// 세울 수업이 없으면 아예 안 붙인다. 빈 유리 알약이 떠 있으면 고장으로 읽힌다.
+    private var nextClass: TeamClass? {
+        guard product == Product.teamfis else { return nil }
+        return NextClassBarView.next()
+    }
+
     @available(iOS 18.0, *)
+    @ViewBuilder
     private var glass: some View {
+        if let next = nextClass {
+            // 아래로 굴리면 바가 접히면서 이 줄이 가운데로 내려앉는다 — 시스템이 한다
+            glassTabs
+                .bottomAccessory(NextClassBarView(item: next))
+                .minimizeTabBarOnScroll()
+        } else {
+            glassTabs
+        }
+    }
+
+    @available(iOS 18.0, *)
+    private var glassTabs: some View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.name) { tab in
                 Tab(tab.label, image: tab.iconFilled, value: tab.name) { page(tab) }
