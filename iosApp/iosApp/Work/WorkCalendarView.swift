@@ -37,24 +37,58 @@ struct WorkCalendarView: View {
     }
 
     var body: some View {
+        // **잘라 내며 드러난다.** 둘을 같은 자리에서 겹쳐 흐리면(`if`/`else` 갈아 끼우기)
+        // 주 줄 위에 달 격자가 포개져 보인다 — 안드로이드는 둘이 세로로 나란히 서서
+        // 각자 잘리며 높이만 오간다 (`expandVertically` / `shrinkVertically`).
+        //
+        // **아래에 붙어 위가 잘린다** (`Alignment.Bottom` — 안드로이드 기본값).
+        // 달은 아래 줄부터 드러나고 머리글이 마지막에 붙는다.
         VStack(spacing: 0) {
-            if expanded {
-                monthHeader
-                weekdayHeader
-                ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
-                    monthRow(week)
-                }
-            } else {
-                HStack(spacing: 0) {
-                    ForEach(week, id: \.key) { cell in
-                        dayCell(cell)
-                    }
-                }
-            }
+            weekStrip
+                // **제 키로 먼저 선다.** 안 박으면 `frame(height:)` 이 자르는 게 아니라
+                // 키를 *제안*해서, 안쪽 줄들이 그 키에 맞춰 다시 앉는다 (줄이 겹쳐 보였다)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(height: expanded ? 0 : Self.stripRow, alignment: .bottom)
+                .opacity(expanded ? 0 : 1)
+                .clipped()
+                // 잘려 안 보이는 것은 눌리지도 않아야 한다 — 그림만 잘릴 뿐 자리는 남는다
+                .allowsHitTesting(!expanded)
+            monthBlock
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(height: expanded ? monthHeight : 0, alignment: .bottom)
+                .opacity(expanded ? 1 : 0)
+                .clipped()
+                .allowsHitTesting(expanded)
         }
         .padding(.horizontal, HifisSize.screenEdge)
-        // 줄 수가 통째로 바뀌는 것을 높이로 잇는다 — 펼침이 툭 끊기면 안 된다
-        .animation(.easeInOut(duration: Self.fold), value: expanded)
+    }
+
+    private var weekStrip: some View {
+        HStack(spacing: 0) {
+            ForEach(week, id: \.key) { cell in
+                dayCell(cell)
+            }
+        }
+    }
+
+    private var monthBlock: some View {
+        VStack(spacing: 0) {
+            monthHeader
+            weekdayHeader
+            ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
+                monthRow(week)
+            }
+        }
+    }
+
+    /// 다 펼쳤을 때의 키 — **재지 않고 센다**
+    ///
+    /// 안의 값이 다 고정이라 더할 수 있다. 재려면(`GeometryReader`) 첫 그림에서 한 번은
+    /// 0 으로 서고, 그 사이에 펼치면 0 에서 0 으로 움직여 아무 일도 안 일어난다.
+    private var monthHeight: CGFloat {
+        Self.headerRow + Self.monthHeaderGap
+            + Self.weekdayRow + Self.weekdayGap
+            + CGFloat(weeks.count) * Self.monthRow
     }
 
     // MARK: - 접힌 줄
@@ -136,6 +170,8 @@ struct WorkCalendarView: View {
                     .frame(maxWidth: .infinity)
             }
         }
+        // **키를 못 박는다** — 펼친 키를 세어서 쓰는 자리라 글자가 정하게 두면 어긋난다
+        .frame(height: Self.weekdayRow)
         .padding(.bottom, Self.weekdayGap)
     }
 
@@ -213,6 +249,10 @@ struct WorkCalendarView: View {
     private static let stamp: CGFloat = 40
     /// 펼친 달의 한 줄 높이 — 날짜(40) + 점 자리
     private static let monthRow: CGFloat = 50
+    /// 달 머리글 한 줄 — **화살표 누르는 자리가 정한다** (글자보다 크다)
+    private static let headerRow: CGFloat = arrowTap
+    /// 요일 머리글 한 줄 — 안드로이드 `caption` 줄 높이(18)와 같다
+    private static let weekdayRow: CGFloat = 18
     /// 달 머리글 아래·요일 머리글 아래
     private static let monthHeaderGap: CGFloat = 12
     private static let weekdayGap: CGFloat = 4
@@ -221,8 +261,13 @@ struct WorkCalendarView: View {
     private static let arrowIcon: CGFloat = 20
     /// 알약이 옮겨 가는 빠르기 — `ModeSwitch` 와 같은 값이다
     private static let slide: Double = 0.24
-    /// 달이 펴지고 접히는 빠르기 — 줄 수가 통째로 바뀌는 자리라 알약보다 길다
-    fileprivate static let fold: Double = 0.32
+    /// 달이 펴지고 접히는 결 — 줄 수가 통째로 바뀌는 자리라 알약보다 길다
+    ///
+    /// **부르는 쪽이 `withAnimation` 으로 건다.** 여기서 `.animation(value:)` 로 걸면
+    /// 달력 안쪽만 움직이고 아래 줄들은 즉시 튄다 — 화살표가 혼자 늦게 따라오는 것처럼 보인다.
+    /// 안드로이드 `tween(320)` 과 **같은 값·같은 곡선**이다 — Compose `tween` 의 기본
+    /// 가감속은 `FastOutSlowIn`(0.4, 0, 0.2, 1) 이라 `.easeInOut`(0.42, 0, 0.58, 1) 과 다르다
+    static let foldMotion: Animation = .timingCurve(0.4, 0, 0.2, 1, duration: 0.32)
 }
 
 /// 달력 아래 한 줄 — `펼쳐보기` / `접기`
@@ -243,8 +288,8 @@ struct WorkCalendarBar: View {
                         .renderingMode(.template)
                         .resizable()
                         .frame(width: Self.icon, height: Self.icon)
+                        // **제 애니메이션을 안 건다.** 달력과 같은 전환을 타야 같이 움직인다
                         .rotationEffect(.degrees(expanded ? 180 : 0))
-                        .animation(.easeInOut(duration: WorkCalendarView.fold), value: expanded)
                 }
                 .foregroundStyle(HifisColor.inkSecondary)
                 .padding(.horizontal, Self.inset)

@@ -88,7 +88,11 @@ struct WorkView: View {
                     )
                     .padding(.top, Self.calendarTop)
 
-                    WorkCalendarBar(expanded: expanded) { expanded.toggle() }
+                    // **전환을 한 곳에서 건다.** 안 감싸면 달력 안쪽만 제 애니메이션으로
+                    // 움직이고 그 아래는 즉시 튀어서, 화살표만 혼자 늦게 따라오는 것처럼 보인다
+                    WorkCalendarBar(expanded: expanded) {
+                        withAnimation(WorkCalendarView.foldMotion) { expanded.toggle() }
+                    }
                         .padding(.top, Self.barCalendarGap)
                         .padding(.bottom, Self.barSwitchGap)
 
