@@ -46,16 +46,17 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.hifis.hifis.R
-import app.hifis.hifis.shell.ScreenTitle
 import app.hifis.hifis.shell.TabPage
 import app.hifis.hifis.ui.ModeSwitch
 import app.hifis.hifis.ui.tap
 import app.hifis.hifis.ui.theme.Dimens
 import app.hifis.hifis.ui.theme.HifisTheme
 import app.hifis.hifis.ui.theme.HifisType
+import app.hifis.shared.schedule.Calendar
 import app.hifis.shared.work.EnvItem
 import app.hifis.shared.work.MyTask
 import app.hifis.shared.work.WorkBoard
+import java.time.LocalDate as JavaDate
 
 /**
  * 업무 — **오늘 할 일 그 자체**다
@@ -65,12 +66,13 @@ import app.hifis.shared.work.WorkBoard
  * **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
  * V3 는 공통 업무와 개인 업무만 둔다 (2026-09-10 대표 결정).
  *
- * 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
+ * 헤더 밑에 **달력**이 서고 그 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
  * 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 개인 업무는 한 번씩 체크해서
  * 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
  *
- * **개인 업무는 요일을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
- * 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
+ * **개인 업무는 날을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
+ * 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다. 고르는 자리는 **헤더 밑 달력**
+ * 하나뿐이다 (2026-09-13 대표) — 목록 위에 요일 줄을 따로 두면 고르개가 둘이 된다.
  */
 @Composable
 fun WorkScreen(
@@ -91,12 +93,19 @@ fun WorkScreen(
         val items = remember { EnvItem.base }
         // 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
         val counts = remember { mutableStateMapOf<String, Int>() }
-        // 오늘의 요일은 **공용 모듈이 센다** — 플랫폼마다 세면 iOS 가 하루 밀린다
-        val today = remember { WorkBoard.today() }
+        // **날짜도 요일도 공용 모듈이 짓는다** — 플랫폼마다 세면 iOS 가 하루 밀린다
+        val todayDate = remember {
+            JavaDate.now().let { Calendar.dateOf(it.year, it.monthValue, it.dayOfMonth) }
+        }
+        val today = remember(todayDate) { WorkBoard.isoDay(todayDate) }
         val tasks = remember { mutableStateListOf(*MyTask.demo(today).toTypedArray()) }
-        // 화면을 돌려도 보던 칸·보던 요일에 그대로 있는다
+        // 화면을 돌려도 보던 칸에 그대로 있는다
         var mine by rememberSaveable { mutableStateOf(false) }
-        var day by rememberSaveable { mutableStateOf(today) }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+        // 고른 날과 펼쳤을 때 보이는 달 — **화살표는 달만 옮긴다** (고른 날은 그대로 둔다)
+        var picked by remember { mutableStateOf(todayDate) }
+        var month by remember { mutableStateOf(todayDate) }
+        val day = WorkBoard.isoDay(picked)
 
         Column(
             Modifier
@@ -104,7 +113,24 @@ fun WorkScreen(
                 // 떠 있는 AI 단추가 마지막 칩의 `+` 를 덮는다 — 그만큼 더 둬서 굴려 올릴 수 있게 한다
                 .padding(bottom = Dimens.aiChatClear),
         ) {
-            ScreenTitle(WorkBoard.TITLE)
+            WorkCalendar(
+                picked = picked,
+                today = todayDate,
+                month = month,
+                expanded = expanded,
+                onPick = {
+                    picked = it
+                    // 고른 날이 든 달을 보여 준다 — 옆 달을 눌러 넘어갔을 때 뒤에 남지 않게
+                    month = it
+                },
+                onMonth = { month = it },
+                modifier = Modifier.padding(top = CALENDAR_TOP),
+            )
+            WorkCalendarBar(
+                expanded = expanded,
+                onToggle = { expanded = !expanded },
+                modifier = Modifier.padding(top = BAR_CALENDAR_GAP, bottom = BAR_SWITCH_GAP),
+            )
             ModeSwitch(
                 left = WorkBoard.COMMON,
                 right = WorkBoard.MINE,
@@ -114,14 +140,9 @@ fun WorkScreen(
             )
             Spacer(Modifier.height(SWITCH_BODY_GAP))
             if (mine) {
-                MyTasks(
-                    tasks = tasks,
-                    day = day,
-                    today = today,
-                    onPickDay = { day = it },
-                ) { picked ->
+                MyTasks(tasks = tasks, day = day, today = today) { task ->
                     // 화면을 먼저 바꾼다. 서버가 붙으면 그 뒤에 보낸다
-                    val at = tasks.indexOfFirst { it.id == picked.id }
+                    val at = tasks.indexOfFirst { it.id == task.id }
                     if (at >= 0) tasks[at] = tasks[at].check(day)
                 }
             } else {
@@ -137,15 +158,14 @@ fun WorkScreen(
  * **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
  * 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
  *
- * 머리말·진행 막대는 **고른 요일** 것이다. 요일 줄이 그 아래에 서서
- * 바로 밑 목록을 갈아 끼운다 — 고르는 것은 늘 바뀌는 것 위에 둔다.
+ * 머리말·진행 막대는 **고른 날** 것이다. 고르는 자리는 헤더 밑 달력 하나뿐이다 —
+ * 목록 위에 요일 줄을 따로 두면 같은 것을 고르는 자리가 둘이 된다 (2026-09-13 대표).
  */
 @Composable
 private fun MyTasks(
     tasks: List<MyTask>,
     day: Int,
     today: Int,
-    onPickDay: (Int) -> Unit,
     onCheck: (MyTask) -> Unit,
 ) {
     val colors = HifisTheme.colors
@@ -175,7 +195,7 @@ private fun MyTasks(
         Spacer(Modifier.height(10.dp))
 
         // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**.
-        // 비는 날에도 자리를 지킨다 — 빠지면 요일을 옮길 때마다 목록이 위아래로 튄다
+        // 비는 날에도 자리를 지킨다 — 빠지면 날을 옮길 때마다 목록이 위아래로 튄다
         Box(
             Modifier
                 .fillMaxWidth()
@@ -190,11 +210,9 @@ private fun MyTasks(
                     .background(colors.brand),
             )
         }
-        // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 요일 줄과 갈라 놓는다.
-        // 붙여 두면 요일 줄의 윗선처럼 읽힌다
-        Spacer(Modifier.height(BAR_DAY_GAP))
-
-        DayRow(selected = day, today = today, onPick = onPickDay)
+        // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 목록과 갈라 놓는다.
+        // 붙여 두면 막대가 첫 줄의 윗선처럼 읽힌다
+        Spacer(Modifier.height(BAR_LIST_GAP))
 
         if (ofDay.isEmpty()) {
             Text(
@@ -223,66 +241,6 @@ private fun MyTasks(
                 )
             }
             TaskRow(task, checked = task.isChecked(day), canCheck = canCheck) { onCheck(task) }
-        }
-    }
-}
-
-/**
- * 요일 줄 — 누르면 그날 목록으로 갈린다 (V2 2026-08-20)
- *
- * **업무마다 도는 요일이 달라서** 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
- * 줄마다 `월·수·금` 을 적는 것보다 요일을 골라 보는 편이 읽을 것이 적다.
- *
- * **이레를 다 세운다.** 근무일만 세우면 쉬는 날에 넣어 둔 업무를 볼 자리가 없어진다.
- *
- * **안 고른 날은 면이 없다.** 일곱 칸을 다 칠하면 머리말 아래가 통째로 블록이 되어
- * 목록보다 무거워진다. 오늘은 안 골랐어도 브랜드색으로 도드라진다 — 돌아올 자리를 잃지 않게.
- */
-@Composable
-private fun DayRow(selected: Int, today: Int, onPick: (Int) -> Unit) {
-    val colors = HifisTheme.colors
-    Row(Modifier.fillMaxWidth()) {
-        WorkBoard.DAYS.forEach { day ->
-            val name = WorkBoard.dayName(day)
-            val picked = day == selected
-            val spec = tween<Color>(DAY_SLIDE)
-            val fill by animateColorAsState(
-                if (picked) colors.brand else Color.Transparent,
-                spec,
-                label = "day-fill",
-            )
-            val tint by animateColorAsState(
-                when {
-                    picked -> Color.White
-                    day == today -> colors.brand
-                    // 일요일만 붉다 — 달력에서 쉬는 날을 찾는 눈이 그대로 온다
-                    day == SUNDAY -> colors.danger
-                    else -> colors.inkSecondary
-                },
-                spec,
-                label = "day-tint",
-            )
-            Box(
-                Modifier
-                    .weight(1f)
-                    .height(DAY_ROW_HEIGHT)
-                    .tap(label = "${name}요일") { onPick(day) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    Modifier
-                        .size(DAY_CIRCLE)
-                        .background(fill, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        name,
-                        style = HifisType.body,
-                        fontWeight = if (picked || day == today) FontWeight.Bold else FontWeight.Medium,
-                        color = tint,
-                    )
-                }
-            }
         }
     }
 }
@@ -592,24 +550,23 @@ private const val ACTIVE_LINE = 0.45f
 private val CHIP_FONT_BASE = 14.sp
 private const val CHIP_FONT_MIN = 10f
 
+/** 헤더와 달력 사이 — 달력 첫 줄이 헤더에 붙으면 헤더가 늘어난 것처럼 보인다 */
+private val CALENDAR_TOP = 8.dp
+
+/** 달력과 `펼쳐보기` 줄 사이 — 그 줄은 달력에 딸린 것이라 바짝 붙인다 */
+private val BAR_CALENDAR_GAP = 4.dp
+
+/** `펼쳐보기` 줄과 칸 고르개 사이 — 달력 묶음과 그 아래를 가르는 자리다 */
+private val BAR_SWITCH_GAP = 8.dp
+
 /** 스위치와 본문 사이 */
 private val SWITCH_BODY_GAP = 16.dp
 
 /** 개인 업무 진행 막대 두께 */
 private val BAR_HEIGHT = 6.dp
 
-/** 진행 막대와 요일 줄 사이 — 머리말과 막대 사이(10)보다 넓다 */
-private val BAR_DAY_GAP = 8.dp
-
-/** 요일 줄 — 한 칸 높이와 고른 날의 동그라미 */
-private val DAY_ROW_HEIGHT = 40.dp
-private val DAY_CIRCLE = 32.dp
-
-/** 요일이 갈리는 빠르기 — 알약(240)보다 짧다. 일곱 칸이라 길면 꾸물거려 보인다 */
-private const val DAY_SLIDE = 140
-
-/** 일요일 — ISO 차례의 마지막이다 */
-private const val SUNDAY = 7
+/** 진행 막대와 목록 사이 — 머리말과 막대 사이(10)보다 넓다 */
+private val BAR_LIST_GAP = 8.dp
 
 /** 개인 업무 줄 왼쪽 동그라미 */
 private val CHECK_SIZE = 22.dp

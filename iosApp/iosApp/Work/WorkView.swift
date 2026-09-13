@@ -8,12 +8,13 @@ import SharedKit
 /// **매일 하는 일과 가끔 보는 것이 한 줄에 서 있어서** 매일 하는 사람이 매일 한 번 더 골랐다.
 /// V3 는 공통 업무와 개인 업무만 둔다 (2026-09-10 대표 결정).
 ///
-/// 제목 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
+/// 헤더 밑에 **달력**이 서고 그 아래 두 칸으로 나뉜다. **둘은 도는 방식이 다르다** —
 /// 공통 업무는 하루에 여러 번 해서 횟수가 늘고, 개인 업무는 한 번씩 체크해서
 /// 다 하면 완료·남으면 누락이다. 그래서 한쪽은 칩 격자, 한쪽은 체크 목록이다.
 ///
-/// **개인 업무는 요일을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
-/// 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
+/// **개인 업무는 날을 골라 본다.** 업무마다 도는 요일이 달라서(월·수·금, 화·목…)
+/// 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다. 고르는 자리는 **헤더 밑 달력**
+/// 하나뿐이다 (2026-09-13 대표) — 목록 위에 요일 줄을 따로 두면 고르개가 둘이 된다.
 ///
 /// 안드로이드 `WorkScreen` 과 같은 화면이다.
 struct WorkView: View {
@@ -27,14 +28,20 @@ struct WorkView: View {
     private let items = EnvItem.companion.base
     /// 오늘 몇 번 했는지 — **화면에만 있다.** 서버가 붙으면 그날 것을 받아 채운다
     @State private var counts: [String: Int] = [:]
-    /// 오늘의 요일 (ISO 1=월 … 7=일) — **공용 모듈이 센다**
+    /// 오늘 — **날짜도 요일도 공용 모듈이 짓는다**
     ///
-    /// `Calendar` 의 `.weekday` 는 **일요일이 1** 이라 여기서 세면 하루 밀린다.
-    private let today = Int(WorkBoard.shared.today())
+    /// `Foundation.Calendar` 의 `.weekday` 는 **일요일이 1** 이라 여기서 세면 하루 밀린다.
+    private let todayDate: Kotlinx_datetimeLocalDate
+    private let today: Int
     @State private var tasks: [MyTask]
     @State private var mine = false
-    /// 보고 있는 요일 — **기본은 오늘**
-    @State private var day: Int
+    @State private var expanded = false
+    /// 고른 날과 펼쳤을 때 보이는 달 — **화살표는 달만 옮긴다** (고른 날은 그대로 둔다)
+    @State private var picked: Kotlinx_datetimeLocalDate
+    @State private var month: Kotlinx_datetimeLocalDate
+
+    /// 보고 있는 요일 — 고른 날이 정한다
+    private var day: Int { Int(WorkBoard.shared.isoDay(date: picked)) }
 
     init(
         onSearch: @escaping () -> Void = {},
@@ -46,16 +53,45 @@ struct WorkView: View {
         self.onScan = onScan
         self.onChat = onChat
         self.onNotification = onNotification
-        let today = Int(WorkBoard.shared.today())
+        let parts = Foundation.Calendar.current.dateComponents(
+            [.year, .month, .day], from: Date()
+        )
+        // 날짜는 `shared` 가 짓는다 — 화면에서 직접 만들면 판이 올라갈 때 한쪽만 깨진다
+        let now = SharedKit.Calendar.shared.dateOf(
+            year: Int32(parts.year ?? 2026),
+            month: Int32(parts.month ?? 1),
+            day: Int32(parts.day ?? 1)
+        )
+        let today = Int(WorkBoard.shared.isoDay(date: now))
+        todayDate = now
+        self.today = today
         _tasks = State(initialValue: MyTask.companion.demo(today: Int32(today)))
-        _day = State(initialValue: today)
+        _picked = State(initialValue: now)
+        _month = State(initialValue: now)
     }
 
     var body: some View {
         TabPage(onSearch: onSearch, onScan: onScan, onChat: onChat, onNotification: onNotification) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    ScreenTitle(WorkBoard.shared.TITLE)
+                    WorkCalendarView(
+                        picked: picked,
+                        today: todayDate,
+                        month: month,
+                        expanded: expanded,
+                        onPick: {
+                            picked = $0
+                            // 고른 날이 든 달을 보여 준다 — 옆 달을 눌러 넘어갔을 때 뒤에 남지 않게
+                            month = $0
+                        },
+                        onMonth: { month = $0 }
+                    )
+                    .padding(.top, Self.calendarTop)
+
+                    WorkCalendarBar(expanded: expanded) { expanded.toggle() }
+                        .padding(.top, Self.barCalendarGap)
+                        .padding(.bottom, Self.barSwitchGap)
+
                     ModeSwitch(
                         left: WorkBoard.shared.COMMON,
                         right: WorkBoard.shared.MINE,
@@ -179,8 +215,8 @@ struct WorkView: View {
     /// **면을 안 깐다** (V2 와 같다). 회색 박스를 줄마다 두면 다섯 개짜리 목록이
     /// 회색 덩어리 다섯으로 읽힌다. 줄 사이는 얇은 선이 가른다.
     ///
-    /// 머리말·진행 막대는 **고른 요일** 것이다. 요일 줄이 그 아래에 서서
-    /// 바로 밑 목록을 갈아 끼운다 — 고르는 것은 늘 바뀌는 것 위에 둔다.
+    /// 머리말·진행 막대는 **고른 날** 것이다. 고르는 자리는 헤더 밑 달력 하나뿐이다 —
+    /// 목록 위에 요일 줄을 따로 두면 같은 것을 고르는 자리가 둘이 된다 (2026-09-13 대표).
     private var myTasks: some View {
         let board = WorkBoard.shared
         let ofDay = board.tasksOf(tasks: tasks, day: Int32(day))
@@ -205,7 +241,7 @@ struct WorkView: View {
             Spacer().frame(height: 10)
 
             // 진행 막대 — 머리말 숫자와 같은 말을 하지만 **눈이 먼저 닿는다**.
-            // 비는 날에도 자리를 지킨다 — 빠지면 요일을 옮길 때마다 목록이 위아래로 튄다
+            // 비는 날에도 자리를 지킨다 — 빠지면 날을 옮길 때마다 목록이 위아래로 튄다
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(HifisColor.fieldFill)
@@ -218,11 +254,9 @@ struct WorkView: View {
                 }
             }
             .frame(height: Self.barHeight)
-            // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 요일 줄과 갈라 놓는다.
-            // 붙여 두면 요일 줄의 윗선처럼 읽힌다
-            Spacer().frame(height: Self.barDayGap)
-
-            DayRow(selected: $day, today: today)
+            // 막대는 머리말 숫자와 한 덩어리다 — 아래를 더 띄워 목록과 갈라 놓는다.
+            // 붙여 두면 막대가 첫 줄의 윗선처럼 읽힌다
+            Spacer().frame(height: Self.barListGap)
 
             if ofDay.isEmpty {
                 Text(board.emptyLabel(day: Int32(day), today: Int32(today)))
@@ -273,12 +307,18 @@ struct WorkView: View {
     /// 한 칩의 면·테두리 진하기
     fileprivate static let activeFill: Double = 0.16
     fileprivate static let activeLine: Double = 0.45
+    /// 헤더와 달력 사이 — 달력 첫 줄이 헤더에 붙으면 헤더가 늘어난 것처럼 보인다
+    private static let calendarTop: CGFloat = 8
+    /// 달력과 `펼쳐보기` 줄 사이 — 그 줄은 달력에 딸린 것이라 바짝 붙인다
+    private static let barCalendarGap: CGFloat = 4
+    /// `펼쳐보기` 줄과 칸 고르개 사이 — 달력 묶음과 그 아래를 가르는 자리다
+    private static let barSwitchGap: CGFloat = 8
     /// 스위치와 본문 사이
     private static let switchBodyGap: CGFloat = 16
     /// 개인 업무 진행 막대 두께
     private static let barHeight: CGFloat = 6
-    /// 진행 막대와 요일 줄 사이 — 머리말과 막대 사이(10)보다 넓다
-    private static let barDayGap: CGFloat = 8
+    /// 진행 막대와 목록 사이 — 머리말과 막대 사이(10)보다 넓다
+    private static let barListGap: CGFloat = 8
     /// 목록이 비었을 때 그 자리의 위아래 여백
     private static let emptyPad: CGFloat = 52
 }
@@ -420,64 +460,3 @@ private struct TaskRow: View {
     /// 개인 업무 줄 왼쪽 동그라미
     private static let check: CGFloat = 22
 }
-
-/// 요일 줄 — 누르면 그날 목록으로 갈린다 (V2 2026-08-20)
-///
-/// **업무마다 도는 요일이 달라서** 오늘 것만 보면 다른 요일에 뭘 넣어 뒀는지 알 길이 없다.
-/// 줄마다 `월·수·금` 을 적는 것보다 요일을 골라 보는 편이 읽을 것이 적다.
-///
-/// **이레를 다 세운다.** 근무일만 세우면 쉬는 날에 넣어 둔 업무를 볼 자리가 없어진다.
-///
-/// **안 고른 날은 면이 없다.** 일곱 칸을 다 칠하면 머리말 아래가 통째로 블록이 되어
-/// 목록보다 무거워진다. 오늘은 안 골랐어도 브랜드색으로 도드라진다 — 돌아올 자리를 잃지 않게.
-///
-/// 안드로이드 `DayRow` 와 같은 값이다.
-private struct DayRow: View {
-    @Environment(\.brand) private var brand
-    @Binding var selected: Int
-    let today: Int
-
-    var body: some View {
-        HStack(spacing: 0) {
-            ForEach(WorkBoard.shared.DAYS.map(\.intValue), id: \.self) { day in
-                let name = WorkBoard.shared.dayName(day: Int32(day))
-                let picked = day == selected
-                Button {
-                    selected = day
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(picked ? brand : .clear)
-                            .frame(width: Self.circle, height: Self.circle)
-                        Text(name)
-                            .font(.system(size: 16, weight: picked || day == today ? .bold : .medium))
-                            .foregroundStyle(tint(day, picked: picked))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Self.rowHeight)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(TapStyle())
-                .accessibilityLabel("\(name)요일")
-            }
-        }
-        .animation(.easeOut(duration: Self.slide), value: selected)
-    }
-
-    private func tint(_ day: Int, picked: Bool) -> Color {
-        if picked { return .white }
-        if day == today { return brand }
-        // 일요일만 붉다 — 달력에서 쉬는 날을 찾는 눈이 그대로 온다
-        if day == Self.sunday { return HifisColor.danger }
-        return HifisColor.inkSecondary
-    }
-
-    /// 한 칸 높이와 고른 날의 동그라미
-    private static let rowHeight: CGFloat = 40
-    private static let circle: CGFloat = 32
-    /// 요일이 갈리는 빠르기 — 알약(240ms)보다 짧다. 일곱 칸이라 길면 꾸물거려 보인다
-    private static let slide: Double = 0.14
-    /// 일요일 — ISO 차례의 마지막이다
-    private static let sunday = 7
-}
-
