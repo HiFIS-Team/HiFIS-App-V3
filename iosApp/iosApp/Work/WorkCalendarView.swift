@@ -250,8 +250,10 @@ struct WorkCalendarView: View {
 
     /// 접힌 줄의 한 칸 높이 — **알약 높이가 곧 줄 높이다**
     ///
-    /// 요일과 날짜가 위아래로 서서 터치 타겟(44)보다 커야 한다.
-    private static let stripRow: CGFloat = 68
+    /// **안에 든 것(26 + 4 + 40 = 70)보다 커야 한다.** 68 로 뒀더니 요일 동그라미가 알약 위로
+    /// 튀어나와 **헤더가 위를 자른 것처럼** 보였다 (대표가 봤다, 2026-09-13).
+    /// 위아래로 5 씩 남긴다.
+    private static let stripRow: CGFloat = 80
     /// 고른 날 알약 폭
     private static let pillWidth: CGFloat = 44
     /// 요일 한 글자를 감싸는 동그라미와 그 아래 사이
