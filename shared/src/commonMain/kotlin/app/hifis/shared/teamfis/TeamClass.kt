@@ -55,8 +55,8 @@ data class TeamClass(
     /** 카드 아래 오른쪽 — `12/30회차` */
     val roundLabel: String get() = "$round/${rounds}회차"
 
-    /** 카드 머리말 왼쪽 — `박승규 회원님` */
-    val memberLabel: String get() = "$member 회원님"
+    /** 카드 머리말 왼쪽 — `박승규 회원님`. **회원 목록과 같은 말이다** */
+    val memberLabel: String get() = MemberBoard.nameLabel(member)
 
     /** `18:30` → (18, 30) */
     private fun parse(hhmm: String): Pair<Int, Int> {

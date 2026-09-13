@@ -333,6 +333,11 @@ private struct MainTabBar: View {
                 TeamScheduleView(onSearch: search, onScan: onScan, onChat: onChat, onNotification: onNotification)
             )
         }
+        if product == Product.teamfis, tab == MainTab.member {
+            return AnyView(
+                TeamMemberView(onSearch: search, onScan: onScan, onChat: onChat, onNotification: onNotification)
+            )
+        }
         guard product == Product.hifis else {
             return AnyView(
                 ComingSoonView(
