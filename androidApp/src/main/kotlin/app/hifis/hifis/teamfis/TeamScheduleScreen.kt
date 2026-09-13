@@ -1,6 +1,8 @@
 package app.hifis.hifis.teamfis
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,12 +12,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.hifis.hifis.shell.TabPage
 import app.hifis.hifis.ui.FoldCalendar
 import app.hifis.hifis.ui.FoldCalendarBar
+import app.hifis.hifis.ui.theme.Dimens
+import app.hifis.hifis.ui.theme.HifisTheme
+import app.hifis.hifis.ui.theme.HifisType
 import app.hifis.shared.schedule.Calendar
+import app.hifis.shared.teamfis.TeamSchedule
 import java.time.LocalDate as JavaDate
 
 /**
@@ -27,8 +35,8 @@ import java.time.LocalDate as JavaDate
  * **HiFIS 일정과 다른 화면이다** (2026-09-11 대표). 저쪽은 달 격자에 일정 점을 찍고
  * `다가오는 일정` 을 이어 붙이는데, 여기는 PT 수업을 날짜로 훑는 자리라 짜임이 다르다.
  *
- * > **달력 아래는 아직 비어 있다.** 고른 날에 뭘 세울지 안 정했다 —
- * > 정해지면 `SPEC.md` 에 먼저 적고 만든다.
+ * 달력 아래는 **고른 날의 수업 카드**다 (2026-09-13 대표, 참고 사진의 짜임).
+ * 값은 아직 [TeamSchedule.demo] 다 — **서버를 안 붙였다.**
  */
 @Composable
 fun TeamScheduleScreen(
@@ -54,6 +62,9 @@ fun TeamScheduleScreen(
         // 고른 날과 펼쳤을 때 보이는 달 — **화살표는 달만 옮긴다**
         var picked by remember { mutableStateOf(today) }
         var month by remember { mutableStateOf(today) }
+        // **지점이 정한 수업표다.** 서버가 붙으면 그 트레이너 것을 받아 쓴다
+        val classes = remember(today) { TeamSchedule.demo(today) }
+        val ofDay = TeamSchedule.of(classes, picked)
 
         Column(
             Modifier
@@ -78,6 +89,30 @@ fun TeamScheduleScreen(
                 onToggle = { expanded = !expanded },
                 modifier = Modifier.padding(top = BAR_CALENDAR_GAP),
             )
+
+            if (ofDay.isEmpty()) {
+                Text(
+                    TeamSchedule.emptyLabel(picked, today),
+                    style = HifisType.body,
+                    color = HifisTheme.colors.inkSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = EMPTY_PAD),
+                )
+                return@Column
+            }
+
+            Column(
+                Modifier.padding(
+                    top = LIST_TOP,
+                    start = Dimens.screenEdge,
+                    end = Dimens.screenEdge,
+                ),
+                verticalArrangement = Arrangement.spacedBy(CARD_GAP),
+            ) {
+                ofDay.forEach { TeamClassCard(it) }
+            }
         }
     }
 }

@@ -9,8 +9,8 @@ import SharedKit
 /// **HiFIS 일정과 다른 화면이다** (2026-09-11 대표). 저쪽은 달 격자에 일정 점을 찍고
 /// `다가오는 일정` 을 이어 붙이는데, 여기는 PT 수업을 날짜로 훑는 자리라 짜임이 다르다.
 ///
-/// > **달력 아래는 아직 비어 있다.** 고른 날에 뭘 세울지 안 정했다 —
-/// > 정해지면 `SPEC.md` 에 먼저 적고 만든다.
+/// 달력 아래는 **고른 날의 수업 카드**다 (2026-09-13 대표, 참고 사진의 짜임).
+/// 값은 아직 `TeamSchedule.demo` 다 — **서버를 안 붙였다.**
 ///
 /// 안드로이드 `TeamScheduleScreen` 과 같은 화면이다.
 struct TeamScheduleView: View {
@@ -27,6 +27,13 @@ struct TeamScheduleView: View {
     @State private var month: Kotlinx_datetimeLocalDate
     /// 달력이 얼마나 펼쳐졌나 — **이것만 전환 안에 든다** (0 접힘 · 1 펼침)
     @State private var fold: Double = 0
+
+    /// **지점이 정한 수업표다.** 서버가 붙으면 그 트레이너 것을 받아 쓴다
+    private let classes: [TeamClass]
+
+    private var ofDay: [TeamClass] {
+        TeamSchedule.shared.of(classes: classes, date: picked)
+    }
 
     init(
         onSearch: @escaping () -> Void = {},
@@ -47,6 +54,7 @@ struct TeamScheduleView: View {
             day: Int32(parts.day ?? 1)
         )
         today = now
+        classes = TeamSchedule.shared.demo(today: now)
         _picked = State(initialValue: now)
         _month = State(initialValue: now)
     }
@@ -75,6 +83,22 @@ struct TeamScheduleView: View {
                         withAnimation(FoldCalendarView.foldMotion) { fold = expanded ? 1 : 0 }
                     }
                     .padding(.top, Self.barCalendarGap)
+
+                    if ofDay.isEmpty {
+                        Text(TeamSchedule.shared.emptyLabel(date: picked, today: today))
+                            .font(HifisFont.body)
+                            .foregroundStyle(HifisColor.inkSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Self.emptyPad)
+                    } else {
+                        VStack(spacing: Self.cardGap) {
+                            ForEach(ofDay, id: \.id) { item in
+                                TeamClassCardView(item: item)
+                            }
+                        }
+                        .padding(.top, Self.listTop)
+                        .padding(.horizontal, HifisSize.screenEdge)
+                    }
                 }
                 .padding(.bottom, 24)
             }
@@ -85,4 +109,10 @@ struct TeamScheduleView: View {
     private static let calendarTop: CGFloat = 8
     /// 달력과 `펼쳐보기` 줄 사이 — 그 줄은 달력에 딸린 것이라 바짝 붙인다
     private static let barCalendarGap: CGFloat = 4
+    /// 카드 묶음 위 여백 — `펼쳐보기` 줄과 갈라 놓는다
+    private static let listTop: CGFloat = 14
+    /// 카드 사이
+    private static let cardGap: CGFloat = 10
+    /// 그날 수업이 없을 때 그 자리의 위아래 여백
+    private static let emptyPad: CGFloat = 52
 }
